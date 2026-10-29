@@ -1,119 +1,64 @@
 "use client";
 
-import React, { useState } from "react";
-import { ShieldAlert, AlertTriangle, CheckCircle2, PhoneCall, HelpCircle } from "lucide-react";
+import { useState } from "react";
+import { ExternalLink } from "lucide-react";
+import { Panel, ToolShell, Verdict } from "@/components/tools/kit";
+
+const FLAGS = [
+  { id: "irdai", title: "The caller says they are from IRDAI or an ombudsman", desc: "IRDAI is the regulator. It does not call people to sell policies, release bonuses or collect money." },
+  { id: "bonus", title: "They offer an unclaimed bonus or refund if you buy a new policy", desc: "Money owed on an old policy is never tied to buying a new one." },
+  { id: "loan", title: "They promise a loan or free gift with the policy", desc: "Offers tied to buying a policy are a common sign of mis-selling or fraud." },
+  { id: "personal", title: "They ask you to pay to a personal account, UPI ID or wallet", desc: "Premiums go to the insurer through its official website, app or branch, never to a person." },
+  { id: "otp", title: "They ask for an OTP, PIN or full card or bank details", desc: "A genuine insurer does not need your OTP or PIN to sell or service a policy." },
+  { id: "urgent", title: "They pressure you to act today or say the offer will expire", desc: "Pressure is meant to stop you checking. You have a free-look period after buying anyway." },
+  { id: "link", title: "They send a link or app to install or a form to fill in on a strange site", desc: "Check the address yourself on the insurer's official website. Never install apps on a stranger's request." },
+  { id: "switch", title: "They tell you to surrender or stop your current policy and buy theirs", desc: "Switching often costs you. Compare in writing before you change anything." },
+];
 
 export default function ScamShieldPage() {
-  const [selectedFlags, setSelectedFlags] = useState<string[]>([]);
-
-  const redFlags = [
-    {
-      id: "caller_claims_irdai",
-      title: "Caller claims to be an 'Official IRDAI Officer / Ombudsman'",
-      desc: "IRDAI is a statutory regulator and NEVER calls citizens directly to distribute bonuses, refund lapsed money, or sell policies."
-    },
-    {
-      id: "unclaimed_bonus",
-      title: "Promises 'Unclaimed bonus' or 'Surrender fund release' if you buy a new policy",
-      desc: "Classic scam tactic. Insurers never demand you buy a new policy to release funds from an old policy."
-    },
-    {
-      id: "interest_free_loan",
-      title: "Promises interest-free personal loan against an insurance policy purchase",
-      desc: "Zero-interest loan promises tied to instant policy purchase are fraudulent misrepresentations."
-    },
-    {
-      id: "personal_account_transfer",
-      title: "Asks for premium payment into an individual's personal bank account or UPI handle",
-      desc: "All genuine insurance premiums in India are paid directly to the registered Insurer's official payment gateway."
-    }
-  ];
-
-  const toggleFlag = (id: string) => {
-    if (selectedFlags.includes(id)) {
-      setSelectedFlags(selectedFlags.filter(f => f !== id));
-    } else {
-      setSelectedFlags([...selectedFlags, id]);
-    }
-  };
-
-  const threatLevel = selectedFlags.length === 0 ? "Safe" : selectedFlags.length === 1 ? "Moderate Risk" : "Severe Fraud Risk";
-
+  const [sel, setSel] = useState<string[]>([]);
+  const toggle = (id: string) => setSel((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  const n = sel.length;
+  const level = n === 0 ? "none" : n === 1 ? "watch" : "high";
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-600 text-xs font-bold uppercase tracking-wider">
-          <ShieldAlert className="w-3.5 h-3.5" />
-          <span>Consumer Defense</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#24212B] dark:text-white">
-          Insurance Scam Shield™
-        </h1>
-        <p className="text-sm text-[#6F6A7C] dark:text-[#A59FB5] max-w-xl mx-auto">
-          Identify predatory caller tactics, fake IRDAI impersonations, and fraudulent bonus promises.
-        </p>
-      </div>
-
-      <div className="bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
-        <h2 className="text-sm font-bold text-[#24212B] dark:text-white border-b border-[#D9D3E8] dark:border-[#1E2D4A] pb-3">
-          Check Any Behaviors You Have Encountered:
-        </h2>
-
-        <div className="space-y-3">
-          {redFlags.map((flag) => {
-            const isChecked = selectedFlags.includes(flag.id);
+    <ToolShell slug="scam-shield">
+      <div className="grid gap-6 lg:grid-cols-5 items-start">
+        <div className="lg:col-span-3 space-y-3">
+          <p className="text-sm font-semibold text-[#24212B]">Tick everything that happened</p>
+          {FLAGS.map((f) => {
+            const on = sel.includes(f.id);
             return (
-              <div
-                key={flag.id}
-                onClick={() => toggleFlag(flag.id)}
-                className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                  isChecked
-                    ? "border-rose-500 bg-rose-50/50 dark:bg-rose-950/20"
-                    : "border-[#D9D3E8] dark:border-[#1E2D4A] hover:bg-[#FAF9F6] dark:hover:bg-[#142447]"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => {}}
-                    className="w-4 h-4 mt-0.5 accent-rose-500 rounded"
-                  />
-                  <div>
-                    <h3 className="text-xs font-bold text-[#24212B] dark:text-white mb-1">
-                      {flag.title}
-                    </h3>
-                    <p className="text-[11px] text-[#6F6A7C] dark:text-[#A59FB5] leading-relaxed">
-                      {flag.desc}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <button key={f.id} type="button" onClick={() => toggle(f.id)} aria-pressed={on}
+                className={`ls-spot w-full text-left rounded-2xl border p-4 transition-colors ${on ? "border-[#C0364B] bg-[#FDECEF]" : "border-[#D9D3E8] bg-white hover:border-[#7957FF]"}`}>
+                <span className="flex gap-3">
+                  <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-xs font-bold ${on ? "border-[#C0364B] bg-[#C0364B] text-white" : "border-[#D9D3E8] bg-white text-transparent"}`}>✓</span>
+                  <span><span className="block text-[15px] font-bold text-[#24212B]">{f.title}</span><span className="mt-0.5 block text-sm leading-6 text-[#4A4658]">{f.desc}</span></span>
+                </span>
+              </button>
             );
           })}
         </div>
-
-        {/* Threat Level Verdict */}
-        <div className={`p-4 rounded-xl text-xs font-medium space-y-2 ${
-          selectedFlags.length > 0
-            ? "bg-rose-100/70 text-rose-900 dark:bg-rose-950/40 dark:text-rose-200"
-            : "bg-emerald-100/70 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
-        }`}>
-          <div className="flex items-center gap-2 font-bold text-sm">
-            {selectedFlags.length > 0 ? <AlertTriangle className="w-5 h-5 text-rose-600" /> : <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
-            <span>Verdict: {threatLevel}</span>
-          </div>
-          {selectedFlags.length > 0 ? (
-            <p>
-              CRITICAL: Do NOT share OTPs, policy certificates, or bank account credentials. Report this incident immediately to the IRDAI Grievance Portal (toll-free 155255 / 1800 4254 732) and the National Cyber Crime portal at cybercrime.gov.in.
-            </p>
-          ) : (
-            <p>
-              No high-risk scam indicators selected. Always ensure any premium is paid directly on the insurer&apos;s verified web portal with HTTPS.
-            </p>
-          )}
+        <div className="lg:col-span-2 space-y-4 lg:sticky lg:top-24">
+          <Verdict tone={level === "none" ? "info" : level === "watch" ? "warn" : "bad"}>
+            {level === "none" && "Nothing ticked yet. Tick what happened to see how risky it looks."}
+            {level === "watch" && "One warning sign. Do not pay or share anything. Hang up and check the insurer using the number on its official website."}
+            {level === "high" && `${n} warning signs together. Treat this as a likely fraud. Stop talking, do not pay or share OTPs, and report it.`}
+          </Verdict>
+          <Panel title="What to do">
+            <ul className="space-y-2 text-[15px] leading-6 text-[#24212B]">
+              <li>• Hang up. Call your insurer on the number from its official website or your policy.</li>
+              <li>• Never share OTPs, PINs or card details.</li>
+              <li>• If you lost money, report quickly on the national cybercrime portal or call 1930.</li>
+              <li>• Complain about mis-selling through your insurer, then IRDAI's Bima Bharosa.</li>
+            </ul>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-xl bg-[#7957FF] px-3.5 py-2 text-sm font-bold text-white" data-magnetic>Cybercrime portal <ExternalLink className="w-3.5 h-3.5" /></a>
+              <a href="https://bimabharosa.irdai.gov.in/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-xl border border-[#D9D3E8] bg-white px-3.5 py-2 text-sm font-bold text-[#24212B]" data-magnetic>Bima Bharosa <ExternalLink className="w-3.5 h-3.5" /></a>
+            </div>
+          </Panel>
+          <p className="text-sm text-[#6F6A7C]">A clean result does not prove a call is genuine. When unsure, verify with the insurer yourself.</p>
         </div>
       </div>
-    </div>
+    </ToolShell>
   );
 }

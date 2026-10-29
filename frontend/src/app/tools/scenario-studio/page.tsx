@@ -1,5 +1,6 @@
 "use client";
 
+import { ToolShell } from "@/components/tools/kit";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
@@ -118,23 +119,7 @@ export default function ScenarioStudioPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 bg-[#FFFFFF] text-[#24212B]">
-      
-      {/* Header */}
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#FFFFFF] border border-[#7957FF]/40 text-[#7957FF] text-xs font-extrabold uppercase tracking-wider">
-          <Layers className="w-3.5 h-3.5 text-[#7957FF]" />
-          <span>Interactive What-If Studio</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#24212B]">
-          Scenario Studio™
-        </h1>
-        <p className="text-sm text-[#4A4553] max-w-2xl mx-auto leading-relaxed font-medium">
-          Simulate life transitions without modifying your permanent baseline. Inspect exact delta shifts 
-          in required coverage and indicative annual premiums.
-        </p>
-      </div>
-
+    <ToolShell slug="scenario-studio" wide>
       <img
         src="/scenario-studio-hero.svg"
         alt="One baseline branching into three life scenarios, each showing the change in required cover"
@@ -149,7 +134,7 @@ export default function ScenarioStudioPage() {
           <span className="text-xs font-bold uppercase tracking-wider text-[#7957FF]">
             Select One-Tap Scenario:
           </span>
-          <span className="text-xs text-[#24212B] font-bold">
+          <span className="text-sm text-[#24212B] font-bold">
             Baseline: Age {baselineInput.age} | Income {formatINR(baselineInput.annual_income, { compact: true })} | Debt {formatINR(baselineInput.outstanding_liabilities, { compact: true })}
           </span>
         </div>
@@ -165,8 +150,8 @@ export default function ScenarioStudioPage() {
                   : "border-[#D9D3E8] bg-[#FFFFFF]/60 hover:border-[#7957FF]/40 text-[#24212B]"
               }`}
             >
-              <div className="font-bold text-xs text-[#24212B] mb-1">{p.title}</div>
-              <div className="text-[10px] text-[#6F6A7C] line-clamp-2 font-medium">{p.desc}</div>
+              <div className="font-bold text-sm text-[#24212B] mb-1">{p.title}</div>
+              <div className="text-sm text-[#6F6A7C] line-clamp-2 font-medium">{p.desc}</div>
             </button>
           ))}
         </div>
@@ -192,7 +177,7 @@ export default function ScenarioStudioPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleSaveScenario}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#7957FF] text-[#FFFFFF] text-xs font-extrabold hover:bg-[#6444E6] border border-[#7957FF] transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#7957FF] text-[#FFFFFF] text-sm font-extrabold hover:bg-[#6444E6] border border-[#7957FF] transition-colors"
                   >
                     <Save className="w-3.5 h-3.5 text-[#FFFFFF]" />
                     <span>{saveSuccess ? "Saved!" : "Save Scenario"}</span>
@@ -205,7 +190,7 @@ export default function ScenarioStudioPage() {
                 
                 {/* Cover Shift Card */}
                 <div className="p-5 rounded-xl bg-[#FFFFFF] border border-[#D9D3E8] space-y-2">
-                  <span className="text-xs font-bold text-[#6F6A7C] uppercase">
+                  <span className="text-sm font-bold text-[#6F6A7C] uppercase">
                     Protection Gap Shift
                   </span>
                   <div className="flex items-baseline gap-2">
@@ -219,7 +204,7 @@ export default function ScenarioStudioPage() {
                       <TrendingDown className="w-5 h-5 text-[#24212B]" />
                     )}
                   </div>
-                  <div className="text-xs text-[#4A4553] flex justify-between pt-1 border-t border-[#D9D3E8] font-medium">
+                  <div className="text-sm text-[#4A4553] flex justify-between pt-1 border-t border-[#D9D3E8] font-medium">
                     <span>Baseline: {formatINR(comparisonResult.baseline_result.net_needs.net_coverage_gap, { compact: true })}</span>
                     <span>Scenario: {formatINR(comparisonResult.scenario_result.net_needs.net_coverage_gap, { compact: true })}</span>
                   </div>
@@ -227,7 +212,7 @@ export default function ScenarioStudioPage() {
 
                 {/* Premium Shift Card */}
                 <div className="p-5 rounded-xl bg-[#FFFFFF] border border-[#D9D3E8] space-y-2">
-                  <span className="text-xs font-bold text-[#6F6A7C] uppercase">
+                  <span className="text-sm font-bold text-[#6F6A7C] uppercase">
                     Indicative Annual Term Premium Shift
                   </span>
                   <div className="flex items-baseline gap-2">
@@ -236,7 +221,7 @@ export default function ScenarioStudioPage() {
                       {formatINR(comparisonResult.estimated_premium_difference)}/yr
                     </span>
                   </div>
-                  <div className="text-xs text-[#4A4553] flex justify-between pt-1 border-t border-[#D9D3E8] font-medium">
+                  <div className="text-sm text-[#4A4553] flex justify-between pt-1 border-t border-[#D9D3E8] font-medium">
                     <span>Baseline: ~{formatINR(comparisonResult.baseline_result.net_needs.net_coverage_gap / 100000 * 115 * 1.3)}</span>
                     <span className="text-[#7957FF] font-extrabold">Supported Model</span>
                   </div>
@@ -250,7 +235,7 @@ export default function ScenarioStudioPage() {
                   Modified Input Variables (Rupee-for-Rupee Audit)
                 </span>
                 <div className="overflow-x-auto rounded-xl border border-[#D9D3E8]">
-                  <table className="w-full text-xs text-left">
+                  <table className="w-full text-sm text-left">
                     <thead className="bg-[#FFFFFF] border-b border-[#D9D3E8] text-[#7957FF] font-bold">
                       <tr>
                         <th className="p-3">Variable</th>
@@ -275,11 +260,11 @@ export default function ScenarioStudioPage() {
 
               {/* Plain English Grounded Explanation */}
               <div className="p-4 rounded-xl bg-[#FFFFFF] border border-[#7957FF]/40 space-y-1">
-                <div className="flex items-center gap-2 text-xs font-extrabold text-[#24212B]">
+                <div className="flex items-center gap-2 text-sm font-extrabold text-[#24212B]">
                   <Info className="w-4 h-4 text-[#7957FF]" />
                   <span>Actuarial Driver Explanation</span>
                 </div>
-                <p className="text-xs text-[#4A4553] leading-relaxed font-medium">
+                <p className="text-sm text-[#4A4553] leading-relaxed font-medium">
                   {comparisonResult.explanation}
                 </p>
               </div>
@@ -295,7 +280,7 @@ export default function ScenarioStudioPage() {
                 Quick Adjust Baseline
               </h3>
               
-              <div className="space-y-3 text-xs font-medium">
+              <div className="space-y-3 text-sm font-medium">
                 <div>
                   <label className="font-bold text-[#4A4553] block mb-1">
                     Your Age: {baselineInput.age}
@@ -361,13 +346,13 @@ export default function ScenarioStudioPage() {
                 Saved Scenarios ({savedScenarios.length})
               </h3>
               {savedScenarios.length === 0 ? (
-                <p className="text-xs text-[#A59FB5]">No scenarios saved in this session yet.</p>
+                <p className="text-sm text-[#A59FB5]">No scenarios saved in this session yet.</p>
               ) : (
                 <div className="space-y-2">
                   {savedScenarios.slice(0, 5).map((s: any, idx: number) => (
-                    <div key={idx} className="p-3 rounded-lg bg-[#FFFFFF] border border-[#D9D3E8] text-xs space-y-1">
+                    <div key={idx} className="p-3 rounded-lg bg-[#FFFFFF] border border-[#D9D3E8] text-sm space-y-1">
                       <div className="font-bold text-[#24212B]">{s.title}</div>
-                      <div className="text-[11px] text-[#7957FF] font-extrabold">
+                      <div className="text-sm text-[#7957FF] font-extrabold">
                         Shift: {s.cover_difference > 0 ? "+" : ""}{formatINR(s.cover_difference, { compact: true })}
                       </div>
                     </div>
@@ -381,6 +366,6 @@ export default function ScenarioStudioPage() {
         </div>
       )}
 
-    </div>
+    </ToolShell>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { ToolShell } from "@/components/tools/kit";
 import React, { useState, useEffect } from "react";
 import { 
   Activity, 
@@ -60,36 +61,20 @@ export default function FamilySurvivalSimulatorPage() {
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-      
-      {/* Header */}
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ECFDF5] text-[#0E9F7E] text-xs font-bold uppercase tracking-wider">
-          <Activity className="w-3.5 h-3.5" />
-          <span>Actuarial Cashflow Engine</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#24212B] dark:text-white">
-          Family Financial Survival Simulator
-        </h1>
-        <p className="text-sm text-[#6F6A7C] dark:text-[#A59FB5] max-w-2xl mx-auto">
-          Simulate your family&apos;s financial runway year by year in the event of an untimely death. 
-          See exactly when savings deplete with and without adequate term life protection.
-        </p>
-      </div>
-
+    <ToolShell slug="family-survival-simulator" wide>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left Column: Interactive Parameters */}
-        <div className="lg:col-span-5 bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] rounded-2xl p-6 shadow-sm space-y-5">
-          <h2 className="text-base font-bold text-[#24212B] dark:text-white border-b border-[#D9D3E8] dark:border-[#1E2D4A] pb-3">
+        <div className="lg:col-span-5 bg-white border border-[#D9D3E8] rounded-2xl p-6 shadow-sm space-y-5">
+          <h2 className="text-base font-bold text-[#24212B] border-b border-[#D9D3E8] pb-3">
             Simulation Assumptions
           </h2>
 
-          <div className="space-y-4 text-xs">
+          <div className="space-y-4 text-sm">
             <div>
               <div className="flex justify-between font-semibold mb-1">
                 <span>Existing Liquid Assets:</span>
-                <span className="font-bold text-[#24212B] dark:text-white">{formatINR(liquidAssets, { compact: true })}</span>
+                <span className="font-bold text-[#24212B]">{formatINR(liquidAssets, { compact: true })}</span>
               </div>
               <input
                 type="range"
@@ -105,7 +90,7 @@ export default function FamilySurvivalSimulatorPage() {
             <div>
               <div className="flex justify-between font-semibold mb-1">
                 <span>Existing Life Insurance Payout:</span>
-                <span className="font-bold text-[#24212B] dark:text-white">{formatINR(existingPayout, { compact: true })}</span>
+                <span className="font-bold text-[#24212B]">{formatINR(existingPayout, { compact: true })}</span>
               </div>
               <input
                 type="range"
@@ -137,7 +122,7 @@ export default function FamilySurvivalSimulatorPage() {
             <div>
               <div className="flex justify-between font-semibold mb-1">
                 <span>Annual Living Expenses:</span>
-                <span className="font-bold text-[#24212B] dark:text-white">{formatINR(livingExpenses, { compact: true })}/yr</span>
+                <span className="font-bold text-[#24212B]">{formatINR(livingExpenses, { compact: true })}/yr</span>
               </div>
               <input
                 type="range"
@@ -157,7 +142,7 @@ export default function FamilySurvivalSimulatorPage() {
                   type="number"
                   value={debtAnnual}
                   onChange={(e) => setDebtAnnual(Number(e.target.value))}
-                  className="w-full p-2 rounded-lg border border-[#D9D3E8] dark:border-[#1E2D4A] bg-[#FAF9F6] dark:bg-[#142447]"
+                  className="w-full p-2 rounded-lg border border-[#D9D3E8] bg-[#FAF9F6]"
                 />
               </div>
               <div>
@@ -166,7 +151,7 @@ export default function FamilySurvivalSimulatorPage() {
                   type="number"
                   value={debtTenure}
                   onChange={(e) => setDebtTenure(Number(e.target.value))}
-                  className="w-full p-2 rounded-lg border border-[#D9D3E8] dark:border-[#1E2D4A] bg-[#FAF9F6] dark:bg-[#142447]"
+                  className="w-full p-2 rounded-lg border border-[#D9D3E8] bg-[#FAF9F6]"
                 />
               </div>
             </div>
@@ -201,7 +186,7 @@ export default function FamilySurvivalSimulatorPage() {
             <button
               onClick={runSimulation}
               disabled={loading}
-              className="w-full py-3 text-xs font-bold text-white bg-[#7957FF] hover:bg-[#6444E6] rounded-xl shadow transition-colors"
+              className="w-full py-3 text-sm font-bold text-white bg-[#7957FF] hover:bg-[#6444E6] rounded-xl shadow transition-colors"
             >
               {loading ? "Simulating..." : "Recalculate Survival Runway"}
             </button>
@@ -213,59 +198,59 @@ export default function FamilySurvivalSimulatorPage() {
           {simResult && (
             <>
               {/* Runway Verdict Card */}
-              <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] shadow-sm space-y-4">
+              <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#D9D3E8] shadow-sm space-y-4">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#7957FF]">
                   Actuarial Runway Comparison
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 space-y-1">
-                    <span className="text-xs font-semibold text-rose-700 dark:text-rose-300">
+                  <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 space-y-1">
+                    <span className="text-sm font-semibold text-rose-700">
                       Without Additional Cover
                     </span>
-                    <div className="text-2xl font-black text-rose-600 dark:text-rose-400">
+                    <div className="text-2xl font-black text-rose-600">
                       {simResult.depletion_year_without_new_cover ? (
                         `Depletes in Year ${simResult.depletion_year_without_new_cover}`
                       ) : (
                         `${simResult.financial_runway_years_without_new_cover}+ Years`
                       )}
                     </div>
-                    <span className="text-[11px] text-rose-600/80">
+                    <span className="text-sm text-rose-600/80">
                       Initial Fund: {formatINR(liquidAssets + existingPayout, { compact: true })}
                     </span>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 space-y-1">
-                    <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                  <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-1">
+                    <span className="text-sm font-semibold text-emerald-700">
                       With Evaluated Cover
                     </span>
-                    <div className="text-2xl font-black text-emerald-600 dark:text-[#7957FF]">
+                    <div className="text-2xl font-black text-emerald-600">
                       {simResult.depletion_year_with_new_cover ? (
                         `Depletes in Year ${simResult.depletion_year_with_new_cover}`
                       ) : (
                         `${simResult.financial_runway_years_with_new_cover}+ Years Solvency`
                       )}
                     </div>
-                    <span className="text-[11px] text-emerald-600/80">
+                    <span className="text-sm text-emerald-600/80">
                       Protected Fund: {formatINR(liquidAssets + existingPayout + newCover, { compact: true })}
                     </span>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-[#FAF9F6] dark:bg-[#142447] border border-[#D9D3E8] dark:border-[#1E2D4A] text-xs text-[#24212B] dark:text-[#F1F5F9] leading-relaxed">
+                <div className="p-4 rounded-xl bg-[#FAF9F6] border border-[#D9D3E8] text-sm text-[#24212B] leading-relaxed">
                   <strong>Verdict:</strong> {simResult.summary_verdict}
                 </div>
               </div>
 
               {/* Year by Year Cashflow Timeline Table Preview */}
-              <div className="bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] rounded-2xl p-6 shadow-sm space-y-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#24212B] dark:text-white">
+              <div className="bg-white border border-[#D9D3E8] rounded-2xl p-6 shadow-sm space-y-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#24212B]">
                   First 10 Years Corpus Projection (With Evaluated Cover)
                 </span>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-[#FAF9F6] dark:bg-[#142447] text-[#6F6A7C] dark:text-[#A59FB5]">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-[#FAF9F6] text-[#6F6A7C]">
                       <tr>
                         <th className="p-2.5">Year</th>
                         <th className="p-2.5">Opening Corpus</th>
@@ -274,21 +259,21 @@ export default function FamilySurvivalSimulatorPage() {
                         <th className="p-2.5">Closing Corpus</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#D9D3E8] dark:divide-[#1E2D4A]">
+                    <tbody className="divide-y divide-[#D9D3E8]">
                       {simResult.yearly_timeline_with_cover.slice(0, 10).map((r: any) => (
-                        <tr key={r.year} className="hover:bg-[#FAF9F6] dark:hover:bg-[#142447]/50">
+                        <tr key={r.year} className="hover:bg-[#FAF9F6]">
                           <td className="p-2.5 font-bold">Year {r.year}</td>
                           <td className="p-2.5">{formatINR(r.opening_corpus, { compact: true })}</td>
                           <td className="p-2.5 text-rose-500">-{formatINR(r.living_expenses_withdrawn, { compact: true })}</td>
                           <td className="p-2.5">{r.debt_paid > 0 ? `-${formatINR(r.debt_paid, { compact: true })}` : "₹0"}</td>
-                          <td className="p-2.5 font-bold text-[#24212B] dark:text-white">{formatINR(r.closing_corpus, { compact: true })}</td>
+                          <td className="p-2.5 font-bold text-[#24212B]">{formatINR(r.closing_corpus, { compact: true })}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
 
-                <div className="text-[11px] text-[#7F8FA4] italic">
+                <div className="text-sm text-[#7F8FA4] italic">
                   {simResult.disclaimer}
                 </div>
               </div>
@@ -298,6 +283,6 @@ export default function FamilySurvivalSimulatorPage() {
 
       </div>
 
-    </div>
+    </ToolShell>
   );
 }

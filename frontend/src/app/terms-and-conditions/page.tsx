@@ -8,10 +8,10 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-8 text-xs leading-relaxed text-[#6F6A7C] dark:text-[#A59FB5]">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-8 text-xs leading-relaxed text-[#6F6A7C]">
       
-      <div className="space-y-3 border-b border-[#D9D3E8] dark:border-[#1E2D4A] pb-6">
-        <h1 className="text-3xl font-extrabold text-[#24212B] dark:text-white">
+      <div className="space-y-3 border-b border-[#D9D3E8] pb-6">
+        <h1 className="text-3xl font-extrabold text-[#24212B]">
           Terms & Conditions of Service
         </h1>
         <p className="text-xs text-[#7F8FA4]">
@@ -20,7 +20,7 @@ export default function TermsPage() {
       </div>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-bold text-[#24212B] dark:text-white">1. Nature of Service & Regulatory Boundary</h2>
+        <h2 className="text-sm font-bold text-[#24212B]">1. Nature of Service & Regulatory Boundary</h2>
         <p>
           LifeSure AI operates as a digital financial planning technology and educational analysis provider. LifeSure AI is <strong>not</strong> an insurance broker, insurance agent, corporate agent, or underwriting carrier registered with the Insurance Regulatory and Development Authority of India (IRDAI).
         </p>
@@ -30,28 +30,28 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-bold text-[#24212B] dark:text-white">2. Accuracy of User Information</h2>
+        <h2 className="text-sm font-bold text-[#24212B]">2. Accuracy of User Information</h2>
         <p>
           The mathematical precision of calculations depends directly on the accuracy of financial figures supplied by the user. Under Section 45 of the Insurance Act 1938, any eventual insurance proposal submitted to licensed insurers must provide complete and truthful health and lifestyle disclosures.
         </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-bold text-[#24212B] dark:text-white">3. Third-Party Data & IRDAI Provenance</h2>
+        <h2 className="text-sm font-bold text-[#24212B]">3. Third-Party Data & IRDAI Provenance</h2>
         <p>
           Insurer Claim Settlement Ratios (CSR), Solvency Ratios, and standard product clauses are compiled from public statutory disclosures published annually by IRDAI and respective insurance carriers. While compiled with high diligence, LifeSure AI does not warrant that insurer underwriting guidelines or premium tables will remain static over time.
         </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-bold text-[#24212B] dark:text-white">4. Intellectual Property</h2>
+        <h2 className="text-sm font-bold text-[#24212B]">4. Intellectual Property</h2>
         <p>
           The LifeSure AI logo, mathematical calculation engines, Scenario Studio interface, and visual designs are the proprietary intellectual property of LifeSure AI Technologies Private Limited.
         </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-bold text-[#24212B] dark:text-white">5. Governing Law & Jurisdiction</h2>
+        <h2 className="text-sm font-bold text-[#24212B]">5. Governing Law & Jurisdiction</h2>
         <p>
           These Terms of Service are governed by and construed in accordance with the laws of the Republic of India. Any legal dispute or controversy arising under these terms shall be subject to the exclusive jurisdiction of the competent courts in Bengaluru, Karnataka.
         </p>

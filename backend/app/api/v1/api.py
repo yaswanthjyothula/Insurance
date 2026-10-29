@@ -223,21 +223,9 @@ async def analyse_policy_document(
     if raw_text and len(raw_text) > 5:
         extracted_text = (extracted_text + "\n" + raw_text).strip()
         
-    if not extracted_text:
-        # Default policy sample for interactive exploration
-        extracted_text = """
-        POLICY SCHEDULE - HDFC Life Insurance Co. Ltd.
-        Policy Type: Pure Term Assurance Plan
-        Basic Sum Assured: ₹10,000,000 (One Crore Indian Rupees)
-        Annualized Premium: ₹14,850.00
-        Policy Term: 30 Years
-        Premium Paying Term: 30 Years
-        Grace Period: 30 Days from payment due date.
-        Terminal Illness Accelerated Benefit included: 100% payout upon diagnosis.
-        Exclusion: In case of death due to suicide within 12 months from policy inception, 80% of total premiums refunded.
-        """
-        filename = "Sample_HDFC_Term_Schedule.pdf"
-        
+    if not extracted_text.strip():
+        raise HTTPException(status_code=422, detail="Paste your policy text or upload a text file first.")
+
     return PolicyXRayEngine.analyze_document_text(filename, extracted_text)
 
 # --- 6. Smart Tools ---
@@ -319,6 +307,7 @@ def book_advisor(req: AdvisorBookingRequest):
         "user_name": req.user_name,
         "user_email": req.user_email,
         "user_phone": req.user_phone,
+        "consultation_mode": req.consultation_mode,
         "notes": req.notes,
         "assessment_id": req.assessment_id,
         "share_passport": req.share_passport

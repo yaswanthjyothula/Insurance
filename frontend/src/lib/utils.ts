@@ -33,3 +33,13 @@ export function formatINR(val: number, options: { compact?: boolean; precision?:
 
   return `₹${Math.round(val).toLocaleString("en-IN")}`;
 }
+
+/** Short insurer name for tight spaces, e.g. "HDFC Life Insurance Company Ltd" -> "HDFC", LIC stays "LIC". */
+export function shortInsurerName(name: string): string {
+  if (/Corporation of India|\(LIC\)/i.test(name)) return "LIC";
+  return name
+    .replace(/\(.*?\)/g, "")
+    .replace(/\s+(Life\s+)?Insurance.*$/i, "")
+    .replace(/\s+Life$/i, "")
+    .trim();
+}

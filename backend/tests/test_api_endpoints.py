@@ -82,8 +82,16 @@ def test_policy_xray_endpoint():
     assert response.status_code == 200
     data = response.json()
     assert data["sum_assured"] == 10000000.0
-    assert len(data["key_benefits"]) > 0
-    assert len(data["exclusions"]) > 0
+    assert data["annual_premium"] == 14500.0
+    assert data["policy_term_years"] == 30
+    assert data["insurer"] == "HDFC Life"
+    # nothing about exclusions was in the text, so none are invented
+    assert data["exclusions"] == []
+    assert any("exclusion" in u.lower() for u in data["uncertain_fields"])
+
+
+def test_policy_xray_rejects_empty_text():
+    assert client.post("/api/v1/policies/analyse", data={"raw_text": ""}).status_code == 422
 
 def test_products_compare_endpoint():
     response = client.post("/api/v1/products/compare", json={

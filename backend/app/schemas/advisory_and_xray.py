@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 class ClauseCitation(BaseModel):
     clause_title: str
     extracted_text: str
-    page_reference: int
+    page_reference: Optional[int] = None
     confidence_score: float # 0.0 to 1.0
 
 class PolicyAnalysisResult(BaseModel):
@@ -50,6 +50,7 @@ class AdvisorBookingRequest(BaseModel):
     user_email: str
     user_phone: str
     preferred_slot: str
+    consultation_mode: Optional[str] = None  # "video", "voice" or "chat"
     notes: Optional[str] = None
     assessment_id: Optional[str] = None
     share_passport: bool = False

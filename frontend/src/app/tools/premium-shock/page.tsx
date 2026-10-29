@@ -1,101 +1,61 @@
 "use client";
 
-import React, { useState } from "react";
-import { AlertOctagon, TrendingUp, ShieldCheck } from "lucide-react";
+import { useState } from "react";
 import { formatINR } from "@/lib/utils";
+import { Assumption, Count, Figure, NumberField, Panel, Slider, ToolShell, Verdict } from "@/components/tools/kit";
 
-export default function PremiumShockSimulatorPage() {
-  const [currentLivingExpenses, setCurrentLivingExpenses] = useState(60000); // 60k/mo
-  const [medicalInflationRate, setMedicalInflationRate] = useState(0.12); // 12% health inflation
-  const [yearsProjected, setYearsProjected] = useState(10);
+export default function CostInflationPage() {
+  const [living, setLiving] = useState(60000);
+  const [healthPremium, setHealthPremium] = useState(25000);
+  const [livingRise, setLivingRise] = useState(6);
+  const [premRise, setPremRise] = useState(10);
+  const [years, setYears] = useState(10);
 
-  const futureLivingExpenses = currentLivingExpenses * Math.pow(1.06, yearsProjected);
-  const healthCostMultiplier = Math.pow(1 + medicalInflationRate, yearsProjected);
+  const rows = Array.from({ length: years + 1 }, (_, y) => ({ y, living: living * Math.pow(1 + livingRise / 100, y), health: healthPremium * Math.pow(1 + premRise / 100, y) }));
+  const last = rows[rows.length - 1];
+  const max = Math.max(last.living * 12, last.health);
+  const extraLiving = rows.reduce((s, r) => s + r.living * 12, 0) - living * 12 * rows.length;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-bold uppercase tracking-wider">
-          <AlertOctagon className="w-3.5 h-3.5" />
-          <span>Macroeconomic Stress Testing</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#24212B] dark:text-white">
-          Premium Shock Simulator
-        </h1>
-        <p className="text-sm text-[#6F6A7C] dark:text-[#A59FB5] max-w-xl mx-auto">
-          Simulate how escalating healthcare costs and inflation shock household solvency 
-          if adequate fixed-rate protection is not established early.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        <div className="bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] rounded-2xl p-6 shadow-sm space-y-4 text-xs">
-          <div>
-            <div className="flex justify-between font-semibold mb-1">
-              <span>Current Monthly Living Expenses:</span>
-              <span className="font-bold text-[#24212B] dark:text-white">{formatINR(currentLivingExpenses)}/mo</span>
-            </div>
-            <input
-              type="range"
-              min="25000"
-              max="250000"
-              step="5000"
-              value={currentLivingExpenses}
-              onChange={(e) => setCurrentLivingExpenses(Number(e.target.value))}
-              className="w-full accent-[#7957FF]"
-            />
+    <ToolShell slug="premium-shock">
+      <div className="grid gap-6 md:grid-cols-2 items-start">
+        <Panel title="What you pay now">
+          <div className="space-y-6">
+            <NumberField label="Monthly living costs" value={living} onChange={setLiving} />
+            <NumberField label="Yearly health insurance premium" value={healthPremium} onChange={setHealthPremium} />
+            <Slider label="Living costs rise by" value={livingRise} onChange={setLivingRise} min={2} max={12} step={0.5} format={(v) => `${v}% a year`} />
+            <Slider label="Health premium rises by" value={premRise} onChange={setPremRise} min={0} max={20} step={0.5} format={(v) => `${v}% a year`} hint="Check your own past renewal notices for a real figure." />
+            <Slider label="Years to look ahead" value={years} onChange={setYears} min={3} max={25} format={(v) => `${v} years`} />
           </div>
-
-          <div>
-            <div className="flex justify-between font-semibold mb-1">
-              <span>Medical & Hospital Inflation:</span>
-              <span className="font-bold text-[#24212B] dark:text-white">{(medicalInflationRate * 100).toFixed(0)}% p.a.</span>
-            </div>
-            <input
-              type="range"
-              min="0.08"
-              max="0.18"
-              step="0.01"
-              value={medicalInflationRate}
-              onChange={(e) => setMedicalInflationRate(Number(e.target.value))}
-              className="w-full accent-[#7957FF]"
-            />
-          </div>
-
-          <div>
-            <div className="flex justify-between font-semibold mb-1">
-              <span>Projection Window: {yearsProjected} Years</span>
-            </div>
-            <input
-              type="range"
-              min="5"
-              max="20"
-              value={yearsProjected}
-              onChange={(e) => setYearsProjected(Number(e.target.value))}
-              className="w-full accent-[#7957FF]"
-            />
-          </div>
-        </div>
-
+        </Panel>
         <div className="space-y-4">
-          <div className="p-6 rounded-2xl bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] shadow-sm space-y-4">
-            <span className="text-xs font-bold uppercase text-[#6F6A7C] dark:text-[#A59FB5]">
-              Projected Monthly Cost Shock
-            </span>
-            <div className="text-3xl font-black text-[#24212B] dark:text-white">
-              {formatINR(futureLivingExpenses)}<span className="text-sm font-normal text-[#6F6A7C]">/month</span>
+          <Panel>
+            <div className="grid grid-cols-2 gap-5">
+              <Figure label={`Monthly costs in ${years} yrs`} sub={`Now ${formatINR(living)}`}><Count value={last.living} format={(v) => formatINR(Math.round(v), { compact: true })} /></Figure>
+              <Figure label={`Health premium in ${years} yrs`} sub={`Now ${formatINR(healthPremium)}`} tone="warn"><Count value={last.health} format={(v) => formatINR(Math.round(v), { compact: true })} /></Figure>
             </div>
-
-            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 text-xs text-amber-900 dark:text-amber-200 space-y-1">
-              <strong>Medical Treatment Multiplier:</strong> A hospital procedure costing ₹5 Lakhs today will surge to <strong>{formatINR(500000 * healthCostMultiplier, { compact: true })}</strong> in {yearsProjected} years ({healthCostMultiplier.toFixed(2)}x increase).
+            <div className="mt-5 space-y-3">
+              <Bar label="Yearly living costs" a={living * 12} b={last.living * 12} max={max} />
+              <Bar label="Yearly health premium" a={healthPremium} b={last.health} max={max} />
             </div>
-
-            <p className="text-xs text-[#6F6A7C] dark:text-[#A59FB5] leading-relaxed">
-              Term insurance premiums locked in at a young age remain fixed for your entire multi-decade policy tenure, acting as an unyielding firewall against living cost inflation.
-            </p>
-          </div>
+          </Panel>
+          <Verdict tone="info">Over {years} years you would spend about {formatINR(extraLiving, { compact: true })} more on living costs than if prices stayed flat. Your family's cover and income plans should allow for this.</Verdict>
+          <Assumption>Both rates are your inputs. They are illustrations to help planning, not forecasts.</Assumption>
         </div>
       </div>
+    </ToolShell>
+  );
+}
+
+function Bar({ label, a, b, max }: { label: string; a: number; b: number; max: number }) {
+  return (
+    <div>
+      <p className="text-sm font-semibold text-[#24212B]">{label}</p>
+      <div className="mt-1 space-y-1">
+        <div className="h-2.5 rounded-full bg-[#E9E4FF]"><div className="h-full rounded-full bg-[#D9D3E8] transition-all duration-500" style={{ width: `${(a / max) * 100}%` }} /></div>
+        <div className="h-2.5 rounded-full bg-[#E9E4FF]"><div className="h-full rounded-full bg-[#7957FF] transition-all duration-500" style={{ width: `${(b / max) * 100}%` }} /></div>
+      </div>
+      <p className="mt-1 text-xs text-[#6F6A7C]">{formatINR(a, { compact: true })} now → {formatINR(b, { compact: true })} later</p>
     </div>
   );
 }

@@ -1,83 +1,47 @@
-"use client";
+import { ArrowUpRight } from "lucide-react";
+import catalogue from "@/data/term_catalogue.json";
+import { SOURCES } from "@/data/resources";
+import { Callout, ResourcePage, SourceLinks } from "@/components/resources/parts";
 
-import React, { useState, useEffect } from "react";
-import { Shield, Building2, CheckCircle2, ExternalLink } from "lucide-react";
-import { fetchFromAPI } from "@/lib/api";
+export const metadata = { title: "Insurer directory | LifeSure AI", description: "Claim settlement ratio and solvency for the life insurers we compare, each with its source." };
 
-export default function InsurerDirectoryPage() {
-  const [insurers, setInsurers] = useState<any[]>([]);
+type Fig = { value: number | null; basis: string | null; fy?: string | null; source_url: string | null; note?: string };
+type Insurer = { name: string; claim_settlement_ratio: Fig; solvency_ratio: Fig };
 
-  useEffect(() => {
-    fetchFromAPI("/resources/directory").then(data => setInsurers(data || [])).catch(() => {});
-  }, []);
-
+function Figure({ label, fig, suffix }: { label: string; fig: Fig; suffix: string }) {
+  const known = fig.value != null;
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-      
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E9E4FF] dark:bg-[#1B2B4D] text-[#7957FF] text-xs font-bold uppercase tracking-wider">
-          <Building2 className="w-3.5 h-3.5" />
-          <span>IRDAI Regulatory Registry</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#24212B] dark:text-white">
-          Insurance Company Directory
-        </h1>
-        <p className="text-sm text-[#6F6A7C] dark:text-[#A59FB5] max-w-xl mx-auto">
-          Verified solvency ratios, 3-year Claim Settlement Ratios (CSR), and statutory registration details 
-          compiled from IRDAI Annual Reports.
-        </p>
-      </div>
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-wider text-[#6F6A7C]">{label}</p>
+      <p className={`mt-0.5 text-2xl font-extrabold ${known ? "text-[#24212B]" : "text-[#8C879A]"}`}>{known ? `${fig.value}${suffix}` : "Not confirmed"}</p>
+      {known && <p className="mt-1 text-sm leading-5 text-[#4A4658]">{[fig.basis, fig.fy].filter(Boolean).join(" · ")}</p>}
+      {known && fig.source_url && (
+        <a href={fig.source_url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-0.5 text-sm font-semibold text-[#7957FF] underline underline-offset-2">Source<ArrowUpRight className="w-3 h-3" /></a>
+      )}
+    </div>
+  );
+}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {insurers.map((ins, idx) => (
-          <div
-            key={idx}
-            className="p-6 rounded-2xl bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] shadow-sm space-y-4"
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <span className="text-[10px] font-bold text-[#7957FF] uppercase">
-                  IRDAI Reg #{ins.irda_reg_no}
-                </span>
-                <h2 className="text-base font-bold text-[#24212B] dark:text-white mt-0.5">
-                  {ins.name}
-                </h2>
-                <span className="text-xs text-[#6F6A7C] dark:text-[#A59FB5]">
-                  {ins.type} | Est. {ins.established} | {ins.headquarters}
-                </span>
-              </div>
+export default function InsurersPage() {
+  const insurers = Object.values(catalogue.insurers as unknown as Record<string, Insurer>);
+  return (
+    <ResourcePage eyebrow="Insurer directory" title="Life insurers we compare" intro={`Figures come from each insurer's own pages and filings, as of ${catalogue.as_of}. Where we could not confirm a figure, it says so. We do not fill gaps with estimates.`}>
+      <div className="mb-8"><Callout>Compare like with like: the year and the basis (by number of claims or by amount) differ between insurers, and are shown with each figure. A higher claim ratio is better, but one year is a thin guide.</Callout></div>
+      <div className="grid gap-4 md:grid-cols-2">
+        {insurers.map((ins) => (
+          <section key={ins.name} className="rounded-2xl bg-white border border-[#D9D3E8] p-6">
+            <h2 className="text-lg font-bold text-[#24212B]">{ins.name}</h2>
+            <div className="mt-4 grid grid-cols-2 gap-5">
+              <Figure label="Claims paid" fig={ins.claim_settlement_ratio} suffix="%" />
+              <Figure label="Solvency ratio" fig={ins.solvency_ratio} suffix="x" />
             </div>
-
-            <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
-              <div className="p-3 rounded-xl bg-[#FAF9F6] dark:bg-[#142447] border border-[#D9D3E8] dark:border-[#1E2D4A]">
-                <span className="text-[#6F6A7C] dark:text-[#A59FB5]">Claim Settlement (CSR)</span>
-                <div className="text-xl font-extrabold text-[#0E9F7E] mt-0.5">{ins.claim_settlement_ratio}%</div>
-                <span className="text-[10px] text-[#7F8FA4]">IRDAI FY 2023-24</span>
-              </div>
-
-              <div className="p-3 rounded-xl bg-[#FAF9F6] dark:bg-[#142447] border border-[#D9D3E8] dark:border-[#1E2D4A]">
-                <span className="text-[#6F6A7C] dark:text-[#A59FB5]">Solvency Ratio</span>
-                <div className="text-xl font-extrabold text-[#7957FF] mt-0.5">{ins.solvency_ratio}x</div>
-                <span className="text-[10px] text-[#7F8FA4]">Min required: 1.50x</span>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-[#D9D3E8]/60 dark:border-[#1E2D4A]/60 flex items-center justify-between text-xs">
-              <span className="text-[11px] text-[#7F8FA4]">Source: {ins.source}</span>
-              <a
-                href={ins.website}
-                target="_blank"
-                rel="noreferrer"
-                className="text-[#7957FF] font-semibold hover:underline flex items-center gap-1"
-              >
-                <span>Official Portal</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
+          </section>
         ))}
       </div>
-
-    </div>
+      <div className="mt-8 space-y-2">
+        <p className="text-sm leading-6 text-[#4A4658]">This list covers the insurers whose term plans we compare, not every insurer. IRDAI keeps the complete list of registered life insurers.</p>
+        <SourceLinks sources={[SOURCES.lifeList, SOURCES.lifeFaq]} label="Official lists" />
+      </div>
+    </ResourcePage>
   );
 }

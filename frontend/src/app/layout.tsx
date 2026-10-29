@@ -1,18 +1,10 @@
 import type { Metadata } from "next";
-import { Albert_Sans } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollEffects } from "@/components/layout/ScrollEffects";
+import { CursorEffects } from "@/components/layout/CursorEffects";
 import { AuthProvider } from "@/components/auth/AuthProvider";
-
-const albertSans = Albert_Sans({
-  subsets: ["latin"],
-  variable: "--font-albert-sans",
-  display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
-});
-
 
 export const metadata: Metadata = {
   title: "LifeSure AI | Plan Better. Choose Smarter. Protect What Matters.",
@@ -38,8 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`scroll-smooth ${albertSans.variable}`}>
-      <body className={`min-h-screen flex flex-col text-[#24212B] font-sans antialiased ${albertSans.className}`}>
+    <html lang="en" className="scroll-smooth">
+      <body className="min-h-screen flex flex-col text-[#24212B] font-sans antialiased">
         {/* Skip to Content for Keyboard Accessibility */}
         <a
           href="#main-content"
@@ -50,6 +42,7 @@ export default function RootLayout({
 
         <AuthProvider>
         <ScrollEffects />
+        <CursorEffects />
         <Navbar />
         
         <main id="main-content" className="flex-grow">

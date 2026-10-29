@@ -1,147 +1,174 @@
 import re
 import uuid
-from typing import Dict, Any, List, Optional
-from app.schemas.advisory_and_xray import PolicyAnalysisResult, ClauseCitation
+from typing import List, Optional
+
+from app.schemas.advisory_and_xray import ClauseCitation, PolicyAnalysisResult
+
+# Insurer names to look for as whole words. Anything not found is reported as not found, never guessed.
+INSURERS = [
+    ("HDFC Life", "HDFC Life"), ("ICICI Prudential", "ICICI Prudential Life"), ("ICICI Life", "ICICI Life"),
+    ("Max Life", "Max Life"), ("Axis Max", "Axis Max Life"), ("Tata AIA", "Tata AIA Life"), ("SBI Life", "SBI Life"),
+    ("Kotak", "Kotak Life"), ("Bajaj", "Bajaj Life"), ("LIC", "Life Insurance Corporation of India"),
+    ("Life Insurance Corporation", "Life Insurance Corporation of India"),
+    ("Star Health", "Star Health"), ("Care Health", "Care Health"), ("Niva Bupa", "Niva Bupa"), ("HDFC ERGO", "HDFC ERGO"),
+]
+MONEY = r"(?:₹|rs\.?|inr)?\s*([\d,]+(?:\.\d+)?)\s*(crore|cr|lakhs?|lacs?|l)?\b"
+
+
+def _amount(num: str, unit: Optional[str]) -> Optional[float]:
+    try:
+        v = float(num.replace(",", ""))
+    except ValueError:
+        return None
+    u = (unit or "").lower()
+    if u in ("crore", "cr"):
+        v *= 10_000_000
+    elif u in ("lakh", "lakhs", "lac", "lacs", "l"):
+        v *= 100_000
+    return v
+
+
+def _lines(text: str) -> List[str]:
+    parts = re.split(r"[\n\r]+|(?<=[.;])\s+(?=[A-Z])", text)
+    return [re.sub(r"\s+", " ", p).strip() for p in parts if len(p.strip()) > 3]
+
 
 class PolicyXRayEngine:
     @classmethod
     def analyze_document_text(cls, filename: str, text: str) -> PolicyAnalysisResult:
-        """
-        Parses policy document text deterministically, extracting key schedule parameters,
-        identifying exclusions, waiting periods, citations, and highlighting gaps.
-        """
-        # Normalization
-        text_lower = text.lower()
-        
-        # 1. Insurer extraction
-        insurer = "Unidentified Insurer"
-        insurers_known = [
-            ("HDFC Life", "HDFC Life Insurance Co. Ltd."),
-            ("ICICI Prudential", "ICICI Prudential Life Insurance Co. Ltd."),
-            ("Max Life", "Max Life Insurance Co. Ltd."),
-            ("Tata AIA", "Tata AIA Life Insurance Co. Ltd."),
-            ("LIC", "Life Insurance Corporation of India"),
-            ("SBI Life", "SBI Life Insurance Co. Ltd."),
-            ("HDFC ERGO", "HDFC ERGO General Insurance"),
-            ("Care Health", "Care Health Insurance")
-        ]
-        for pattern, full_name in insurers_known:
-            if pattern.lower() in text_lower:
-                insurer = full_name
-                break
-                
-        # 2. Extract Sum Assured
-        sum_assured = None
-        sa_matches = re.findall(r"(?:sum assured|sum insured|basic sum assured|coverage amount)[^\d₹]*₹?\s*([\d,]+(?:\.\d+)?)", text, re.IGNORECASE)
-        if sa_matches:
-            try:
-                raw_num = sa_matches[0].replace(",", "")
-                sum_assured = float(raw_num)
-            except ValueError:
-                pass
-        if not sum_assured:
-            # Fallback for lakh/crore textual notation
-            cr_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:cr|crore)", text, re.IGNORECASE)
-            lk_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:lakh|lac)", text, re.IGNORECASE)
-            if cr_match:
-                sum_assured = float(cr_match.group(1)) * 10000000.0
-            elif lk_match:
-                sum_assured = float(lk_match.group(1)) * 100000.0
-                
-        # 3. Extract Premium
-        annual_premium = None
-        prem_matches = re.findall(r"(?:annualized premium|total premium|installment premium)[^\d₹]*₹?\s*([\d,]+(?:\.\d+)?)", text, re.IGNORECASE)
-        if prem_matches:
-            try:
-                annual_premium = float(prem_matches[0].replace(",", ""))
-            except ValueError:
-                pass
-
-        # 4. Extract Terms
-        term_years = None
-        term_match = re.search(r"(?:policy term|policy tenure)[^\d]*(\d+)\s*(?:years|yrs)", text, re.IGNORECASE)
-        if term_match:
-            term_years = int(term_match.group(1))
-
-        # Citations & clauses
+        """Reads only what is in the text. Every item reported comes from a line in the input; missing items go to uncertain_fields."""
+        lines = _lines(text)
+        low = text.lower()
+        uncertain: List[str] = []
         citations: List[ClauseCitation] = []
+
+        def cite(title: str, line: str, conf: float = 0.9):
+            citations.append(ClauseCitation(clause_title=title, extracted_text=line[:400], page_reference=None, confidence_score=conf))
+
+        def first(pattern: str):
+            for ln in lines:
+                m = re.search(pattern, ln, re.IGNORECASE)
+                if m:
+                    return ln, m
+            return None, None
+
+        insurer = None
+        for key, name in INSURERS:
+            if re.search(rf"(?<![A-Za-z]){re.escape(key)}(?![A-Za-z])", text, re.IGNORECASE if len(key) > 3 else 0):
+                insurer = name
+                break
+        if not insurer:
+            uncertain.append("Insurer name not found in the text.")
+
+        sum_assured = None
+        ln, m = first(r"(?:sum assured|sum insured|cover(?:age)? amount|life cover)\D{0,30}" + MONEY)
+        if m:
+            sum_assured = _amount(m.group(1), m.group(2))
+            if sum_assured:
+                cite("Sum assured", ln)
+        if not sum_assured:
+            uncertain.append("Sum assured or sum insured not found.")
+
+        premium = None
+        ln, m = first(r"(?:annual(?:ized|ised)? premium|total premium|installment premium|yearly premium|premium)\D{0,30}" + MONEY)
+        if m:
+            premium = _amount(m.group(1), m.group(2))
+            if premium:
+                cite("Premium", ln)
+        if not premium:
+            uncertain.append("Premium amount not found.")
+
+        term = None
+        ln, m = first(r"(?:policy term|policy tenure|term)\D{0,20}(\d{1,2})\s*(?:years|yrs|year)")
+        if m:
+            term = int(m.group(1))
+            cite("Policy term", ln)
+        else:
+            uncertain.append("Policy term not found.")
+        ppt = None
+        ln, m = first(r"(?:premium paying term|premium payment term|pay(?:ing)? term|ppt)\D{0,20}(\d{1,2})\s*(?:years|yrs|year)")
+        if m:
+            ppt = int(m.group(1))
+            cite("Premium paying term", ln)
+
+        product = None
+        ln, m = first(r"(?:plan name|product name|name of the plan|policy type|plan)\s*[:\-]\s*([A-Za-z0-9 &\-+]{4,60})")
+        if m:
+            product = m.group(1).strip()
+        policy_no = None
+        ln, m = first(r"policy\s*(?:no\.?|number)\s*[:\-]?\s*([A-Za-z0-9\-/]{5,24})")
+        if m:
+            n = m.group(1)
+            policy_no = "*" * max(0, len(n) - 4) + n[-4:]
+
+        benefits: List[str] = []
+        for ln in lines:
+            if re.search(r"death benefit|maturity benefit|terminal illness|accelerated|waiver of premium|critical illness benefit|survival benefit|accidental death", ln, re.IGNORECASE):
+                benefits.append(ln[:240])
         exclusions: List[str] = []
-        uncertain_fields: List[str] = []
-        
-        # Check suicide clause
-        if "suicide" in text_lower:
-            citations.append(ClauseCitation(
-                clause_title="Suicide Exclusion Clause",
-                extracted_text="In case of death due to suicide within 12 months from policy inception, 80% of total premiums paid shall be refunded.",
-                page_reference=3,
-                confidence_score=0.96
-            ))
-            exclusions.append("Death by suicide within first 12 months of inception or revival.")
+        for ln in lines:
+            if re.search(r"exclusion|excluded|not payable|shall not be payable|suicide", ln, re.IGNORECASE):
+                exclusions.append(ln[:240])
+                cite("Exclusion or limit", ln, 0.85)
+        if not exclusions:
+            uncertain.append("No exclusions or suicide clause found. Look in the policy wording.")
+
+        waiting: List[str] = []
+        for ln in lines:
+            if re.search(r"waiting period|cooling|moratorium|lock-?in", ln, re.IGNORECASE):
+                waiting.append(ln[:240])
+                cite("Waiting period", ln, 0.85)
+
+        deadlines: List[str] = []
+        ln, m = first(r"grace period\D{0,40}(\d{1,3})\s*days")
+        if m:
+            deadlines.append(f"Grace period: {m.group(1)} days")
+            cite("Grace period", ln)
         else:
-            uncertain_fields.append("Suicide clause not explicitly located in provided excerpts.")
+            uncertain.append("Grace period not found.")
+        ln, m = first(r"free[- ]?look\D{0,40}(\d{1,3})\s*days")
+        if m:
+            deadlines.append(f"Free-look period: {m.group(1)} days")
+            cite("Free-look period", ln)
+        ln, m = first(r"(?:revival|reinstatement)\D{0,40}(\d{1,2})\s*(?:years|year|months)")
+        if m:
+            deadlines.append(ln[:200])
 
-        # Check Grace period clause
-        if "grace period" in text_lower or "grace" in text_lower:
-            citations.append(ClauseCitation(
-                clause_title="Grace Period & Lapsation",
-                extracted_text="A grace period of thirty (30) days from the due date shall be allowed for payment of yearly, half-yearly or quarterly premiums.",
-                page_reference=5,
-                confidence_score=0.92
-            ))
-        else:
-            uncertain_fields.append("Grace period timeline requires verification with schedule.")
+        # Observations based only on figures actually found
+        gaps: List[str] = []
+        if sum_assured and sum_assured < 5_000_000:
+            gaps.append(f"Cover of ₹{sum_assured:,.0f} is small next to most households' needs. Check it against your loans and expenses.")
+        if sum_assured and premium and premium > 0 and sum_assured / premium < 100 and "term" in low:
+            gaps.append("The premium looks high for the cover. Compare with a pure term quote for the same cover.")
+        if term and term < 20:
+            gaps.append(f"The policy runs {term} years. Check it outlasts your loans and your dependents' need for support.")
+        if "critical illness" not in low and "waiver" not in low:
+            gaps.append("No critical illness or waiver of premium benefit mentioned in this text.")
 
-        # Check Critical Illness / Terminal Illness
-        key_benefits = [
-            f"Pure Death Benefit payout of ₹{sum_assured:,.0f} to registered nominees upon claim settlement" if sum_assured else "Death benefit payable to designated nominee",
-            "Tax exemption on death benefit proceeds under Section 10(10D) of Income Tax Act 1961"
-        ]
-        
-        if "terminal illness" in text_lower:
-            key_benefits.append("Accelerated 100% death benefit payout upon diagnosis of certified terminal illness.")
-            citations.append(ClauseCitation(
-                clause_title="Terminal Illness Accelerated Benefit",
-                extracted_text="Upon medical certification of illness with prognosis of less than 6 months life expectancy, sum assured is paid immediately.",
-                page_reference=7,
-                confidence_score=0.94
-            ))
-
-        # Potential gaps identified
-        potential_gaps = []
-        if not sum_assured or sum_assured < 5000000:
-            potential_gaps.append("Sum assured may be insufficient to cover multi-year household inflation and outstanding home liabilities.")
-        if "critical illness" not in text_lower:
-            potential_gaps.append("No active Critical Illness rider detected; high-cost medical diagnoses may cause out-of-pocket strain.")
-        if term_years and term_years < 20:
-            potential_gaps.append(f"Policy term ({term_years} years) may expire before youngest dependents become financially self-sufficient.")
-
-        suggested_questions = [
-            "Does this policy offer an option to step-up sum assured during life milestones (marriage, child birth)?",
-            "What is the exact list of non-payable exclusions under the accidental disability rider?",
-            "Is the premium paying term equal to the policy term, or is it a limited-pay variant?"
+        questions = [
+            "Is the sum assured level or does it change over time?",
+            "Which riders are attached, and what does each cost?",
+            "What documents does a nominee need to claim?",
         ]
 
         return PolicyAnalysisResult(
             document_id=str(uuid.uuid4()),
             filename=filename,
             insurer=insurer,
-            product_name="Identified Term / Life Policy Document",
-            policy_number_masked="POL-****-8841",
-            sum_assured=sum_assured or 10000000.0, # Default ₹1 Cr if sample demo
-            annual_premium=annual_premium or 14850.0,
-            policy_term_years=term_years or 30,
-            premium_paying_term_years=term_years or 30,
-            policy_type="Individual Pure Term Life Insurance",
-            key_benefits=key_benefits,
-            exclusions=exclusions or ["Suicide within 12 months", "Breach of law with criminal intent", "Active military warfare"],
-            waiting_periods=["90 days for critical illness riders", "Zero waiting period for accidental death"],
-            critical_deadlines=["Grace period: 30 days", "Free-look cancellation period: 30 days from document receipt"],
+            product_name=product,
+            policy_number_masked=policy_no,
+            sum_assured=sum_assured,
+            annual_premium=premium,
+            policy_term_years=term,
+            premium_paying_term_years=ppt,
+            policy_type="Not stated" if not product else product,
+            key_benefits=benefits,
+            exclusions=exclusions,
+            waiting_periods=waiting,
+            critical_deadlines=deadlines,
             citations=citations,
-            uncertain_fields=uncertain_fields,
-            potential_protection_gaps=potential_gaps,
-            suggested_questions_for_insurer=suggested_questions,
-            disclaimer=(
-                "Policy X-Ray extracts factual statements and references from submitted text excerpts. "
-                "This automated summary does not replace your binding policy contract or insurer endorsements."
-            )
+            uncertain_fields=uncertain,
+            potential_protection_gaps=gaps,
+            suggested_questions_for_insurer=questions,
+            disclaimer="Read from the text you provided only. It does not interpret legal meaning and does not replace your policy contract.",
         )

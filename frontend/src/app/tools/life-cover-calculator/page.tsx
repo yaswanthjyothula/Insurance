@@ -1,5 +1,6 @@
 "use client";
 
+import { ToolShell } from "@/components/tools/kit";
 import React, { useState } from "react";
 import Link from "next/link";
 import { 
@@ -31,9 +32,9 @@ export default function LifeCoverCalculatorPage() {
   const [annualExpenses, setAnnualExpenses] = useState<number>(720000);
   const [dependents, setDependents] = useState<number>(2);
   const [supportHorizon, setSupportHorizon] = useState<number>(25);
-  const [liabilities, setLiabilities] = useState<number>(3500000);
-  const [existingCover, setExistingCover] = useState<number>(5000000);
-  const [eligibleAssets, setEligibleAssets] = useState<number>(2000000);
+  const [liabilities, setLiabilities] = useState<number>(0);
+  const [existingCover, setExistingCover] = useState<number>(0);
+  const [eligibleAssets, setEligibleAssets] = useState<number>(0);
   const [smoker, setSmoker] = useState<boolean>(false);
   
   // Assumptions
@@ -42,9 +43,7 @@ export default function LifeCoverCalculatorPage() {
   const [retirementAge, setRetirementAge] = useState<number>(60);
 
   // Future Goals
-  const [futureGoals, setFutureGoals] = useState([
-    { name: "Child Higher Education", cost_today: 2500000, years_away: 14, category: "education" }
-  ]);
+  const [futureGoals, setFutureGoals] = useState<{ name: string; cost_today: number; years_away: number; category: string }[]>([]);
 
   // Results State
   const [assessmentResult, setAssessmentResult] = useState<any>(null);
@@ -112,24 +111,9 @@ export default function LifeCoverCalculatorPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      
-      {/* Header */}
-      <div className="text-center space-y-3 mb-10">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E9E4FF] dark:bg-[#1B2B4D] text-[#7957FF] text-xs font-bold uppercase tracking-wider">
-          <Calculator className="w-3.5 h-3.5" />
-          <span>Actuarial Precision</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#24212B] dark:text-white">
-          AI Life-Cover Calculator
-        </h1>
-        <p className="text-sm text-[#6F6A7C] dark:text-[#A59FB5] max-w-xl mx-auto">
-          Calculate your family&apos;s true protection gap using Capital Needs Analysis and Human Life Value (HLV).
-        </p>
-      </div>
-
+    <ToolShell slug="life-cover-calculator">
       {/* Progress Steps */}
-      <div className="flex items-center justify-center gap-3 mb-10 text-xs font-bold">
+      <div className="flex items-center justify-center gap-3 mb-10 text-sm font-bold">
         {[
           { num: 1, label: "Family Profile" },
           { num: 2, label: "Liabilities & Assets" },
@@ -143,35 +127,35 @@ export default function LifeCoverCalculatorPage() {
                   ? "bg-[#7957FF] text-white"
                   : step > s.num
                   ? "bg-[#0E9F7E] text-white"
-                  : "bg-[#D9D3E8] dark:bg-[#1E2D4A] text-[#6F6A7C] dark:text-[#A59FB5]"
+                  : "bg-[#D9D3E8] text-[#6F6A7C]"
               }`}
             >
               {step > s.num ? <CheckCircle2 className="w-4 h-4" /> : s.num}
             </div>
-            <span className={`hidden sm:inline ${step === s.num ? "text-[#7957FF]" : "text-[#6F6A7C] dark:text-[#A59FB5]"}`}>
+            <span className={`hidden sm:inline ${step === s.num ? "text-[#7957FF]" : "text-[#6F6A7C]"}`}>
               {s.label}
             </span>
-            {s.num < 4 && <div className="w-6 h-0.5 bg-[#D9D3E8] dark:bg-[#1E2D4A] hidden sm:block" />}
+            {s.num < 4 && <div className="w-6 h-0.5 bg-[#D9D3E8] hidden sm:block" />}
           </div>
         ))}
       </div>
 
       {error && (
-        <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 text-xs">
+        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
           {error}
         </div>
       )}
 
       {/* STEP 1: FAMILY PROFILE */}
       {step === 1 && (
-        <div className="bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] rounded-2xl p-6 sm:p-10 shadow-sm space-y-6">
-          <h2 className="text-xl font-bold text-[#24212B] dark:text-white border-b border-[#D9D3E8] dark:border-[#1E2D4A] pb-3">
+        <div className="bg-white border border-[#D9D3E8] rounded-2xl p-6 sm:p-10 shadow-sm space-y-6">
+          <h2 className="text-xl font-bold text-[#24212B] border-b border-[#D9D3E8] pb-3">
             Step 1: Household Earning & Expense Profile
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-xs font-bold text-[#24212B] dark:text-white mb-1">
+              <label className="block text-sm font-bold text-[#24212B] mb-1">
                 Your Current Age: {age} Years
               </label>
               <input
@@ -182,37 +166,37 @@ export default function LifeCoverCalculatorPage() {
                 onChange={(e) => setAge(Number(e.target.value))}
                 className="w-full accent-[#7957FF]"
               />
-              <span className="text-[11px] text-[#6F6A7C] dark:text-[#A59FB5]">Entry age defines insurance tenure eligibility</span>
+              <span className="text-sm text-[#6F6A7C]">Entry age defines insurance tenure eligibility</span>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#24212B] dark:text-white mb-1">
+              <label className="block text-sm font-bold text-[#24212B] mb-1">
                 Annual Take-Home Income (₹)
               </label>
               <input
                 type="number"
                 value={annualIncome}
                 onChange={(e) => setAnnualIncome(Number(e.target.value))}
-                className="w-full p-3 text-sm rounded-xl border border-[#D9D3E8] dark:border-[#1E2D4A] bg-[#FAF9F6] dark:bg-[#142447] text-[#24212B] dark:text-white focus:outline-[#7957FF]"
+                className="w-full p-3 text-sm rounded-xl border border-[#D9D3E8] bg-[#FAF9F6] text-[#24212B] focus:outline-[#7957FF]"
               />
-              <span className="text-[11px] text-[#6F6A7C] dark:text-[#A59FB5]">e.g. ₹18,00,000 (₹18 Lakhs)</span>
+              <span className="text-sm text-[#6F6A7C]">e.g. ₹18,00,000 (₹18 Lakhs)</span>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#24212B] dark:text-white mb-1">
+              <label className="block text-sm font-bold text-[#24212B] mb-1">
                 Annual Household Expenses (₹)
               </label>
               <input
                 type="number"
                 value={annualExpenses}
                 onChange={(e) => setAnnualExpenses(Number(e.target.value))}
-                className="w-full p-3 text-sm rounded-xl border border-[#D9D3E8] dark:border-[#1E2D4A] bg-[#FAF9F6] dark:bg-[#142447] text-[#24212B] dark:text-white focus:outline-[#7957FF]"
+                className="w-full p-3 text-sm rounded-xl border border-[#D9D3E8] bg-[#FAF9F6] text-[#24212B] focus:outline-[#7957FF]"
               />
-              <span className="text-[11px] text-[#6F6A7C] dark:text-[#A59FB5]">Living expenses your family depends on</span>
+              <span className="text-sm text-[#6F6A7C]">Living expenses your family depends on</span>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#24212B] dark:text-white mb-1">
+              <label className="block text-sm font-bold text-[#24212B] mb-1">
                 Financial Dependents: {dependents}
               </label>
               <input
@@ -223,7 +207,7 @@ export default function LifeCoverCalculatorPage() {
                 onChange={(e) => setDependents(Number(e.target.value))}
                 className="w-full accent-[#7957FF]"
               />
-              <span className="text-[11px] text-[#6F6A7C] dark:text-[#A59FB5]">Spouse, children, or dependent parents</span>
+              <span className="text-sm text-[#6F6A7C]">Spouse, children, or dependent parents</span>
             </div>
           </div>
 
@@ -241,53 +225,53 @@ export default function LifeCoverCalculatorPage() {
 
       {/* STEP 2: LIABILITIES & ASSETS */}
       {step === 2 && (
-        <div className="bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] rounded-2xl p-6 sm:p-10 shadow-sm space-y-6">
-          <h2 className="text-xl font-bold text-[#24212B] dark:text-white border-b border-[#D9D3E8] dark:border-[#1E2D4A] pb-3">
+        <div className="bg-white border border-[#D9D3E8] rounded-2xl p-6 sm:p-10 shadow-sm space-y-6">
+          <h2 className="text-xl font-bold text-[#24212B] border-b border-[#D9D3E8] pb-3">
             Step 2: Balance Sheet & Existing Protection
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-xs font-bold text-[#24212B] dark:text-white mb-1">
+              <label className="block text-sm font-bold text-[#24212B] mb-1">
                 Outstanding Debt / Loans (₹)
               </label>
               <input
                 type="number"
                 value={liabilities}
                 onChange={(e) => setLiabilities(Number(e.target.value))}
-                className="w-full p-3 text-sm rounded-xl border border-[#D9D3E8] dark:border-[#1E2D4A] bg-[#FAF9F6] dark:bg-[#142447] text-[#24212B] dark:text-white"
+                className="w-full p-3 text-sm rounded-xl border border-[#D9D3E8] bg-[#FAF9F6] text-[#24212B]"
               />
-              <span className="text-[11px] text-[#6F6A7C] dark:text-[#A59FB5]">Home mortgages, personal loans, car loans</span>
+              <span className="text-sm text-[#6F6A7C]">Home mortgages, personal loans, car loans</span>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#24212B] dark:text-white mb-1">
+              <label className="block text-sm font-bold text-[#24212B] mb-1">
                 Existing Active Life Cover (₹)
               </label>
               <input
                 type="number"
                 value={existingCover}
                 onChange={(e) => setExistingCover(Number(e.target.value))}
-                className="w-full p-3 text-sm rounded-xl border border-[#D9D3E8] dark:border-[#1E2D4A] bg-[#FAF9F6] dark:bg-[#142447] text-[#24212B] dark:text-white"
+                className="w-full p-3 text-sm rounded-xl border border-[#D9D3E8] bg-[#FAF9F6] text-[#24212B]"
               />
-              <span className="text-[11px] text-[#6F6A7C] dark:text-[#A59FB5]">Current active term or endowment sum assured</span>
+              <span className="text-sm text-[#6F6A7C]">Current active term or endowment sum assured</span>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#24212B] dark:text-white mb-1">
+              <label className="block text-sm font-bold text-[#24212B] mb-1">
                 Eligible Liquid Financial Assets (₹)
               </label>
               <input
                 type="number"
                 value={eligibleAssets}
                 onChange={(e) => setEligibleAssets(Number(e.target.value))}
-                className="w-full p-3 text-sm rounded-xl border border-[#D9D3E8] dark:border-[#1E2D4A] bg-[#FAF9F6] dark:bg-[#142447] text-[#24212B] dark:text-white"
+                className="w-full p-3 text-sm rounded-xl border border-[#D9D3E8] bg-[#FAF9F6] text-[#24212B]"
               />
-              <span className="text-[11px] text-[#6F6A7C] dark:text-[#A59FB5]">FDs, Mutual Funds, Stocks (Excluding primary home)</span>
+              <span className="text-sm text-[#6F6A7C]">FDs, Mutual Funds, Stocks (Excluding primary home)</span>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#24212B] dark:text-white mb-1">
+              <label className="block text-sm font-bold text-[#24212B] mb-1">
                 Support Horizon: {supportHorizon} Years
               </label>
               <input
@@ -298,14 +282,14 @@ export default function LifeCoverCalculatorPage() {
                 onChange={(e) => setSupportHorizon(Number(e.target.value))}
                 className="w-full accent-[#7957FF]"
               />
-              <span className="text-[11px] text-[#6F6A7C] dark:text-[#A59FB5]">Years until youngest dependent is self-sufficient</span>
+              <span className="text-sm text-[#6F6A7C]">Years until youngest dependent is self-sufficient</span>
             </div>
           </div>
 
           <div className="pt-4 flex items-center justify-between">
             <button
               onClick={() => setStep(1)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#6F6A7C] dark:text-[#A59FB5] hover:text-[#24212B] rounded-xl"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#6F6A7C] hover:text-[#24212B] rounded-xl"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back</span>
@@ -323,28 +307,28 @@ export default function LifeCoverCalculatorPage() {
 
       {/* STEP 3: GOALS & ASSUMPTIONS */}
       {step === 3 && (
-        <div className="bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] rounded-2xl p-6 sm:p-10 shadow-sm space-y-6">
-          <h2 className="text-xl font-bold text-[#24212B] dark:text-white border-b border-[#D9D3E8] dark:border-[#1E2D4A] pb-3">
+        <div className="bg-white border border-[#D9D3E8] rounded-2xl p-6 sm:p-10 shadow-sm space-y-6">
+          <h2 className="text-xl font-bold text-[#24212B] border-b border-[#D9D3E8] pb-3">
             Step 3: Milestone Commitments & Disclosed Assumptions
           </h2>
 
           {/* Goals List */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#6F6A7C] dark:text-[#A59FB5]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#6F6A7C]">
                 Future Family Milestones (e.g. Higher Education, Marriage)
               </span>
               <button
                 type="button"
                 onClick={handleAddGoal}
-                className="text-xs font-bold text-[#7957FF] hover:underline"
+                className="text-sm font-bold text-[#7957FF] hover:underline"
               >
                 + Add Another Goal
               </button>
             </div>
 
             {futureGoals.map((g, idx) => (
-              <div key={idx} className="p-4 rounded-xl bg-[#FAF9F6] dark:bg-[#142447] border border-[#D9D3E8] dark:border-[#1E2D4A] grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+              <div key={idx} className="p-4 rounded-xl bg-[#FAF9F6] border border-[#D9D3E8] grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
                 <input
                   type="text"
                   value={g.name}
@@ -353,7 +337,7 @@ export default function LifeCoverCalculatorPage() {
                     updated[idx].name = e.target.value;
                     setFutureGoals(updated);
                   }}
-                  className="p-2 text-xs rounded-lg border border-[#D9D3E8] dark:border-[#1E2D4A] bg-white dark:bg-[#0E1A33]"
+                  className="p-2 text-sm rounded-lg border border-[#D9D3E8] bg-white"
                   placeholder="Goal Title"
                 />
                 <input
@@ -364,7 +348,7 @@ export default function LifeCoverCalculatorPage() {
                     updated[idx].cost_today = Number(e.target.value);
                     setFutureGoals(updated);
                   }}
-                  className="p-2 text-xs rounded-lg border border-[#D9D3E8] dark:border-[#1E2D4A] bg-white dark:bg-[#0E1A33]"
+                  className="p-2 text-sm rounded-lg border border-[#D9D3E8] bg-white"
                   placeholder="Cost in Today's ₹"
                 />
                 <div className="flex items-center gap-2">
@@ -376,15 +360,15 @@ export default function LifeCoverCalculatorPage() {
                       updated[idx].years_away = Number(e.target.value);
                       setFutureGoals(updated);
                     }}
-                    className="p-2 text-xs rounded-lg border border-[#D9D3E8] dark:border-[#1E2D4A] bg-white dark:bg-[#0E1A33] w-20"
+                    className="p-2 text-sm rounded-lg border border-[#D9D3E8] bg-white w-20"
                     placeholder="Yrs"
                   />
-                  <span className="text-xs text-[#6F6A7C]">Yrs away</span>
+                  <span className="text-sm text-[#6F6A7C]">Yrs away</span>
                   {futureGoals.length > 1 && (
                     <button
                       type="button"
                       onClick={() => handleRemoveGoal(idx)}
-                      className="text-xs text-red-500 hover:underline ml-auto"
+                      className="text-sm text-red-500 hover:underline ml-auto"
                     >
                       Delete
                     </button>
@@ -395,12 +379,12 @@ export default function LifeCoverCalculatorPage() {
           </div>
 
           {/* Actuarial Disclosed Assumptions */}
-          <div className="pt-4 border-t border-[#D9D3E8] dark:border-[#1E2D4A] space-y-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#6F6A7C] dark:text-[#A59FB5]">
+          <div className="pt-4 border-t border-[#D9D3E8] space-y-4">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#6F6A7C]">
               Disclosed Economic Assumptions (India)
             </span>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               <div>
                 <label className="font-semibold block mb-1">General Inflation: {(inflationRate * 100).toFixed(1)}%</label>
                 <input
@@ -435,17 +419,17 @@ export default function LifeCoverCalculatorPage() {
                   onChange={(e) => setSmoker(e.target.checked)}
                   className="w-4 h-4 accent-[#7957FF] rounded"
                 />
-                <label htmlFor="smoker" className="font-bold text-[#24212B] dark:text-white cursor-pointer">
+                <label htmlFor="smoker" className="font-bold text-[#24212B] cursor-pointer">
                   Tobacco / Nicotine User (in last 3 yrs)
                 </label>
               </div>
             </div>
           </div>
 
-          <div className="pt-6 flex items-center justify-between border-t border-[#D9D3E8] dark:border-[#1E2D4A]">
+          <div className="pt-6 flex items-center justify-between border-t border-[#D9D3E8]">
             <button
               onClick={() => setStep(2)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#6F6A7C] dark:text-[#A59FB5]"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#6F6A7C]"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back</span>
@@ -484,68 +468,68 @@ export default function LifeCoverCalculatorPage() {
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-xs text-slate-300">Total Gross Need:</span>
+                <span className="text-sm text-slate-300">Total Gross Need:</span>
                 <div className="text-xl font-bold text-slate-100">
                   {formatINR(assessmentResult.net_needs.total_gross_need, { compact: true })}
                 </div>
               </div>
             </div>
 
-            <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-2xl">
+            <p className="text-sm sm:text-sm text-slate-200 leading-relaxed max-w-2xl">
               {assessmentResult.recommendation_summary}
             </p>
           </div>
 
           {/* Capital Needs Breakdown Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] space-y-1">
-              <span className="text-[11px] font-bold text-[#6F6A7C] dark:text-[#A59FB5] uppercase">Income Replacement</span>
-              <div className="text-xl font-extrabold text-[#24212B] dark:text-white">
+            <div className="p-5 rounded-2xl bg-white border border-[#D9D3E8] space-y-1">
+              <span className="text-sm font-bold text-[#6F6A7C] uppercase">Income Replacement</span>
+              <div className="text-xl font-extrabold text-[#24212B]">
                 {formatINR(assessmentResult.net_needs.income_replacement_pv, { compact: true })}
               </div>
-              <span className="text-[10px] text-[#7F8FA4]">Discounted living costs for {supportHorizon} yrs</span>
+              <span className="text-sm text-[#7F8FA4]">Discounted living costs for {supportHorizon} yrs</span>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] space-y-1">
-              <span className="text-[11px] font-bold text-[#6F6A7C] dark:text-[#A59FB5] uppercase">Future Milestone Goals</span>
-              <div className="text-xl font-extrabold text-[#24212B] dark:text-white">
+            <div className="p-5 rounded-2xl bg-white border border-[#D9D3E8] space-y-1">
+              <span className="text-sm font-bold text-[#6F6A7C] uppercase">Future Milestone Goals</span>
+              <div className="text-xl font-extrabold text-[#24212B]">
                 {formatINR(assessmentResult.net_needs.future_goals_pv, { compact: true })}
               </div>
-              <span className="text-[10px] text-[#7F8FA4]">Present value of education/marriage milestones</span>
+              <span className="text-sm text-[#7F8FA4]">Present value of education/marriage milestones</span>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] space-y-1">
-              <span className="text-[11px] font-bold text-[#6F6A7C] dark:text-[#A59FB5] uppercase">Outstanding Liabilities</span>
+            <div className="p-5 rounded-2xl bg-white border border-[#D9D3E8] space-y-1">
+              <span className="text-sm font-bold text-[#6F6A7C] uppercase">Outstanding Liabilities</span>
               <div className="text-xl font-extrabold text-rose-500">
                 {formatINR(assessmentResult.net_needs.outstanding_liabilities, { compact: true })}
               </div>
-              <span className="text-[10px] text-[#7F8FA4]">Immediate debt retirement obligation</span>
+              <span className="text-sm text-[#7F8FA4]">Immediate debt retirement obligation</span>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] space-y-1">
-              <span className="text-[11px] font-bold text-[#6F6A7C] dark:text-[#A59FB5] uppercase">Deducted Assets & Cover</span>
+            <div className="p-5 rounded-2xl bg-white border border-[#D9D3E8] space-y-1">
+              <span className="text-sm font-bold text-[#6F6A7C] uppercase">Deducted Assets & Cover</span>
               <div className="text-xl font-extrabold text-[#0E9F7E]">
                 -{formatINR(assessmentResult.net_needs.eligible_assets_deducted + assessmentResult.net_needs.existing_cover_deducted, { compact: true })}
               </div>
-              <span className="text-[10px] text-[#7F8FA4]">Existing wealth and active life policies</span>
+              <span className="text-sm text-[#7F8FA4]">Existing wealth and active life policies</span>
             </div>
           </div>
 
           {/* HLV Cross-Reference Comparison */}
-          <div className="p-6 rounded-2xl bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] space-y-3">
-            <div className="flex items-center justify-between border-b border-[#D9D3E8] dark:border-[#1E2D4A] pb-3">
+          <div className="p-6 rounded-2xl bg-white border border-[#D9D3E8] space-y-3">
+            <div className="flex items-center justify-between border-b border-[#D9D3E8] pb-3">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-[#7957FF]" />
-                <h3 className="text-base font-bold text-[#24212B] dark:text-white">
+                <h3 className="text-base font-bold text-[#24212B]">
                   Human Life Value (HLV) Cross-Reference
                 </h3>
               </div>
-              <span className="text-xs font-bold text-[#7957FF] px-2.5 py-1 bg-[#E9E4FF] dark:bg-[#1B2B4D] rounded-md">
+              <span className="text-sm font-bold text-[#7957FF] px-2.5 py-1 bg-[#E9E4FF] rounded-md">
                 Gross HLV: {formatINR(assessmentResult.hlv.hlv_gross, { compact: true })}
               </span>
             </div>
 
-            <p className="text-xs leading-relaxed text-[#6F6A7C] dark:text-[#A59FB5]">
+            <p className="text-sm leading-relaxed text-[#6F6A7C]">
               Your Human Life Value represents your economic value to your family based on your future working horizon of{" "}
               {assessmentResult.hlv.earning_horizon_years} years until age {retirementAge}. Net HLV gap is estimated at{" "}
               <strong>{formatINR(assessmentResult.hlv.hlv_net_gap, { compact: true })}</strong>.
@@ -557,11 +541,11 @@ export default function LifeCoverCalculatorPage() {
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-[#7957FF]">PLAN MATCHING ENGINE</span>
-                <h3 className="text-2xl font-bold text-[#24212B] dark:text-white">
+                <h3 className="text-2xl font-bold text-[#24212B]">
                   Ranked Insurance Candidates for Your Gap
                 </h3>
               </div>
-              <Link href="/tools/scenario-studio" className="text-xs font-bold text-[#7957FF] hover:underline flex items-center gap-1">
+              <Link href="/tools/scenario-studio" className="text-sm font-bold text-[#7957FF] hover:underline flex items-center gap-1">
                 <span>Test in Scenario Studio</span>
                 <span>→</span>
               </Link>
@@ -571,35 +555,35 @@ export default function LifeCoverCalculatorPage() {
               {recommendedProducts.slice(0, 4).map((rec: any) => (
                 <div
                   key={rec.product.id}
-                  className="p-6 rounded-2xl bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] hover:border-[#7957FF] transition-all space-y-4"
+                  className="p-6 rounded-2xl bg-white border border-[#D9D3E8] hover:border-[#7957FF] transition-all space-y-4"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-[11px] font-bold text-[#7957FF] uppercase">
+                      <span className="text-sm font-bold text-[#7957FF] uppercase">
                         Rank #{rec.rank} Match
                       </span>
-                      <h4 className="text-base font-bold text-[#24212B] dark:text-white">
+                      <h4 className="text-base font-bold text-[#24212B]">
                         {rec.product.name}
                       </h4>
-                      <span className="text-xs text-[#6F6A7C] dark:text-[#A59FB5]">
+                      <span className="text-sm text-[#6F6A7C]">
                         {rec.product.insurer}
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs text-[#7F8FA4]">Indicative Premium</span>
-                      <div className="text-lg font-black text-[#24212B] dark:text-white">
+                      <span className="text-sm text-[#7F8FA4]">Indicative Premium</span>
+                      <div className="text-lg font-black text-[#24212B]">
                         {formatINR(rec.estimated_annual_premium)}/yr
                       </div>
-                      <span className="text-[10px] text-[#0E9F7E] font-bold">~{formatINR(rec.estimated_monthly_premium)}/mo</span>
+                      <span className="text-sm text-[#0E9F7E] font-bold">~{formatINR(rec.estimated_monthly_premium)}/mo</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-[#6F6A7C] dark:text-[#A59FB5] leading-relaxed">
+                  <p className="text-sm text-[#6F6A7C] leading-relaxed">
                     {rec.grounded_explanation}
                   </p>
 
-                  <div className="pt-2 border-t border-[#D9D3E8]/60 dark:border-[#1E2D4A]/60 flex items-center justify-between text-xs font-semibold">
-                    <span className="text-[#24212B] dark:text-white">
+                  <div className="pt-2 border-t border-[#D9D3E8]/60 flex items-center justify-between text-sm font-semibold">
+                    <span className="text-[#24212B]">
                       CSR: {rec.product.claim_settlement_ratio != null ? `${rec.product.claim_settlement_ratio}%` : "not confirmed"} | Solvency: {rec.product.solvency_ratio != null ? `${rec.product.solvency_ratio}x` : "not confirmed"}
                     </span>
                     <Link
@@ -615,10 +599,10 @@ export default function LifeCoverCalculatorPage() {
           </div>
 
           {/* Action Row */}
-          <div className="pt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#D9D3E8] dark:border-[#1E2D4A]">
+          <div className="pt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#D9D3E8]">
             <button
               onClick={() => setStep(1)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-[#6F6A7C] dark:text-[#A59FB5] border border-[#D9D3E8] dark:border-[#1E2D4A] rounded-xl hover:bg-slate-50"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#6F6A7C] border border-[#D9D3E8] rounded-xl hover:bg-slate-50"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Modify Inputs</span>
@@ -627,13 +611,13 @@ export default function LifeCoverCalculatorPage() {
             <div className="flex items-center gap-3">
               <Link
                 href="/tools/scenario-studio"
-                className="px-5 py-2.5 text-xs font-bold text-white bg-[#24212B] rounded-xl hover:opacity-95"
+                className="px-5 py-2.5 text-sm font-bold text-white bg-[#24212B] rounded-xl hover:opacity-95"
               >
                 Simulate Scenarios with this Cover →
               </Link>
               <Link
                 href="/dashboard/protection-passport"
-                className="px-5 py-2.5 text-xs font-bold text-white bg-[#7957FF] rounded-xl hover:bg-[#6444E6]"
+                className="px-5 py-2.5 text-sm font-bold text-white bg-[#7957FF] rounded-xl hover:bg-[#6444E6]"
               >
                 Save to Protection Passport
               </Link>
@@ -643,6 +627,6 @@ export default function LifeCoverCalculatorPage() {
         </div>
       )}
 
-    </div>
+    </ToolShell>
   );
 }

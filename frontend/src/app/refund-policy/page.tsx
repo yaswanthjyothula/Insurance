@@ -8,10 +8,10 @@ export const metadata = {
 
 export default function RefundPolicyPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-8 text-xs leading-relaxed text-[#6F6A7C] dark:text-[#A59FB5]">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-8 text-xs leading-relaxed text-[#6F6A7C]">
       
-      <div className="space-y-3 border-b border-[#D9D3E8] dark:border-[#1E2D4A] pb-6">
-        <h1 className="text-3xl font-extrabold text-[#24212B] dark:text-white">
+      <div className="space-y-3 border-b border-[#D9D3E8] pb-6">
+        <h1 className="text-3xl font-extrabold text-[#24212B]">
           Refund Policy
         </h1>
         <p className="text-xs text-[#7F8FA4]">
@@ -20,7 +20,7 @@ export default function RefundPolicyPage() {
       </div>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-bold text-[#24212B] dark:text-white">1. Free Consumer Advisory & Calculation Tools</h2>
+        <h2 className="text-sm font-bold text-[#24212B]">1. Free Consumer Advisory & Calculation Tools</h2>
         <p>
           LifeSure AI provides its core financial engineering suite—including the AI Life-Cover Calculator, Scenario Studio, Family Survival Simulator, Policy X-Ray, and Protection Passport—as a <strong>100% complimentary digital public resource</strong> for Indian citizens and households.
         </p>
@@ -30,7 +30,7 @@ export default function RefundPolicyPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-bold text-[#24212B] dark:text-white">2. Free-Look statutory Cancellation for Insurance Policies</h2>
+        <h2 className="text-sm font-bold text-[#24212B]">2. Free-Look statutory Cancellation for Insurance Policies</h2>
         <p>
           If you subsequently choose to purchase an insurance policy from a licensed insurer:
         </p>

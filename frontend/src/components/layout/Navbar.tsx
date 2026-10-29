@@ -14,45 +14,61 @@ import {
   FileText, 
   Activity, 
   Compass, 
-  LayoutDashboard
+  LayoutDashboard,
+  User,
+  Lock,
+  Calendar,
+  LogOut,
+  LogIn,
+  CheckCircle2,
+  Sliders
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useAssessmentStore } from "@/store/assessment-store";
+import { formatINR } from "@/lib/utils";
 
 export function Navbar() {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
+  const { input, result } = useAssessmentStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setActiveDropdown(null);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close mobile menu on route change
+  // Close menus on route change
   useEffect(() => {
     setMobileMenuOpen(false);
     setActiveDropdown(null);
+    setProfileOpen(false);
   }, [pathname]);
 
   const insuranceCategories = [
-    { name: "Term Insurance", href: "/insurance/term", desc: "Pure income replacement & debt protection" },
-    { name: "Life Insurance", href: "/insurance/life", desc: "Traditional endowment & whole-life plans" },
-    { name: "Health Insurance", href: "/insurance/health", desc: "Hospitalization, OPD & critical illness" },
-    { name: "General Insurance", href: "/insurance/general", desc: "Home, motor, property & travel cover" },
-    { name: "Investment-Linked", href: "/insurance/investment-linked", desc: "ULIPs & market wealth creation" },
-    { name: "Business Insurance", href: "/insurance/business", desc: "Keyman, group term & liability protection" },
-    { name: "Other Insurance", href: "/insurance/other", desc: "Personal cyber & accident sachet covers" },
+    { name: "Term Insurance", href: "/insurance/term", desc: "Pure cover for your family if you die" },
+    { name: "Life Insurance (traditional)", href: "/insurance/life", desc: "Guaranteed savings with life cover" },
+    { name: "Health Insurance", href: "/insurance/health", desc: "Hospital bills and critical illness" },
+    { name: "General (home, motor, travel)", href: "/insurance/general", desc: "Home, motor and travel cover" },
+    { name: "Investment-Linked (ULIP)", href: "/insurance/investment-linked", desc: "Cover plus market-linked investing" },
+    { name: "Business Insurance", href: "/insurance/business", desc: "Keyman, group term and director cover" },
+    { name: "Cyber & Accident", href: "/insurance/other", desc: "Online fraud and accident cover" },
   ];
 
   const journeyStages = [
@@ -78,13 +94,6 @@ export function Navbar() {
     { name: "Explore All 12 Smart Tools", href: "/tools", icon: Compass, badge: "All" },
   ];
 
-  const advisoryItems = [
-    { name: "My Protection Passport", href: "/dashboard/protection-passport", icon: ShieldCheck },
-    { name: "Advisory Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Saved Scenarios", href: "/tools/scenario-studio", icon: Activity },
-    { name: "Consultation Bookings", href: "/dashboard/appointments", icon: FileText },
-    { name: "Emergency Insurance Vault", href: "/dashboard/insurance-vault", icon: ShieldCheck },
-  ];
 
   const resources = [
     { name: "Insurance Learning Centre", href: "/resources/learning-centre" },
@@ -254,41 +263,7 @@ export function Navbar() {
               )}
             </div>
 
-            {/* Advisory Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setActiveDropdown(activeDropdown === "advisory" ? null : "advisory")}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-[#4A4553] hover:text-[#24212B] hover:bg-[rgba(36,33,43,0.06)] rounded-full transition-all"
-                aria-expanded={activeDropdown === "advisory"}
-              >
-                <span>Advisory</span>
-                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === "advisory" ? "rotate-180" : ""}`} />
-              </button>
 
-              {activeDropdown === "advisory" && (
-                <div className="absolute left-0 mt-2 w-80 bg-[#FFFFFF] border border-[#D9D3E8] rounded-2xl shadow-[0_30px_60px_rgba(121,87,255,0.13)] py-2 px-1 z-50">
-                  <div className="px-3 py-1 mb-1 border-b border-[#D9D3E8]">
-                    <span className="text-[11px] font-bold tracking-wider text-[#7957FF] uppercase">Personal Protection Portal</span>
-                  </div>
-                  {advisoryItems.map((item) => {
-                    const IconComp = item.icon;
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded hover:bg-[#E9E4FF] transition-colors"
-                        onClick={() => setActiveDropdown(null)}
-                      >
-                        <IconComp className="w-4 h-4 text-[#24212B]" />
-                        <span className="text-sm font-bold text-[#24212B]">
-                          {item.name}
-                        </span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
 
           </nav>
 
@@ -303,31 +278,153 @@ export function Navbar() {
               <Search className="w-4 h-4" />
             </button>
 
-            {user ? (
+            {/* User Profile Flyout (Replaces Dashboard) */}
+            <div className="relative" ref={profileRef}>
               <button
-                onClick={signOut}
-                title={user.email ?? undefined}
-                className="px-4 py-2 text-sm font-semibold whitespace-nowrap rounded-md text-[#24212B] border border-[#D9D3E8] hover:border-[#7957FF]"
+                onClick={() => {
+                  setProfileOpen(!profileOpen);
+                  setActiveDropdown(null);
+                }}
+                className="flex items-center gap-2.5 p-1.5 pl-2.5 pr-3 rounded-full border border-[#D9D3E8] bg-white hover:border-[#7957FF] hover:shadow-md transition-all group"
+                aria-label="User Profile"
+                aria-expanded={profileOpen}
               >
-                Sign Out
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#7957FF] to-[#9A80FF] text-white flex items-center justify-center font-bold text-xs shadow-sm relative">
+                  {user ? (user.email?.[0]?.toUpperCase() || "U") : (input.annual_income > 0 ? "P" : "G")}
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#0E9F7E] border-2 border-white rounded-full"></span>
+                </div>
+                <div className="text-left hidden xl:block">
+                  <div className="text-xs font-bold text-[#24212B] leading-none group-hover:text-[#7957FF] transition-colors">
+                    {user ? (user.user_metadata?.full_name || user.email?.split("@")[0]) : (input.annual_income > 0 ? "Praveen Sharma" : "Guest Client")}
+                  </div>
+                  <div className="text-[10px] text-[#6F6A7C] leading-tight font-medium mt-0.5">
+                    {user ? "Verified Account" : (input.annual_income > 0 ? "Profile Active" : "Get Started")}
+                  </div>
+                </div>
+                <ChevronDown className={`w-3.5 h-3.5 text-[#6F6A7C] transition-transform duration-200 ${profileOpen ? "rotate-180" : ""}`} />
               </button>
-            ) : (
-            <Link
-              href="/sign-in"
-              className="px-3.5 py-2 text-[15px] font-medium whitespace-nowrap text-[#24212B] hover:text-[#7957FF] rounded-md transition-colors"
-            >
-              Sign In
-            </Link>
-            )}
 
-            {/* MANDATORY TOP-RIGHT ACTION: Dashboard in Neon Noir (Neon Green bg, Black text, Restrained Rectangular) */}
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 px-5 py-3 text-[15px] font-semibold text-[#FFFFFF] bg-[#7957FF] hover:brightness-110 hover:-translate-y-0.5 border-0 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-[#7957FF] focus:ring-offset-2 focus:ring-offset-[#FFFFFF]"
-            >
-              <LayoutDashboard className="w-4 h-4 text-[#FFFFFF]" />
-              <span>Dashboard</span>
-            </Link>
+              {/* Profile Flyout Popover */}
+              {profileOpen && (
+                <div className="absolute right-0 mt-2.5 w-80 bg-white border border-[#D9D3E8] rounded-3xl shadow-[0_25px_60px_rgba(121,87,255,0.18)] p-4 z-50 animate-in fade-in zoom-in-95 duration-150 text-[#24212B]">
+                  {/* Identity Header */}
+                  <div className="flex items-center gap-3 pb-3 border-b border-[#D9D3E8]">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#7957FF] to-[#9A80FF] text-white flex items-center justify-center font-extrabold text-base shadow-sm">
+                      {user ? (user.email?.[0]?.toUpperCase() || "U") : (input.annual_income > 0 ? "PS" : "GC")}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-extrabold text-[#24212B] truncate block">
+                          {user ? (user.user_metadata?.full_name || user.email?.split("@")[0]) : (input.annual_income > 0 ? "Praveen Sharma" : "Guest Client")}
+                        </span>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#0E9F7E] flex-shrink-0" />
+                      </div>
+                      <span className="text-[11px] text-[#6F6A7C] truncate block">
+                        {user ? user.email : (input.annual_income > 0 ? "praveen.sharma@example.com" : "Assessment in progress")}
+                      </span>
+                      <span className="inline-block mt-0.5 text-[9.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#E9E4FF] text-[#7957FF]">
+                        {user ? "Retail Banking Client" : "Assessment Active"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Financial Snapshot Card */}
+                  <div className="my-3 p-3 rounded-2xl bg-[#FAF9F6] border border-[#D9D3E8]/80 space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-[#6F6A7C]">
+                      <span>Financial Profile Details</span>
+                      <Link 
+                        href="/assessment" 
+                        onClick={() => setProfileOpen(false)}
+                        className="text-[#7957FF] hover:underline"
+                      >
+                        Edit
+                      </Link>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="p-2 rounded-xl bg-white border border-[#D9D3E8]/60">
+                        <span className="text-[10px] text-[#6F6A7C] block">Age / Dependents</span>
+                        <span className="font-extrabold text-[#24212B] mt-0.5 block">
+                          {input.age || 32} yrs • {input.dependents_count || 2} dep
+                        </span>
+                      </div>
+                      <div className="p-2 rounded-xl bg-white border border-[#D9D3E8]/60">
+                        <span className="text-[10px] text-[#6F6A7C] block">Annual Income</span>
+                        <span className="font-extrabold text-[#24212B] mt-0.5 block">
+                          {input.annual_income ? formatINR(input.annual_income) : "₹18,00,000"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white border border-[#D9D3E8]/60 flex items-center justify-between">
+                      <span className="text-[10px] text-[#6F6A7C]">Calculated Gap</span>
+                      <span className="text-xs font-extrabold text-[#7957FF]">
+                        {result?.net_needs?.net_coverage_gap ? formatINR(result.net_needs.net_coverage_gap) : "₹1.35 Crore"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* User Profile Links */}
+                  <div className="space-y-1 pt-1">
+                    <Link
+                      href="/dashboard/protection-passport"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-[#7957FF]" />
+                      <span>My Protection Passport</span>
+                    </Link>
+                    <Link
+                      href="/dashboard/insurance-vault"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
+                    >
+                      <Lock className="w-4 h-4 text-[#7957FF]" />
+                      <span>Emergency Insurance Vault</span>
+                    </Link>
+                    <Link
+                      href="/dashboard/appointments"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
+                    >
+                      <Calendar className="w-4 h-4 text-[#7957FF]" />
+                      <span>Consultation Bookings</span>
+                    </Link>
+                    <Link
+                      href="/dashboard/policies"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
+                    >
+                      <FileText className="w-4 h-4 text-[#7957FF]" />
+                      <span>My Policies & Quotes</span>
+                    </Link>
+                  </div>
+
+                  {/* Auth Footer */}
+                  <div className="pt-3 mt-2 border-t border-[#D9D3E8]">
+                    {user ? (
+                      <button
+                        onClick={() => {
+                          signOut();
+                          setProfileOpen(false);
+                        }}
+                        className="w-full flex items-center justify-center gap-2 py-2 text-xs font-bold text-[#D32F2F] hover:bg-[#FFEBEE] rounded-xl transition-colors"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Sign Out</span>
+                      </button>
+                    ) : (
+                      <Link
+                        href="/sign-in"
+                        onClick={() => setProfileOpen(false)}
+                        className="w-full flex items-center justify-center gap-2 py-2 text-xs font-bold text-white bg-[#7957FF] hover:bg-[#6444E6] rounded-xl transition-colors shadow-sm"
+                      >
+                        <LogIn className="w-3.5 h-3.5" />
+                        <span>Sign In / Register</span>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -379,26 +476,55 @@ export function Navbar() {
             Resources & Claims Guide
           </Link>
 
-          <div className="pt-4 border-t border-[#D9D3E8] space-y-2">
-            {/* MANDATORY MOBILE CTA: Dashboard */}
-            <Link
-              href="/dashboard"
-              className="flex items-center justify-center gap-2 w-full text-center py-2.5 text-sm font-extrabold text-[#FFFFFF] bg-[#7957FF] hover:bg-[#6444E6] rounded"
-            >
-              <LayoutDashboard className="w-4 h-4 text-[#FFFFFF]" />
-              <span>Dashboard</span>
-            </Link>
+          <div className="pt-4 border-t border-[#D9D3E8] space-y-3">
+            {/* User Profile Card in Mobile */}
+            <div className="p-3 rounded-2xl bg-[#FAF9F6] border border-[#D9D3E8] space-y-2.5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#7957FF] to-[#9A80FF] text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                  {user ? (user.email?.[0]?.toUpperCase() || "U") : (input.annual_income > 0 ? "PS" : "GC")}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-[#24212B] truncate">
+                    {user ? (user.user_metadata?.full_name || user.email?.split("@")[0]) : (input.annual_income > 0 ? "Praveen Sharma" : "Guest Client")}
+                  </div>
+                  <div className="text-[10px] text-[#6F6A7C] truncate">
+                    {user ? user.email : (input.annual_income > 0 ? "praveen.sharma@example.com" : "Assessment in progress")}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5 pt-1 text-[11px]">
+                <Link
+                  href="/dashboard/protection-passport"
+                  className="p-2 rounded-xl bg-white border border-[#D9D3E8] font-bold text-[#24212B] flex items-center gap-1.5"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#7957FF]" />
+                  <span>Passport</span>
+                </Link>
+                <Link
+                  href="/dashboard/insurance-vault"
+                  className="p-2 rounded-xl bg-white border border-[#D9D3E8] font-bold text-[#24212B] flex items-center gap-1.5"
+                >
+                  <Lock className="w-3.5 h-3.5 text-[#7957FF]" />
+                  <span>Vault</span>
+                </Link>
+              </div>
+            </div>
+
             {user ? (
-              <button onClick={signOut} className="block w-full text-center py-2 text-sm font-bold text-[#24212B] border border-[#D9D3E8] rounded hover:bg-[#E9E4FF]">
+              <button 
+                onClick={signOut} 
+                className="block w-full text-center py-2 text-xs font-bold text-[#D32F2F] border border-[#D9D3E8] rounded-xl hover:bg-[#FFEBEE]"
+              >
                 Sign Out ({user.email})
               </button>
             ) : (
-            <Link
-              href="/sign-in"
-              className="block w-full text-center py-2 text-sm font-bold text-[#24212B] border border-[#D9D3E8] rounded hover:bg-[#E9E4FF]"
-            >
-              Sign In
-            </Link>
+              <Link
+                href="/sign-in"
+                className="block w-full text-center py-2.5 text-xs font-bold text-white bg-[#7957FF] rounded-xl hover:bg-[#6444E6]"
+              >
+                Sign In / Register
+              </Link>
             )}
           </div>
         </div>

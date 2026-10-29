@@ -1,141 +1,66 @@
 "use client";
 
-import React, { useState } from "react";
-import { TrendingUp, Calculator, ShieldCheck, ArrowRight } from "lucide-react";
+import { useMemo, useState } from "react";
 import { formatINR } from "@/lib/utils";
-import { fetchFromAPI } from "@/lib/api";
+import { indicativeAnnualPremium } from "@/lib/premium";
+import { Assumption, Count, Figure, NumberField, Panel, Slider, ToolShell, Verdict } from "@/components/tools/kit";
 
-export default function EMICalculatorPage() {
-  const [principal, setPrincipal] = useState<number>(5000000); // ₹50 Lakhs
-  const [interestRate, setInterestRate] = useState<number>(8.5); // 8.5%
-  const [tenureYears, setTenureYears] = useState<number>(20); // 20 years
+export default function EmiPage() {
+  const [principal, setPrincipal] = useState(5000000);
+  const [rate, setRate] = useState(8.5);
+  const [years, setYears] = useState(20);
+  const [age, setAge] = useState(32);
 
-  const tenureMonths = tenureYears * 12;
-  const r = (interestRate / 100) / 12;
-  const emi = r === 0 ? principal / tenureMonths : (principal * r * Math.pow(1 + r, tenureMonths)) / (Math.pow(1 + r, tenureMonths) - 1);
-  const totalPayment = emi * tenureMonths;
-  const totalInterest = totalPayment - principal;
+  const calc = useMemo(() => {
+    const n = years * 12, r = rate / 1200;
+    const emi = r === 0 ? principal / n : (principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+    let bal = principal;
+    const yearly: { year: number; balance: number }[] = [{ year: 0, balance: principal }];
+    for (let m = 1; m <= n; m++) {
+      bal = bal * (1 + r) - emi;
+      if (m % 12 === 0) yearly.push({ year: m / 12, balance: Math.max(0, bal) });
+    }
+    return { emi, total: emi * n, interest: emi * n - principal, yearly };
+  }, [principal, rate, years]);
 
-  // Indicative term life insurance cost to cover this mortgage:
-  const mortgageShieldAnnualPremium = Math.round((principal / 100000) * 115 * 1.25);
+  const premium = indicativeAnnualPremium(principal, age, false);
+  const max = principal;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-      
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E9E4FF] dark:bg-[#1B2B4D] text-[#7957FF] text-xs font-bold uppercase tracking-wider">
-          <TrendingUp className="w-3.5 h-3.5" />
-          <span>Amortisation & Debt Immunization</span>
+    <ToolShell slug="emi-calculator">
+      <div className="grid gap-6 md:grid-cols-2 items-start">
+        <Panel title="Loan details">
+          <div className="space-y-6">
+            <NumberField label="Loan amount" value={principal} onChange={setPrincipal} />
+            <Slider label="Interest rate" value={rate} onChange={setRate} min={5} max={16} step={0.1} format={(v) => `${v.toFixed(1)}% a year`} />
+            <Slider label="Loan tenure" value={years} onChange={setYears} min={1} max={30} format={(v) => `${v} years`} />
+            <Slider label="Your age" value={age} onChange={setAge} min={21} max={60} format={(v) => `${v} years`} hint="Used to estimate the cover cost" />
+          </div>
+        </Panel>
+        <div className="space-y-4">
+          <Panel>
+            <div className="grid grid-cols-2 gap-5">
+              <Figure label="Monthly EMI"><Count value={calc.emi} format={(v) => formatINR(Math.round(v))} /></Figure>
+              <Figure label="Total interest" tone="warn"><Count value={calc.interest} format={(v) => formatINR(v, { compact: true })} /></Figure>
+            </div>
+            <p className="mt-3 text-sm text-[#4A4658]">You repay {formatINR(calc.total, { compact: true })} in all, which is {(calc.total / principal).toFixed(2)}x the amount borrowed.</p>
+          </Panel>
+          <Verdict tone="info">
+            To clear this loan from a life cover payout, you need cover of at least {formatINR(principal, { compact: true })} today. Indicative cost: about {formatINR(premium)} a year ({formatINR(premium / 12)} a month). Add your family's living costs on top.
+          </Verdict>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#24212B] dark:text-white">
-          Loan EMI & Insurance Shield Calculator
-        </h1>
-        <p className="text-sm text-[#6F6A7C] dark:text-[#A59FB5] max-w-xl mx-auto">
-          Calculate your monthly mortgage installments and see the exact low-cost term protection 
-          needed to immunize your family home from foreclosure.
-        </p>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-        
-        {/* Controls */}
-        <div className="md:col-span-6 bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] rounded-2xl p-6 shadow-sm space-y-5">
-          <h2 className="text-sm font-bold text-[#24212B] dark:text-white border-b border-[#D9D3E8] dark:border-[#1E2D4A] pb-3">
-            Loan Parameters
-          </h2>
-
-          <div className="space-y-4 text-xs">
-            <div>
-              <div className="flex justify-between font-semibold mb-1">
-                <span>Loan Principal Amount:</span>
-                <span className="font-bold text-[#24212B] dark:text-white">{formatINR(principal, { compact: true })}</span>
-              </div>
-              <input
-                type="range"
-                min="500000"
-                max="30000000"
-                step="500000"
-                value={principal}
-                onChange={(e) => setPrincipal(Number(e.target.value))}
-                className="w-full accent-[#7957FF]"
-              />
+      <Panel title="What you still owe, year by year" className="mt-6">
+        <div className="flex items-end gap-1 h-40" role="img" aria-label="Outstanding loan balance by year">
+          {calc.yearly.map((y) => (
+            <div key={y.year} className="group relative flex-1 min-w-0 rounded-t bg-[#D9D3E8] hover:bg-[#7957FF] transition-colors" style={{ height: `${Math.max(2, (y.balance / max) * 100)}%` }}>
+              <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#24212B] px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100">Yr {y.year}: {formatINR(y.balance, { compact: true })}</span>
             </div>
-
-            <div>
-              <div className="flex justify-between font-semibold mb-1">
-                <span>Annual Interest Rate:</span>
-                <span className="font-bold text-[#24212B] dark:text-white">{interestRate.toFixed(1)}% p.a.</span>
-              </div>
-              <input
-                type="range"
-                min="6.5"
-                max="16.0"
-                step="0.1"
-                value={interestRate}
-                onChange={(e) => setInterestRate(Number(e.target.value))}
-                className="w-full accent-[#7957FF]"
-              />
-            </div>
-
-            <div>
-              <div className="flex justify-between font-semibold mb-1">
-                <span>Tenure:</span>
-                <span className="font-bold text-[#24212B] dark:text-white">{tenureYears} Years ({tenureMonths} Months)</span>
-              </div>
-              <input
-                type="range"
-                min="1"
-                max="30"
-                value={tenureYears}
-                onChange={(e) => setTenureYears(Number(e.target.value))}
-                className="w-full accent-[#7957FF]"
-              />
-            </div>
-          </div>
+          ))}
         </div>
-
-        {/* Results */}
-        <div className="md:col-span-6 space-y-4">
-          
-          <div className="p-6 rounded-2xl bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] shadow-sm space-y-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#6F6A7C] dark:text-[#A59FB5]">
-              Monthly Installment
-            </span>
-            <div className="text-3xl font-black text-[#24212B] dark:text-white">
-              {formatINR(emi)}/month
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#D9D3E8] dark:border-[#1E2D4A] text-xs">
-              <div>
-                <span className="text-[#6F6A7C] dark:text-[#A59FB5]">Total Interest:</span>
-                <div className="font-bold text-[#24212B] dark:text-white">{formatINR(totalInterest, { compact: true })}</div>
-              </div>
-              <div>
-                <span className="text-[#6F6A7C] dark:text-[#A59FB5]">Total Payment:</span>
-                <div className="font-bold text-[#24212B] dark:text-white">{formatINR(totalPayment, { compact: true })}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Mortgage Protection Shield Card */}
-          <div className="p-6 rounded-2xl bg-[#E9E4FF]/50 dark:bg-[#1B2B4D]/50 border border-[#7957FF]/20 space-y-3">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-[#7957FF]" />
-              <h3 className="text-sm font-bold text-[#24212B] dark:text-white">
-                Family Debt Immunization Shield
-              </h3>
-            </div>
-            <p className="text-xs text-[#6F6A7C] dark:text-[#A59FB5] leading-relaxed">
-              If an untimely demise occurs, banks demand immediate loan settlement. Covering this{" "}
-              <strong>{formatINR(principal, { compact: true })}</strong> mortgage requires an indicative 
-              term insurance cost of only <strong>~{formatINR(mortgageShieldAnnualPremium)}/year</strong> (~{formatINR(mortgageShieldAnnualPremium / 12)}/month).
-            </p>
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
+        <p className="mt-2 text-sm text-[#6F6A7C]">Early on, most of the EMI is interest, so the balance falls slowly. Hover a bar to read it.</p>
+      </Panel>
+      <div className="mt-4"><Assumption>Fixed rate for the full tenure, standard EMI formula. Cover cost is an indicative estimate for a non-smoker male, not an insurer quote.</Assumption></div>
+    </ToolShell>
   );
 }

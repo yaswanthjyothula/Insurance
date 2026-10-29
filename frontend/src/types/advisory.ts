@@ -16,6 +16,7 @@ export interface BookingRequest {
   user_name: string;
   user_email: string;
   user_phone: string;
+  consultation_mode?: string;
   notes?: string;
   assessment_id?: string;
   share_passport?: boolean;
@@ -29,4 +30,6 @@ export interface BookingConfirmation {
   meeting_link: string;
   calendar_ics_url: string;
   created_at: string;
+  consultation_mode?: "video" | "voice" | "chat";
+  user_name?: string;
 }

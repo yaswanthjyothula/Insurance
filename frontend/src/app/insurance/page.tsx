@@ -1,127 +1,115 @@
-import React from "react";
 import Link from "next/link";
-import { Shield, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Compass } from "lucide-react";
+import { categoryList } from "@/data/categories/guides";
 
 export const metadata = {
-  title: "Insurance Disciplines Directory | LifeSure AI",
-  description: "Explore all 7 insurance categories in India: Term, Traditional Life, Health, General, Investment-Linked, Business, and Cyber."
+  title: "Insurance categories | LifeSure AI",
+  description: "The seven main kinds of insurance in India, what each one is for, and real plans to look at in each.",
 };
 
+const eyebrow = "text-[13px] font-bold tracking-[0.2em] uppercase text-[#7957FF]";
+
+const CATEGORY_IMAGES: Record<string, string> = {
+  term: "/images/categories/term.jpg",
+  life: "/images/categories/life.jpg",
+  health: "/images/categories/health.jpg",
+  general: "/images/categories/general.jpg",
+  "investment-linked": "/images/categories/investment-linked.jpg",
+  business: "/images/categories/business.jpg",
+  other: "/images/categories/other.jpg",
+};
+
+const finder = [
+  ["My family depends on my income", "/insurance/term", "Term"],
+  ["I want hospital bills covered", "/insurance/health", "Health"],
+  ["I want guaranteed savings for a goal", "/insurance/life", "Life"],
+  ["I want to invest long term and have cover", "/insurance/investment-linked", "ULIP"],
+  ["I own a home or drive a vehicle", "/insurance/general", "General"],
+  ["I run a company", "/insurance/business", "Business"],
+  ["I worry about online fraud", "/insurance/other", "Other"],
+] as const;
+
 export default function InsuranceHubPage() {
-  const categories = [
-    {
-      title: "Term Insurance",
-      tag: "Pure Income Replacement",
-      desc: "Pure protection life cover with maximum sum assured at minimal annual premium. Built to clear debts and replace lifetime earnings.",
-      href: "/insurance/term",
-      metric: "99.3% Average CSR",
-      features: ["Accelerated Terminal Illness", "Waiver of Premium on Disability", "Discounted Non-Smoker Rates"]
-    },
-    {
-      title: "Life Insurance (Traditional)",
-      tag: "Guaranteed Savings & Bonuses",
-      desc: "Endowment, money-back, and whole-life policies providing disciplined capital preservation with sovereign backing.",
-      href: "/insurance/life",
-      metric: "Lifelong Cover up to 100 yrs",
-      features: ["Guaranteed Annual Payouts", "Simple Reversionary Bonuses", "Section 37 Sovereign Guarantee"]
-    },
-    {
-      title: "Health Insurance",
-      tag: "Hospitalization & Critical Care",
-      desc: "Cashless in-patient medical treatments, day-care surgeries, unlimited restoration benefits, and zero room-rent sublimits.",
-      href: "/insurance/health",
-      metric: "10,000+ Network Hospitals",
-      features: ["Zero Consumables Deduction", "Cumulative Bonus Boosters", "34+ Critical Illness Riders"]
-    },
-    {
-      title: "General & Property Insurance",
-      tag: "Asset & Structural Shield",
-      desc: "Bharat Griha Raksha standardized homeowner protection shielding building structures, home contents, vehicles, and travel.",
-      href: "/insurance/general",
-      metric: "All-Perils Natural Disaster",
-      features: ["Earthquake & Flood Damage", "Alternative Accommodation Rent", "Third-Party Motor Liability"]
-    },
-    {
-      title: "Investment-Linked (ULIP)",
-      tag: "Market Equity & Debt Creation",
-      desc: "Integrated life insurance and professionally managed mutual fund portfolios with automated asset allocation and tax exemptions.",
-      href: "/insurance/investment-linked",
-      metric: "Section 10(10D) Tax-Free",
-      features: ["Automated Asset Rebalancing", "Zero Allocation Charges", "Loyalty Fund Additions"]
-    },
-    {
-      title: "Business Insurance",
-      tag: "Keyman & Corporate Liability",
-      desc: "Shield enterprise continuity, shareholder buyout agreements, and bank loan covenants against the loss of key executives.",
-      href: "/insurance/business",
-      metric: "Section 37(1) Deductible",
-      features: ["Keyman Executive Cover", "Group Term Employee Protection", "Directors & Officers (D&O) Liability"]
-    },
-    {
-      title: "Other Insurance",
-      tag: "Cyber & Personal Sachet",
-      desc: "Low-cost specialized protection against digital UPI fraud, online identity theft, cyber extortion, and accidental injuries.",
-      href: "/insurance/other",
-      metric: "Instant Online Sachet",
-      features: ["UPI Phishing Reimbursement", "Legal Defence Fee Coverage", "Specialist Cyber Forensics Support"]
-    }
-  ];
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-12">
-      
-      <div className="max-w-3xl space-y-4">
-        <span className="text-xs font-bold uppercase tracking-wider text-[#7957FF]">
-          PRODUCT DISCOVERY MATRIX
-        </span>
-        <h1 className="text-3xl sm:text-5xl font-extrabold text-[#24212B] dark:text-white">
-          7 Insurance Categories
-        </h1>
-        <p className="text-base text-[#6F6A7C] dark:text-[#A59FB5] leading-relaxed">
-          Different risks require dedicated financial instruments. Understand the purpose, trade-offs, 
-          and verified regulatory product choices across the Indian insurance market.
-        </p>
-      </div>
+    <div className="text-[#24212B]">
+      <section className="bg-[#E9E4FF] border-b border-[#D9D3E8]" data-no-reveal>
+        <div className="max-w-[1100px] mx-auto px-5 sm:px-8 py-14 sm:py-20 flex flex-col gap-5">
+          <span className={eyebrow}>Insurance guide</span>
+          <h1 className="m-0 text-[clamp(36px,4.8vw,60px)] leading-[1.02] font-extrabold tracking-[-0.04em]" style={{ color: "#24212B" }}>The 7 kinds of insurance</h1>
+          <p className="m-0 text-[19px] leading-[1.55] text-[#4A4553] max-w-[720px]">Each kind covers a different risk. Start with what protects your family and your health, then look at savings and investing. Each guide explains how the cover works, what to watch for, and shows real plans with their sources.</p>
+        </div>
+      </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {categories.map((c) => (
-          <Link
-            key={c.title}
-            href={c.href}
-            className="p-6 rounded-2xl bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] hover:border-[#7957FF] dark:hover:border-[#7957FF] transition-all hover:-translate-y-1 hover:shadow-lg flex flex-col justify-between group"
-          >
-            <div className="space-y-3">
-              <span className="text-[11px] font-bold text-[#7957FF] uppercase">
-                {c.tag}
-              </span>
-              <h2 className="text-xl font-bold text-[#24212B] dark:text-white group-hover:text-[#7957FF]">
-                {c.title}
-              </h2>
-              <p className="text-xs leading-relaxed text-[#6F6A7C] dark:text-[#A59FB5]">
-                {c.desc}
-              </p>
+      <div className="max-w-[1100px] mx-auto px-5 sm:px-8 py-14 flex flex-col gap-16">
+        <section className="flex flex-col gap-5" aria-label="Not sure where to start">
+          <h2 className="m-0 text-[24px] font-extrabold tracking-[-0.025em] flex items-center gap-3"><Compass className="w-6 h-6 text-[#7957FF]" />Not sure where to start?</h2>
+          <div className="flex flex-wrap gap-3">
+            {finder.map(([label, href, tag]) => (
+              <Link key={href} href={href} className="inline-flex items-center gap-2.5 min-h-12 px-5 py-2.5 rounded-xl border border-[#D9D3E8] bg-white font-semibold shadow-[0_3px_0_#D9D3E8] hover:-translate-y-0.5 hover:border-[#7957FF] transition-all">
+                {label}<span className="text-[12px] font-bold px-2 py-0.5 rounded-md bg-[#E9E4FF] text-[#7957FF]">{tag}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
 
-              <div className="pt-2 space-y-1.5 border-t border-[#D9D3E8]/60 dark:border-[#1E2D4A]/60">
-                {c.features.map((f, i) => (
-                  <div key={i} className="text-xs text-[#6F6A7C] dark:text-[#A59FB5] flex items-center gap-1.5">
-                    <span className="text-[#0E9F7E] font-bold">✓</span>
-                    <span>{f}</span>
+        <section className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 ls-persp" aria-label="Categories">
+          {categoryList.map((c, i) => {
+            const imageSrc = CATEGORY_IMAGES[c.key] || "/images/categories/term.jpg";
+            return (
+              <Link 
+                key={c.key} 
+                href={c.href} 
+                className="ls-lift group bg-white border border-[#D9D3E8] rounded-3xl overflow-hidden flex flex-col shadow-[inset_0_1px_0_#fff,0_5px_0_#D9D3E8,0_26px_40px_-24px_rgba(36,33,43,0.28)] hover:border-[#7957FF] transition-all"
+              >
+                {/* Background image container for card texts replacing the previous symbol */}
+                <div className="relative overflow-hidden min-h-[220px] p-6 sm:p-7 flex flex-col justify-between text-white isolate">
+                  <img
+                    src={imageSrc}
+                    alt={c.title}
+                    className="absolute inset-0 w-full h-full object-cover -z-20 group-hover:scale-108 transition-transform duration-500 ease-out"
+                  />
+                  {/* High contrast gradient overlay for text readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#171329] via-[#171329]/80 to-[#171329]/45 -z-10" />
+
+                  {/* Top Bar: Tag pill and Counter */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-[0.14em] px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/25 shadow-sm">
+                      {c.tag}
+                    </span>
+                    <span className="text-[12px] font-bold px-2.5 py-0.5 rounded-full bg-black/45 backdrop-blur-md text-white/90 font-mono border border-white/10">
+                      0{i + 1}
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            <div className="pt-4 mt-6 border-t border-[#D9D3E8]/60 dark:border-[#1E2D4A]/60 flex items-center justify-between text-xs font-semibold">
-              <span className="text-[#24212B] dark:text-white">{c.metric}</span>
-              <span className="text-[#7957FF] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                <span>Detailed Guide</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </span>
-            </div>
-          </Link>
-        ))}
+                  {/* Card Texts: Title & Tagline over the background image */}
+                  <div className="mt-5">
+                    <h2 className="m-0 text-[24px] font-extrabold tracking-[-0.025em] text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+                      {c.title}
+                    </h2>
+                    <p className="m-0 mt-2 text-[14.5px] leading-[1.5] text-[#ECE7F8] line-clamp-3 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                      {c.tagline}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Card body below image */}
+                <div className="p-6 sm:p-7 flex flex-col gap-4 flex-1 justify-between bg-white">
+                  <div className="rounded-xl bg-[#F7F4FF] px-4 py-3 text-[14px]">
+                    <span className="font-bold text-[#7957FF]">Good fit if: </span>
+                    <span className="text-[#4A4553]">{c.forYou}</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-4 border-t border-[#D9D3E8] text-[14.5px] font-bold">
+                    <span className="text-[#5A5566] font-semibold">{c.plans.length ? `${c.plans.length} real plans` : "Guide"}</span>
+                    <span className="text-[#7957FF] inline-flex items-center gap-1.5 group-hover:translate-x-1 transition-transform">
+                      Read the guide<ArrowRight className="w-4 h-4" />
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </section>
       </div>
-
     </div>
   );
 }

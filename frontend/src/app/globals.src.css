@@ -1,0 +1,318 @@
+@import "tailwindcss";
+
+/* The site is light-only: dark: styles apply only if a .dark class is ever added, never from the visitor's system setting */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: var(--font-albert-sans), "Albert Sans", Arial, Helvetica, sans-serif;
+  --font-mono: var(--font-albert-sans), "Albert Sans", Arial, Helvetica, sans-serif;
+  --color-blue-primary: #7957FF;
+  --color-blue-dark: #6444E6;
+  --color-blue-light: #E9E4FF;
+  --color-navy: #24212B;
+  --color-white: #FFFFFF;
+}
+
+@layer base {
+  :root {
+    --font-albert-sans: "Albert Sans", Arial, Helvetica, sans-serif;
+
+    /* Locked Blue & White Palette */
+    --background: #FAF9F6;
+    --surface: #FFFFFF;
+    --surface-strong: #FAF9F6;
+    --surface-elevated: #FFFFFF;
+
+    --foreground: #24212B;
+    --foreground-secondary: #4A4553;
+    --foreground-muted: #6F6A7C;
+
+    --border: rgba(36,33,43,0.08);
+    --border-subtle: #F1F5F9;
+    --border-accent: #7957FF;
+    --border-secondary: #9277FF;
+
+    --accent-primary: #7957FF;
+    --accent-secondary: #6444E6;
+
+    --button-primary-bg: #7957FF;
+    --button-primary-text: #FFFFFF;
+
+    --button-secondary-bg: #E9E4FF;
+    --button-secondary-text: #6444E6;
+    --button-secondary-border: #D9D3E8;
+
+    /* Theme Variable Compatibility */
+    --bg-main: #FAF9F6;
+    --navy: #24212B;
+    --blue-electric: #7957FF;
+    --blue-secondary: #6444E6;
+    --blue-sky: #9277FF;
+    --blue-ice: #E9E4FF;
+    --text-primary: #24212B;
+    --text-secondary: #4A4553;
+    --text-muted: #6F6A7C;
+    --border-color: rgba(36,33,43,0.08);
+    --success: #16A34A;
+    --success-bg: #F0FDF4;
+    --warning: #D97706;
+    --warning-bg: #FFFBEB;
+    --danger: #DC2626;
+    --danger-bg: #FEF2F2;
+  }
+}
+
+html {
+  color-scheme: light;
+}
+
+html,
+body {
+  font-family: var(--font-albert-sans), "Albert Sans", Arial, Helvetica, sans-serif;
+  background-color: #FAF9F6;
+  color: #24212B;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* LifeSure v2 ambient background (violet / mint / coral glow) */
+body {
+  background:
+    radial-gradient(900px 600px at 85% 0%, rgba(233,228,255,0.7), transparent 60%),
+    radial-gradient(700px 500px at 0% 20%, rgba(217,211,232,0.35), transparent 60%),
+    #FAF9F6;
+  background-attachment: fixed;
+}
+
+h1, h2 { letter-spacing: -0.035em; }
+
+@keyframes lsFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+#main-content { animation: lsFade .3s ease backwards; }
+@media (prefers-reduced-motion: reduce) { #main-content { animation: none; } }
+
+/* Mono eyebrow labels used across the design */
+.ls-eyebrow {
+  font-family: var(--font-albert-sans), "Albert Sans", Arial, sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: #7957FF;
+}
+.ls-gradient-text {
+  background: linear-gradient(90deg,#7957FF,#9277FF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ls-primary-gradient { background: #7957FF; }
+input[type=range] { accent-color: #7957FF; }
+
+
+/* Ensure all form controls and interactive elements strictly inherit Albert Sans */
+button,
+input,
+textarea,
+select,
+option,
+optgroup {
+  font-family: inherit;
+  font-feature-settings: inherit;
+}
+
+input,
+textarea,
+select {
+  background-color: #FFFFFF;
+  color: #24212B;
+  border-color: #CBD5E1;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #A59FB5;
+}
+
+/* Tabular numerals for financial calculations and figures */
+.tabular-nums,
+[data-financial="true"] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Base Headings & High Contrast Text Rules */
+h1, h2, h3, h4, h5, h6 {
+  color: #24212B;
+  font-weight: 700;
+}
+
+/* Accessible visible focus styles using Blue */
+:focus-visible {
+  outline: 2px solid #7957FF;
+  outline-offset: 2px;
+}
+
+/* Custom Scrollbar - Blue & White */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #7957FF;
+}
+
+/* Global Selection */
+::selection {
+  background-color: #E9E4FF;
+  color: #6444E6;
+}
+
+/* Card & Surface Styling */
+.card-shadow {
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+}
+
+.card-shadow-hover {
+  transition: all 0.2s ease-in-out;
+}
+.card-shadow-hover:hover {
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.08), 0 4px 6px -4px rgba(37, 99, 235, 0.04);
+}
+
+/* ===================== LifeSure 3D design system ===================== */
+
+/* Chunky primary buttons: raised lip that presses down on click */
+a[class~="bg-[#7957FF]"],
+button[class~="bg-[#7957FF]"] {
+  box-shadow: 0 4px 0 #5B3BE6, 0 14px 28px -10px rgba(121,87,255,0.7);
+  transition: transform .15s, box-shadow .15s, background-color .15s;
+}
+a[class~="bg-[#7957FF]"]:hover,
+button[class~="bg-[#7957FF]"]:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #5B3BE6, 0 20px 34px -10px rgba(121,87,255,0.75);
+}
+a[class~="bg-[#7957FF]"]:active,
+button[class~="bg-[#7957FF]"]:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #5B3BE6, 0 6px 14px -6px rgba(121,87,255,0.6);
+}
+
+/* Cards: white surface with a stacked lip and soft ground shadow */
+[class*="rounded-"][class~="bg-[#FFFFFF]"][class*="border"]:not(input):not(select):not(textarea):not(button):not(a):not(.ls-lip):not(.ls-flat) {
+  box-shadow: inset 0 1px 0 #FFFFFF, 0 4px 0 #E9E4FF, 0 5px 0 #D9D3E8, 0 22px 36px -24px rgba(36,33,43,0.22);
+}
+.ls-lip {
+  box-shadow: inset 0 1px 0 #FFFFFF, 0 6px 0 #E9E4FF, 0 7px 0 #D9D3E8, 0 30px 50px -24px rgba(36,33,43,0.22);
+}
+.ls-lip-lilac { box-shadow: inset 0 2px 0 #FFFFFF, 0 40px 80px -40px rgba(121,87,255,0.45); }
+
+/* Form fields: inset well with a small lip */
+input:not([type=range]):not([type=radio]):not([type=checkbox]):not([class~="bg-transparent"]):not(.ls-flat),
+select:not(.ls-flat),
+textarea:not(.ls-flat) {
+  background-color: #FAF9F6;
+  border-color: #D9D3E8;
+  border-radius: 10px;
+  box-shadow: inset 0 2px 4px rgba(36,33,43,0.06), 0 3px 0 #E9E4FF;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid #7957FF; outline-offset: 2px; }
+
+/* Extruded type */
+.ls-extrude {
+  color: #7957FF;
+  text-shadow: 0 1px 0 #6A48F5, 0 2px 0 #5F3EEC, 0 3px 0 #5535E2, 0 14px 24px rgba(121,87,255,0.35);
+}
+.ls-extrude-num {
+  color: #7957FF;
+  text-shadow: 1px 1px 0 #6A48F5, 2px 2px 0 #5F3EEC, 3px 3px 0 #5535E2, 4px 4px 0 #4B2DD6, 10px 14px 18px rgba(121,87,255,0.3);
+}
+.ls-extrude-on-violet { text-shadow: 0 2px 0 #5B3BE6, 0 14px 24px rgba(36,33,43,0.25); }
+
+/* Tilted cards: individual transform props so reveal animations never fight them */
+.ls-tilt-card {
+  rotate: x 6deg;
+  transform-origin: bottom center;
+  transition: rotate .3s, translate .3s, box-shadow .3s;
+}
+.ls-tilt-card:hover {
+  rotate: x 0deg;
+  translate: 0 -10px;
+}
+.ls-persp { perspective: 1400px; }
+.ls-lift { transition: translate .3s, rotate .3s, box-shadow .3s; }
+.ls-lift:hover { translate: 0 -8px; rotate: x 5deg; }
+
+/* ===================== Scroll effects ===================== */
+.ls-reveal:not(.is-in) {
+  opacity: 0;
+  transform: perspective(1200px) translateY(36px) rotateX(8deg);
+}
+.ls-reveal.is-in {
+  animation: lsRise .8s cubic-bezier(.2,.8,.2,1) var(--ls-d, 0ms) backwards;
+}
+.ls-reveal-flat:not(.is-in) { opacity: 0; transform: translateY(24px); }
+.ls-reveal-flat.is-in { animation: lsRiseFlat .6s ease var(--ls-d, 0ms) backwards; }
+@keyframes lsRiseFlat {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes lsRise {
+  from { opacity: 0; transform: perspective(1200px) translateY(36px) rotateX(8deg); }
+  to { opacity: 1; transform: none; }
+}
+.ls-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 60;
+  transform-origin: 0 50%; transform: scaleX(0);
+  background: linear-gradient(90deg, #7957FF, #9277FF);
+  pointer-events: none;
+}
+[data-parallax], [data-scroll-tilt] { will-change: translate, rotate; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ls-reveal:not(.is-in) { opacity: 1; transform: none; }
+  .ls-reveal.is-in, .ls-reveal-flat.is-in { animation: none; }
+  .ls-reveal-flat:not(.is-in) { opacity: 1; transform: none; }
+  [data-parallax], [data-scroll-tilt] { translate: none !important; rotate: none !important; }
+  .ls-tilt-card, .ls-lift { rotate: none; }
+}
+
+/* ===================== Cursor effects ===================== */
+/* Spotlight: a soft violet glow follows the pointer inside a card */
+.ls-spot { position: relative; isolation: isolate; }
+.ls-spot::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(121,87,255,.16), transparent 70%);
+  opacity: 0; transition: opacity .25s;
+}
+.ls-spot:hover::before { opacity: 1; }
+/* Magnetic: JS sets --tx/--ty, the element leans toward the cursor */
+[data-magnetic] { translate: var(--tx, 0) var(--ty, 0); transition: translate .18s ease-out; }
+/* Cursor aura: soft ring that trails the pointer (fine pointers only) */
+.ls-aura {
+  position: fixed; left: 0; top: 0; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 999px;
+  border: 1.5px solid rgba(121,87,255,.55); background: rgba(121,87,255,.06);
+  pointer-events: none; z-index: 60; opacity: 0;
+  transition: opacity .2s, width .2s, height .2s, margin .2s, background .2s;
+}
+.ls-aura.is-on { opacity: 1; }
+.ls-aura.is-hot { width: 54px; height: 54px; margin: -27px 0 0 -27px; background: rgba(121,87,255,.12); }
+/* Click ripple */
+.ls-ripple { position: fixed; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 999px; pointer-events: none; z-index: 60; border: 2px solid #7957FF; animation: ls-ripple .6s ease-out forwards; }
+@keyframes ls-ripple { to { transform: scale(7); opacity: 0; } }
+/* Result numbers settle in */
+@keyframes ls-pop { 0% { transform: scale(.96); opacity: .5; } 100% { transform: scale(1); opacity: 1; } }
+.ls-pop { animation: ls-pop .35s ease-out; }
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .ls-aura, .ls-ripple { display: none; }
+  [data-magnetic] { translate: none; }
+}

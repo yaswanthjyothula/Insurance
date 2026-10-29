@@ -21,10 +21,10 @@ export default function ContactPage() {
         <span className="text-xs font-bold uppercase tracking-wider text-[#7957FF]">
           REACH OUR EDITORIAL & ADVISORY TEAM
         </span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#24212B] dark:text-white">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#24212B]">
           Contact & Grievance Redressal
         </h1>
-        <p className="text-sm text-[#6F6A7C] dark:text-[#A59FB5] max-w-xl">
+        <p className="text-sm text-[#6F6A7C] max-w-xl">
           Have an inquiry, feedback on an actuarial calculation, or need assistance? Reach out to our Bengaluru team.
         </p>
       </div>
@@ -32,8 +32,8 @@ export default function ContactPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         
         {/* Contact Information */}
-        <div className="bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] rounded-2xl p-6 sm:p-8 shadow-sm space-y-6 text-xs text-[#6F6A7C] dark:text-[#A59FB5]">
-          <h2 className="text-base font-bold text-[#24212B] dark:text-white border-b border-[#D9D3E8] dark:border-[#1E2D4A] pb-3">
+        <div className="bg-white border border-[#D9D3E8] rounded-2xl p-6 sm:p-8 shadow-sm space-y-6 text-xs text-[#6F6A7C]">
+          <h2 className="text-base font-bold text-[#24212B] border-b border-[#D9D3E8] pb-3">
             Registered Headquarters
           </h2>
 
@@ -41,7 +41,7 @@ export default function ContactPage() {
             <div className="flex items-start gap-3">
               <MapPin className="w-4 h-4 text-[#7957FF] flex-shrink-0 mt-0.5" />
               <div>
-                <strong className="text-[#24212B] dark:text-white block">LifeSure AI Technologies Pvt. Ltd.</strong>
+                <strong className="text-[#24212B] block">LifeSure AI Technologies Pvt. Ltd.</strong>
                 <span>Outer Ring Road, Bellandur, Bengaluru, Karnataka 560103, India</span>
               </div>
             </div>
@@ -49,7 +49,7 @@ export default function ContactPage() {
             <div className="flex items-center gap-3">
               <Mail className="w-4 h-4 text-[#7957FF] flex-shrink-0" />
               <div>
-                <strong className="text-[#24212B] dark:text-white block">Support & Inquiries</strong>
+                <strong className="text-[#24212B] block">Support & Inquiries</strong>
                 <span>support@lifesure.ai</span>
               </div>
             </div>
@@ -57,14 +57,14 @@ export default function ContactPage() {
             <div className="flex items-center gap-3">
               <Phone className="w-4 h-4 text-[#7957FF] flex-shrink-0" />
               <div>
-                <strong className="text-[#24212B] dark:text-white block">Direct Helpline</strong>
+                <strong className="text-[#24212B] block">Direct Helpline</strong>
                 <span>+91 (080) 4123 8890 (Mon - Fri, 9:30 AM - 6:00 PM IST)</span>
               </div>
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#FAF9F6] dark:bg-[#142447] border border-[#D9D3E8] dark:border-[#1E2D4A] space-y-1">
-            <span className="font-bold text-[#24212B] dark:text-white">Grievance Redressal</span>
+          <div className="p-4 rounded-xl bg-[#FAF9F6] border border-[#D9D3E8] space-y-1">
+            <span className="font-bold text-[#24212B]">Grievance Redressal</span>
             <p className="text-[11px]">
               For complaints regarding data privacy under DPDP Act 2023 or IT Rules 2021, contact: <strong>grievance@lifesure.ai</strong>
             </p>
@@ -72,16 +72,16 @@ export default function ContactPage() {
         </div>
 
         {/* Contact Form */}
-        <div className="bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] rounded-2xl p-6 sm:p-8 shadow-sm space-y-4 text-xs">
-          <h2 className="text-base font-bold text-[#24212B] dark:text-white border-b border-[#D9D3E8] dark:border-[#1E2D4A] pb-3">
+        <div className="bg-white border border-[#D9D3E8] rounded-2xl p-6 sm:p-8 shadow-sm space-y-4 text-xs">
+          <h2 className="text-base font-bold text-[#24212B] border-b border-[#D9D3E8] pb-3">
             Send an Online Inquiry
           </h2>
 
           {submitted ? (
-            <div className="p-6 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 text-center space-y-2">
+            <div className="p-6 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
               <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-              <h3 className="font-bold text-sm text-emerald-900 dark:text-emerald-200">Message Received</h3>
-              <p className="text-[11px] text-emerald-700 dark:text-emerald-300">
+              <h3 className="font-bold text-sm text-emerald-900">Message Received</h3>
+              <p className="text-[11px] text-emerald-700">
                 Thank you for contacting us. Our advisory team will respond to {email} within 24 business hours.
               </p>
             </div>
@@ -94,7 +94,7 @@ export default function ContactPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Rahul Verma"
-                  className="w-full p-2.5 rounded-lg border border-[#D9D3E8] dark:border-[#1E2D4A] bg-[#FAF9F6] dark:bg-[#142447]"
+                  className="w-full p-2.5 rounded-lg border border-[#D9D3E8] bg-[#FAF9F6]"
                   required
                 />
               </div>
@@ -106,7 +106,7 @@ export default function ContactPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. rahul@example.com"
-                  className="w-full p-2.5 rounded-lg border border-[#D9D3E8] dark:border-[#1E2D4A] bg-[#FAF9F6] dark:bg-[#142447]"
+                  className="w-full p-2.5 rounded-lg border border-[#D9D3E8] bg-[#FAF9F6]"
                   required
                 />
               </div>
@@ -118,7 +118,7 @@ export default function ContactPage() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="How can we assist your financial planning journey?"
-                  className="w-full p-2.5 rounded-lg border border-[#D9D3E8] dark:border-[#1E2D4A] bg-[#FAF9F6] dark:bg-[#142447]"
+                  className="w-full p-2.5 rounded-lg border border-[#D9D3E8] bg-[#FAF9F6]"
                   required
                 />
               </div>

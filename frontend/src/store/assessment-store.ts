@@ -130,6 +130,10 @@ export function useAssessmentStore() {
     saveStoredSession({ booking, currentStage: 4 });
   };
 
+  const clearBooking = () => {
+    saveStoredSession({ booking: null });
+  };
+
   const setStage = (stage: number) => {
     saveStoredSession({ currentStage: stage });
   };
@@ -153,6 +157,7 @@ export function useAssessmentStore() {
     setSelectedProduct,
     setCustomization,
     setBooking,
+    clearBooking,
     setStage,
     loadDemo,
     resetAll

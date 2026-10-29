@@ -1,122 +1,62 @@
 "use client";
 
-import React, { useState } from "react";
-import { CheckSquare, CheckCircle2, ShieldCheck, FileCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Count, Panel, ToolShell, Verdict } from "@/components/tools/kit";
 
-export default function ApplicationReadinessCheckerPage() {
-  const [checkedItems, setCheckedItems] = useState<string[]>([]);
+const KEY = "lifesure_readiness";
+const ITEMS = [
+  { group: "Identity", id: "kyc", title: "PAN and Aadhaar, with your mobile number linked", desc: "Needed for KYC. Make sure the name matches across documents." },
+  { group: "Identity", id: "photo", title: "Recent photo and address proof", desc: "Insurers can ask for these in addition to e-KYC." },
+  { group: "Money", id: "income", title: "Income proof: recent salary slips or tax returns, and bank statements", desc: "Larger cover usually needs income proof. Thresholds differ by insurer, so ask yours." },
+  { group: "Money", id: "bank", title: "Bank account details for premium and claim payments", desc: "The payout goes to the nominee's account, so keep details accurate." },
+  { group: "Health", id: "history", title: "Your full health history: conditions, surgeries, medicines", desc: "Write down dates and doctor names so you answer exactly." },
+  { group: "Health", id: "family", title: "Family medical history the form asks for", desc: "Answer what is asked. Do not guess. Say you are unsure if you are." },
+  { group: "Health", id: "habits", title: "Truthful answers on smoking, alcohol and tobacco", desc: "A wrong answer can lead to a claim being challenged later." },
+  { group: "Health", id: "medical", title: "Medical tests, if the insurer asks for them", desc: "The insurer usually arranges these. Ask whether to fast and which tests to expect." },
+  { group: "Family", id: "nominee", title: "Nominee name, date of birth and relationship", desc: "For a minor nominee you must also name an appointee." },
+  { group: "Family", id: "others", title: "List of your other life and health policies", desc: "Many forms ask about existing cover." },
+  { group: "Before you sign", id: "read", title: "Read the proposal form before signing, and keep a copy", desc: "You sign that the answers are true. Check each one." },
+  { group: "Before you sign", id: "free", title: "Note the free-look period and read the policy when it arrives", desc: "You have 30 days from receiving the policy to return it if it is not what you expected." },
+];
 
-  const checklist = [
-    {
-      id: "itr_docs",
-      category: "Income Proof",
-      title: "Latest 2-3 Years Income Tax Returns (ITR-V) with Computation of Income",
-      desc: "Mandatory for term life sum assured exceeding ₹1 Crore to substantiate your insurable interest."
-    },
-    {
-      id: "salary_slips",
-      category: "Income Proof",
-      title: "Last 3 Months Salary Slips & 6 Months Bank Statement",
-      desc: "Verifies current salary credits, employer legitimacy, and disposable income."
-    },
-    {
-      id: "pan_aadhaar",
-      category: "KYC Compliance",
-      title: "Valid PAN Card and Aadhaar Card with active mobile link for e-KYC",
-      desc: "Statutory requirement under IRDAI Master KYC Direction for policy issuance."
-    },
-    {
-      id: "medical_disclosure",
-      category: "Medical Honesty",
-      title: "Complete disclosure of pre-existing health history, surgeries, and family medical pedigree",
-      desc: "Full disclosure protects your claim from repudiation under Section 45 after the 3-year contestability period."
-    },
-    {
-      id: "fasting_prep",
-      category: "Medical Underwriting",
-      title: "Fasting preparation for Full Medical Examination (MER), Blood Sugar (HbA1c) and Lipid Profile",
-      desc: "Insurers provide home-visit phlebotomists free of charge for pure term life underwriting."
-    }
-  ];
-
-  const toggle = (id: string) => {
-    if (checkedItems.includes(id)) {
-      setCheckedItems(checkedItems.filter(i => i !== id));
-    } else {
-      setCheckedItems([...checkedItems, id]);
-    }
-  };
-
-  const readinessPercent = Math.round((checkedItems.length / checklist.length) * 100);
+export default function ReadinessPage() {
+  const [done, setDone] = useState<string[]>([]);
+  useEffect(() => { try { const s = localStorage.getItem(KEY); if (s) setDone(JSON.parse(s)); } catch {} }, []);
+  const toggle = (id: string) => setDone((d) => { const n = d.includes(id) ? d.filter((x) => x !== id) : [...d, id]; try { localStorage.setItem(KEY, JSON.stringify(n)); } catch {} return n; });
+  const pct = Math.round((done.length / ITEMS.length) * 100);
+  const groups = Array.from(new Set(ITEMS.map((i) => i.group)));
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E9E4FF] dark:bg-[#1B2B4D] text-[#7957FF] text-xs font-bold uppercase tracking-wider">
-          <CheckSquare className="w-3.5 h-3.5" />
-          <span>Pre-Underwriting Verification</span>
+    <ToolShell slug="application-readiness">
+      <Panel className="mb-6">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold text-[#24212B]">{done.length} of {ITEMS.length} ready</p>
+          <p className="text-2xl font-extrabold text-[#7957FF]"><Count value={pct} format={(v) => `${Math.round(v)}%`} /></p>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#24212B] dark:text-white">
-          Application Readiness Checker
-        </h1>
-        <p className="text-sm text-[#6F6A7C] dark:text-[#A59FB5] max-w-xl mx-auto">
-          Ensure you have all mandatory financial, KYC, and medical disclosures prepared 
-          before submitting an insurance proposal form.
-        </p>
-      </div>
-
-      <div className="bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
-        <div className="flex items-center justify-between border-b border-[#D9D3E8] dark:border-[#1E2D4A] pb-3">
-          <span className="text-xs font-bold uppercase text-[#24212B] dark:text-white">
-            Pre-Application Checklist ({checkedItems.length}/{checklist.length} Completed)
-          </span>
-          <span className="text-xs font-bold text-[#7957FF]">
-            {readinessPercent}% Ready
-          </span>
-        </div>
-
-        {/* Progress bar */}
-        <div className="w-full h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-          <div className="h-full bg-[#7957FF] transition-all duration-300" style={{ width: `${readinessPercent}%` }} />
-        </div>
-
-        <div className="space-y-3 pt-2">
-          {checklist.map((item) => {
-            const isChecked = checkedItems.includes(item.id);
-            return (
-              <div
-                key={item.id}
-                onClick={() => toggle(item.id)}
-                className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                  isChecked
-                    ? "border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20"
-                    : "border-[#D9D3E8] dark:border-[#1E2D4A] hover:bg-[#FAF9F6] dark:hover:bg-[#142447]"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => {}}
-                    className="w-4 h-4 mt-0.5 accent-emerald-500 rounded"
-                  />
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#7957FF] block mb-0.5">
-                      {item.category}
+        <div className="mt-3 h-3 rounded-full bg-[#E9E4FF] overflow-hidden"><div className="h-full rounded-full bg-[#7957FF] transition-all duration-500" style={{ width: `${pct}%` }} /></div>
+        {pct === 100 && <div className="mt-4"><Verdict tone="good">You are ready to apply. Take your time reading each answer before you sign.</Verdict></div>}
+        <p className="mt-3 text-sm text-[#6F6A7C]">Your ticks are saved on this device only.</p>
+      </Panel>
+      <div className="space-y-6">
+        {groups.map((g) => (
+          <section key={g}>
+            <h2 className="mb-2 text-sm font-bold uppercase tracking-wider text-[#7957FF]">{g}</h2>
+            <div className="space-y-2">
+              {ITEMS.filter((i) => i.group === g).map((i) => {
+                const on = done.includes(i.id);
+                return (
+                  <button key={i.id} type="button" onClick={() => toggle(i.id)} aria-pressed={on} className={`ls-spot w-full text-left rounded-2xl border p-4 transition-colors ${on ? "border-[#0E7A5F] bg-[#E7F6F0]" : "border-[#D9D3E8] bg-white hover:border-[#7957FF]"}`}>
+                    <span className="flex gap-3">
+                      <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-xs font-bold ${on ? "border-[#0E7A5F] bg-[#0E7A5F] text-white" : "border-[#D9D3E8] bg-white text-transparent"}`}>✓</span>
+                      <span><span className="block text-[15px] font-bold text-[#24212B]">{i.title}</span><span className="mt-0.5 block text-sm leading-6 text-[#4A4658]">{i.desc}</span></span>
                     </span>
-                    <h3 className="text-xs font-bold text-[#24212B] dark:text-white mb-1">
-                      {item.title}
-                    </h3>
-                    <p className="text-[11px] text-[#6F6A7C] dark:text-[#A59FB5] leading-relaxed">
-                      {item.desc}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        ))}
       </div>
-    </div>
+    </ToolShell>
   );
 }

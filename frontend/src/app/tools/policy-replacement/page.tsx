@@ -1,125 +1,64 @@
 "use client";
 
-import React, { useState } from "react";
-import { RefreshCw, AlertTriangle, CheckCircle2, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle } from "lucide-react";
 import { formatINR } from "@/lib/utils";
+import { indicativeAnnualPremium } from "@/lib/premium";
+import { Assumption, Count, Figure, NumberField, Panel, Slider, ToolShell, Verdict } from "@/components/tools/kit";
 
-export default function PolicyReplacementCheckerPage() {
-  const [existingPremium, setExistingPremium] = useState(50000); // 50k / yr in endowment
-  const [existingSumAssured, setExistingSumAssured] = useState(1000000); // 10 Lakhs cover
-  const [yearsPaid, setYearsPaid] = useState(4); // 4 yrs paid
-  const [tenureYears, setTenureYears] = useState(20);
+export default function PolicyReplacementPage() {
+  const [premium, setPremium] = useState(50000);
+  const [sumAssured, setSumAssured] = useState(1000000);
+  const [remaining, setRemaining] = useState(16);
+  const [surrender, setSurrender] = useState(0);
+  const [maturity, setMaturity] = useState(0);
+  const [age, setAge] = useState(34);
+  const [wantCover, setWantCover] = useState(10000000);
+  const [ret, setRet] = useState(8);
 
-  // Term alternative: ₹1 Cr term cover costs ~₹12,000/yr.
-  // The remaining ₹38,000/yr can be invested in PPF / Mutual Funds at ~10% p.a.
-  const termAnnualCost = 12000;
-  const surplusToInvest = Math.max(0, existingPremium - termAnnualCost);
-  
-  // Future projection of surplus invested at 10% for remaining 16 years
-  const remainingYears = Math.max(1, tenureYears - yearsPaid);
-  const r = 0.10;
-  const futureInvestmentCorpus = surplusToInvest * ((Math.pow(1 + r, remainingYears) - 1) / r) * (1 + r);
+  const termPremium = indicativeAnnualPremium(wantCover, age, false);
+  const surplus = Math.max(0, premium - termPremium);
+  const r = ret / 100;
+  const fv = (pmt: number, n: number) => (r === 0 ? pmt * n : pmt * ((Math.pow(1 + r, n) - 1) / r) * (1 + r));
+  const switched = fv(surplus, remaining) + surrender * Math.pow(1 + r, remaining);
+  const keepPayout = maturity;
+  const diff = switched - keepPayout;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E9E4FF] dark:bg-[#1B2B4D] text-[#7957FF] text-xs font-bold uppercase tracking-wider">
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Fiduciary Replacement Analysis</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#24212B] dark:text-white">
-          Policy Replacement Checker
-        </h1>
-        <p className="text-sm text-[#6F6A7C] dark:text-[#A59FB5] max-w-xl mx-auto">
-          Compare keeping your existing low-cover endowment plan versus switching to a pure term life shield 
-          combined with disciplined mutual fund wealth creation.
-        </p>
+    <ToolShell slug="policy-replacement">
+      <Verdict tone="warn"><span className="flex gap-2"><AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" /><span>Do not surrender or stop paying until your new term policy is issued and in force. Ask your insurer for the surrender value and the maturity benefit in writing. Enter them below.</span></span></Verdict>
+      <div className="mt-6 grid gap-6 md:grid-cols-2 items-start">
+        <Panel title="Your current policy">
+          <div className="space-y-6">
+            <NumberField label="Yearly premium you pay" value={premium} onChange={setPremium} />
+            <NumberField label="Life cover it gives" value={sumAssured} onChange={setSumAssured} />
+            <Slider label="Years of premiums left" value={remaining} onChange={setRemaining} min={1} max={30} format={(v) => `${v} years`} />
+            <NumberField label="Surrender value today" value={surrender} onChange={setSurrender} hint="From your insurer. Leave 0 if unknown." />
+            <NumberField label="Total you would get at maturity" value={maturity} onChange={setMaturity} hint="From your insurer's benefit illustration." />
+          </div>
+        </Panel>
+        <Panel title="The alternative">
+          <div className="space-y-6">
+            <Slider label="Your age" value={age} onChange={setAge} min={21} max={60} format={(v) => `${v} years`} />
+            <Slider label="Term cover you want" value={wantCover} onChange={setWantCover} min={2500000} max={50000000} step={2500000} format={(v) => formatINR(v, { compact: true })} />
+            <Slider label="Return on invested money" value={ret} onChange={setRet} min={0} max={14} step={0.5} format={(v) => `${v}% a year`} hint="Your assumption. Returns are not guaranteed." />
+          </div>
+        </Panel>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        <div className="bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] rounded-2xl p-6 shadow-sm space-y-4 text-xs">
-          <h2 className="font-bold text-[#24212B] dark:text-white border-b border-[#D9D3E8] dark:border-[#1E2D4A] pb-2">
-            Your Existing Policy Details
-          </h2>
-
-          <div>
-            <div className="flex justify-between font-semibold mb-1">
-              <span>Annual Premium Paid:</span>
-              <span className="font-bold text-[#24212B] dark:text-white">{formatINR(existingPremium)}/yr</span>
-            </div>
-            <input
-              type="range"
-              min="15000"
-              max="200000"
-              step="5000"
-              value={existingPremium}
-              onChange={(e) => setExistingPremium(Number(e.target.value))}
-              className="w-full accent-[#7957FF]"
-            />
-          </div>
-
-          <div>
-            <div className="flex justify-between font-semibold mb-1">
-              <span>Current Life Cover (Sum Assured):</span>
-              <span className="font-bold text-[#24212B] dark:text-white">{formatINR(existingSumAssured, { compact: true })}</span>
-            </div>
-            <input
-              type="range"
-              min="200000"
-              max="5000000"
-              step="100000"
-              value={existingSumAssured}
-              onChange={(e) => setExistingSumAssured(Number(e.target.value))}
-              className="w-full accent-[#7957FF]"
-            />
-          </div>
-
-          <div>
-            <div className="flex justify-between font-semibold mb-1">
-              <span>Years Already Paid: {yearsPaid} Years</span>
-            </div>
-            <input
-              type="range"
-              min="1"
-              max="15"
-              value={yearsPaid}
-              onChange={(e) => setYearsPaid(Number(e.target.value))}
-              className="w-full accent-[#7957FF]"
-            />
-          </div>
-        </div>
-
-        {/* Comparison Output */}
-        <div className="space-y-4">
-          <div className="p-6 rounded-2xl bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] shadow-sm space-y-4">
-            <span className="text-xs font-bold uppercase text-[#7957FF]">
-              Buy Term & Invest the Difference Strategy
-            </span>
-
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#142447] border border-[#D9D3E8] dark:border-[#1E2D4A]">
-                <span className="text-[#6F6A7C] dark:text-[#A59FB5]">10X Life Cover</span>
-                <div className="text-lg font-black text-[#24212B] dark:text-white mt-1">₹1.00 Crore</div>
-                <span className="text-[10px] text-emerald-600 font-bold">vs {formatINR(existingSumAssured, { compact: true })} current</span>
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#142447] border border-[#D9D3E8] dark:border-[#1E2D4A]">
-                <span className="text-[#6F6A7C] dark:text-[#A59FB5]">Invested Surplus</span>
-                <div className="text-lg font-black text-[#24212B] dark:text-white mt-1">{formatINR(surplusToInvest)}/yr</div>
-                <span className="text-[10px] text-[#7957FF] font-bold">In diversified funds</span>
-              </div>
-            </div>
-
-            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 text-xs text-emerald-900 dark:text-emerald-200">
-              <strong>Projected Surplus Wealth:</strong> By redirecting {formatINR(surplusToInvest)}/yr into index funds @ 10% p.a., your family would accumulate an estimated <strong>{formatINR(futureInvestmentCorpus, { compact: true })}</strong> over the remaining {remainingYears} years, while holding 10X higher life protection.
-            </div>
-
-            <div className="text-[11px] text-[#7F8FA4] italic pt-1 border-t border-[#D9D3E8] dark:border-[#1E2D4A]">
-              Important: Check your current policy&apos;s Guaranteed Surrender Value before cancelling. If paid for less than 3 years, surrender penalties may be significant.
-            </div>
-          </div>
-        </div>
+      <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <Panel><Figure label="Cover now" sub="Your current policy">{formatINR(sumAssured, { compact: true })}</Figure></Panel>
+        <Panel><Figure label="Cover if you switch" sub={`Term premium about ${formatINR(termPremium)} a year`} tone="good">{formatINR(wantCover, { compact: true })}</Figure></Panel>
+        <Panel><Figure label="Cover multiple" sub="Switching vs now" tone="good">{sumAssured > 0 ? `${(wantCover / sumAssured).toFixed(1)}x` : "-"}</Figure></Panel>
       </div>
-    </div>
+      <Panel className="mt-4">
+        <div className="grid gap-5 sm:grid-cols-3">
+          <Figure label="Keep: money at maturity">{maturity > 0 ? <Count value={keepPayout} format={(v) => formatINR(v, { compact: true })} /> : "Enter it"}</Figure>
+          <Figure label="Switch: invested money, projected"><Count value={switched} format={(v) => formatINR(v, { compact: true })} /></Figure>
+          <Figure label="Difference" tone={maturity > 0 ? (diff >= 0 ? "good" : "bad") : "default"}>{maturity > 0 ? <Count value={diff} format={(v) => `${v >= 0 ? "+" : "-"}${formatINR(Math.abs(v), { compact: true })}`} /> : "-"}</Figure>
+        </div>
+        {maturity === 0 && <p className="mt-3 text-sm text-[#6F6A7C]">Enter the maturity amount to compare the two money outcomes. The cover difference above is shown either way.</p>}
+      </Panel>
+      <div className="mt-4"><Assumption>Premiums are paid at the start of each year. The switch figure assumes you invest the premium saved plus the surrender value. It ignores tax, charges and any bonus the old policy would add. Past surrender charges are already in the surrender value your insurer quotes.</Assumption></div>
+    </ToolShell>
   );
 }

@@ -1,179 +1,89 @@
 "use client";
 
-import React, { useState } from "react";
-import { Radar, ShieldCheck, CheckCircle2, AlertTriangle, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { useState } from "react";
 import { formatINR } from "@/lib/utils";
+import { Assumption, Count, NumberField, Panel, Slider, ToolShell, Verdict } from "@/components/tools/kit";
 
-export default function ProtectionGapRadarPage() {
-  const [incomeScore, setIncomeScore] = useState(70);
-  const [debtScore, setDebtScore] = useState(50);
-  const [goalsScore, setGoalsScore] = useState(40);
-  const [emergencyScore, setEmergencyScore] = useState(85);
+export default function ProtectionGapPage() {
+  const [expenses, setExpenses] = useState(600000);
+  const [horizon, setHorizon] = useState(15);
+  const [debt, setDebt] = useState(0);
+  const [goals, setGoals] = useState(0);
+  const [emergMonths, setEmergMonths] = useState(6);
+  const [cover, setCover] = useState(0);
+  const [savings, setSavings] = useState(0);
+  const [emergency, setEmergency] = useState(0);
 
-  const overallScore = Math.round((incomeScore * 0.4 + debtScore * 0.3 + goalsScore * 0.2 + emergencyScore * 0.1));
+  const needs = [
+    { key: "Family income", need: expenses * horizon },
+    { key: "Debts", need: debt },
+    { key: "Future goals", need: goals },
+    { key: "Emergency fund", need: (expenses / 12) * emergMonths },
+  ];
+  // life cover goes to debts first (they are due immediately), then income, then goals; savings fill whatever is left; emergency money is separate
+  let pool = cover + savings;
+  const order = [1, 0, 2];
+  const funded: number[] = [0, 0, 0, 0];
+  order.forEach((i) => { const take = Math.min(pool, needs[i].need); funded[i] = take; pool -= take; });
+  funded[3] = Math.min(emergency, needs[3].need);
+  const rows = needs.map((n, i) => ({ ...n, funded: funded[i], pct: n.need > 0 ? Math.round((funded[i] / n.need) * 100) : 100 }));
+  const totalNeed = needs.reduce((s, n) => s + n.need, 0);
+  const totalFunded = funded.reduce((s, v) => s + v, 0);
+  const overall = totalNeed > 0 ? Math.round((totalFunded / totalNeed) * 100) : 0;
+  const worst = [...rows].filter((r) => r.need > 0).sort((a, b) => a.pct - b.pct)[0];
+
+  // radar
+  const size = 260, c = size / 2, R = 100;
+  const pt = (i: number, v: number) => { const a = (-Math.PI / 2) + (i * 2 * Math.PI) / 4; return [c + Math.cos(a) * R * v, c + Math.sin(a) * R * v]; };
+  const poly = rows.map((r, i) => pt(i, r.pct / 100).join(",")).join(" ");
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E9E4FF] dark:bg-[#1B2B4D] text-[#7957FF] text-xs font-bold uppercase tracking-wider">
-          <Radar className="w-3.5 h-3.5" />
-          <span>Multidimensional Financial Resilience</span>
+    <ToolShell slug="protection-gap">
+      <div className="grid gap-6 lg:grid-cols-5 items-start">
+        <div className="lg:col-span-3 space-y-6">
+          <Panel title="What your family would need">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <NumberField label="Yearly household expenses" value={expenses} onChange={setExpenses} />
+              <Slider label="Years to support" value={horizon} onChange={setHorizon} min={1} max={40} format={(v) => `${v} years`} />
+              <NumberField label="Debts outstanding" value={debt} onChange={setDebt} hint="Home, car, personal loans" />
+              <NumberField label="Future goals (today's cost)" value={goals} onChange={setGoals} hint="Education, marriage" />
+              <Slider label="Emergency fund target" value={emergMonths} onChange={setEmergMonths} min={0} max={12} format={(v) => `${v} months`} />
+            </div>
+          </Panel>
+          <Panel title="What you already have">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <NumberField label="Life cover (all policies)" value={cover} onChange={setCover} />
+              <NumberField label="Savings and investments for the family" value={savings} onChange={setSavings} />
+              <NumberField label="Emergency money set aside" value={emergency} onChange={setEmergency} />
+            </div>
+          </Panel>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#24212B] dark:text-white">
-          Protection Gap Radar™
-        </h1>
-        <p className="text-sm text-[#6F6A7C] dark:text-[#A59FB5] max-w-xl mx-auto">
-          Audit your protection strength across all four critical financial pillars: 
-          Income Replacement, Debt Shielding, Milestone Goals, and Emergency Cash Buffer.
-        </p>
+        <div className="lg:col-span-2 space-y-4">
+          <Panel>
+            <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto w-full max-w-[260px]" role="img" aria-label="Coverage radar">
+              {[0.25, 0.5, 0.75, 1].map((k) => <polygon key={k} points={[0, 1, 2, 3].map((i) => pt(i, k).join(",")).join(" ")} fill="none" stroke="#D9D3E8" />)}
+              {[0, 1, 2, 3].map((i) => <line key={i} x1={c} y1={c} x2={pt(i, 1)[0]} y2={pt(i, 1)[1]} stroke="#D9D3E8" />)}
+              <polygon points={poly} fill="rgba(121,87,255,.25)" stroke="#7957FF" strokeWidth="2" style={{ transition: "all .4s" }} />
+              {rows.map((r, i) => { const [x, y] = pt(i, 1.2); return <text key={r.key} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize="11" fill="#24212B" fontWeight="600">{r.key}</text>; })}
+            </svg>
+            <p className="mt-2 text-center text-sm text-[#6F6A7C]">Outer edge is fully covered</p>
+          </Panel>
+          <Panel>
+            <p className="text-xs font-bold uppercase tracking-wider text-[#6F6A7C]">Overall covered</p>
+            <p className="mt-1 text-4xl font-extrabold text-[#24212B]"><Count value={overall} format={(v) => `${Math.round(v)}%`} /></p>
+            <ul className="mt-4 space-y-3">
+              {rows.map((r) => (
+                <li key={r.key}>
+                  <div className="flex justify-between text-sm"><span className="font-semibold text-[#24212B]">{r.key}</span><span className="text-[#4A4658]">{r.pct}% · gap {formatINR(Math.max(0, r.need - r.funded), { compact: true })}</span></div>
+                  <div className="mt-1 h-2 rounded-full bg-[#E9E4FF]"><div className={`h-full rounded-full transition-all duration-500 ${r.pct >= 100 ? "bg-[#0E7A5F]" : r.pct >= 50 ? "bg-[#7957FF]" : "bg-[#C0364B]"}`} style={{ width: `${Math.min(100, r.pct)}%` }} /></div>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+          {worst && worst.pct < 100 && <Verdict tone={worst.pct < 50 ? "bad" : "warn"}>Biggest gap: {worst.key.toLowerCase()}, with {formatINR(worst.need - worst.funded, { compact: true })} not covered.</Verdict>}
+          <Assumption>Life cover and savings are applied to debts first, then family income, then goals. Emergency money counts only toward the emergency fund. Figures are in today's rupees, with no inflation.</Assumption>
+        </div>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        
-        {/* Sliders */}
-        <div className="bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] rounded-2xl p-6 shadow-sm space-y-4 text-xs">
-          <h2 className="font-bold text-[#24212B] dark:text-white border-b border-[#D9D3E8] dark:border-[#1E2D4A] pb-2">
-            Pillar Coverage Proportions
-          </h2>
-
-          <div>
-            <div className="flex justify-between font-semibold mb-1">
-              <span>Income Replacement Covered:</span>
-              <span className="font-bold text-[#7957FF]">{incomeScore}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={incomeScore}
-              onChange={(e) => setIncomeScore(Number(e.target.value))}
-              className="w-full accent-[#7957FF]"
-            />
-          </div>
-
-          <div>
-            <div className="flex justify-between font-semibold mb-1">
-              <span>Outstanding Debt Immunized:</span>
-              <span className="font-bold text-[#7957FF]">{debtScore}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={debtScore}
-              onChange={(e) => setDebtScore(Number(e.target.value))}
-              className="w-full accent-[#7957FF]"
-            />
-          </div>
-
-          <div>
-            <div className="flex justify-between font-semibold mb-1">
-              <span>Milestone Goals Funded:</span>
-              <span className="font-bold text-[#7957FF]">{goalsScore}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={goalsScore}
-              onChange={(e) => setGoalsScore(Number(e.target.value))}
-              className="w-full accent-[#7957FF]"
-            />
-          </div>
-
-          <div>
-            <div className="flex justify-between font-semibold mb-1">
-              <span>Emergency Liquidity (6 Mos):</span>
-              <span className="font-bold text-[#7957FF]">{emergencyScore}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={emergencyScore}
-              onChange={(e) => setEmergencyScore(Number(e.target.value))}
-              className="w-full accent-[#7957FF]"
-            />
-          </div>
-        </div>
-
-        {/* Visual Score Card */}
-        <div className="space-y-4">
-          <div className="p-6 rounded-2xl bg-white dark:bg-[#0E1A33] border border-[#D9D3E8] dark:border-[#1E2D4A] shadow-sm space-y-4">
-            <span className="text-xs font-bold uppercase text-[#6F6A7C] dark:text-[#A59FB5]">
-              Overall Protection Health Index
-            </span>
-            <div className="flex items-baseline gap-3">
-              <span className="text-5xl font-black text-[#24212B] dark:text-white">
-                {overallScore}/100
-              </span>
-              <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                overallScore >= 75
-                  ? "bg-emerald-100 text-emerald-800"
-                  : overallScore >= 50
-                  ? "bg-amber-100 text-amber-800"
-                  : "bg-rose-100 text-rose-800"
-              }`}>
-                {overallScore >= 75 ? "Resilient" : overallScore >= 50 ? "Moderate Gaps" : "High Risk Exposure"}
-              </span>
-            </div>
-
-            {/* Pillar Breakdown Progress Bars */}
-            <div className="space-y-2 pt-2 border-t border-[#D9D3E8] dark:border-[#1E2D4A] text-xs">
-              <div>
-                <div className="flex justify-between text-[11px] mb-1">
-                  <span>Income Replacement</span>
-                  <span>{incomeScore}%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-[#7957FF]" style={{ width: `${incomeScore}%` }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-[11px] mb-1">
-                  <span>Debt Obligation Shield</span>
-                  <span>{debtScore}%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-rose-500" style={{ width: `${debtScore}%` }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-[11px] mb-1">
-                  <span>Future Milestone Goals</span>
-                  <span>{goalsScore}%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-amber-500" style={{ width: `${goalsScore}%` }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-[11px] mb-1">
-                  <span>Emergency Fund Buffer</span>
-                  <span>{emergencyScore}%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-emerald-500" style={{ width: `${emergencyScore}%` }} />
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <Link
-                href="/tools/life-cover-calculator"
-                className="block text-center py-2.5 px-4 text-xs font-bold text-white bg-[#7957FF] rounded-xl hover:bg-[#6444E6]"
-              >
-                Close These Gaps With Accurate Assessment →
-              </Link>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
+    </ToolShell>
   );
 }

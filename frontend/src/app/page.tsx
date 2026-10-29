@@ -11,11 +11,15 @@ import {
   IndianRupee,
   ListChecks,
   Headset,
-  ArrowRight
+  ArrowRight,
+  LogIn,
+  UserCheck
 } from "lucide-react";
 import { formatINR } from "@/lib/utils";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 export default function HomePage() {
+  const { user } = useAuth();
   const [heroAge, setHeroAge] = useState(32);
   const [heroIncome, setHeroIncome] = useState(1500000);
   const [heroDependents, setHeroDependents] = useState(2);
@@ -202,11 +206,23 @@ export default function HomePage() {
               <Link href="/assessment" className="h-[52px] px-6 bg-[#7957FF] text-white rounded-md flex items-center gap-3 font-semibold text-[15px]">
                 Start Needs Assessment <ArrowRight className="w-[18px] h-[18px]" />
               </Link>
-              <Link href="/dashboard" className="h-[52px] px-5 bg-white text-[#7957FF] border border-[#D9D3E8] rounded-md flex items-center gap-3 font-semibold text-[15px] shadow-[0_4px_0_#D9D3E8,0_16px_30px_-14px_rgba(36,33,43,0.25)] hover:-translate-y-0.5 active:translate-y-[3px] transition-transform">
-                <span className="w-6 h-6 border-2 border-[#7957FF] rounded-full grid place-items-center">
-                  <span className="w-0 h-0 border-l-[7px] border-l-[#7957FF] border-y-[4px] border-y-transparent ml-0.5" />
-                </span>
-                Go to Dashboard
+              <Link 
+                href={user ? "/dashboard/protection-passport" : "/sign-in"} 
+                className="h-[52px] px-5 bg-white/80 backdrop-blur-md text-[#24212B] hover:text-[#7957FF] border border-[#D9D3E8] hover:border-[#7957FF] rounded-md flex items-center gap-3 font-semibold text-[15px] shadow-[0_4px_0_#D9D3E8,0_16px_30px_-14px_rgba(36,33,43,0.18)] hover:-translate-y-0.5 active:translate-y-[3px] transition-all"
+              >
+                {user ? (
+                  <>
+                    <UserCheck className="w-5 h-5 text-[#0E9F7E]" />
+                    <span>My Protection Passport</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-7 h-7 rounded-full bg-[#E9E4FF] text-[#7957FF] flex items-center justify-center">
+                      <LogIn className="w-3.5 h-3.5" />
+                    </span>
+                    <span>Sign In</span>
+                  </>
+                )}
               </Link>
             </div>
           </div>
