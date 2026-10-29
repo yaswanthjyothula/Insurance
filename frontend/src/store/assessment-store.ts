@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AssessmentInput, AssessmentResult } from "@/types/assessment";
 import { RankedRecommendation, PolicyCustomization } from "@/types/recommendation";
 import { BookingConfirmation } from "@/types/advisory";
@@ -55,7 +55,7 @@ interface AssessmentStoreState {
   selectedProduct: InsuranceProduct | null;
   customization: PolicyCustomization | null;
   booking: BookingConfirmation | null;
-  currentStage: number; // 1: Assessment, 2: Results, 3: Products, 4: Advisory
+  currentStage: number; // 1: Assessment, 2: Results, 3: Products, 4: Advisory, 5: Issuance Readiness
 }
 
 const initialStoreState: AssessmentStoreState = {
@@ -83,6 +83,11 @@ export function saveStoredSession(state: Partial<AssessmentStoreState>) {
   if (typeof window === "undefined") return;
   try {
     const current = getStoredSession();
+    const hasChange = (Object.keys(state) as (keyof AssessmentStoreState)[]).some(
+      (key) => JSON.stringify(current[key]) !== JSON.stringify(state[key])
+    );
+    if (!hasChange) return;
+
     const updated = { ...current, ...state };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     // Trigger custom event so other components update synchronously
@@ -101,7 +106,11 @@ export function useAssessmentStore() {
     setIsHydrated(true);
 
     const handleStorageChange = () => {
-      setState(getStoredSession());
+      const next = getStoredSession();
+      setState((prev) => {
+        if (JSON.stringify(prev) === JSON.stringify(next)) return prev;
+        return next;
+      });
     };
 
     window.addEventListener("lifesure_store_change", handleStorageChange);
@@ -110,44 +119,44 @@ export function useAssessmentStore() {
     };
   }, []);
 
-  const setInput = (input: AssessmentInput) => {
+  const setInput = useCallback((input: AssessmentInput) => {
     saveStoredSession({ input });
-  };
+  }, []);
 
-  const setResult = (result: AssessmentResult) => {
+  const setResult = useCallback((result: AssessmentResult) => {
     saveStoredSession({ result, currentStage: 2 });
-  };
+  }, []);
 
-  const setSelectedProduct = (product: InsuranceProduct) => {
+  const setSelectedProduct = useCallback((product: InsuranceProduct) => {
     saveStoredSession({ selectedProduct: product });
-  };
+  }, []);
 
-  const setCustomization = (customization: PolicyCustomization) => {
+  const setCustomization = useCallback((customization: PolicyCustomization) => {
     saveStoredSession({ customization });
-  };
+  }, []);
 
-  const setBooking = (booking: BookingConfirmation) => {
+  const setBooking = useCallback((booking: BookingConfirmation) => {
     saveStoredSession({ booking, currentStage: 4 });
-  };
+  }, []);
 
-  const clearBooking = () => {
+  const clearBooking = useCallback(() => {
     saveStoredSession({ booking: null });
-  };
+  }, []);
 
-  const setStage = (stage: number) => {
+  const setStage = useCallback((stage: number) => {
     saveStoredSession({ currentStage: stage });
-  };
+  }, []);
 
-  const loadDemo = () => {
+  const loadDemo = useCallback(() => {
     saveStoredSession({ input: DEFAULT_DEMO_INPUT });
-  };
+  }, []);
 
-  const resetAll = () => {
+  const resetAll = useCallback(() => {
     if (typeof window !== "undefined") {
       localStorage.removeItem(STORAGE_KEY);
       window.dispatchEvent(new Event("lifesure_store_change"));
     }
-  };
+  }, []);
 
   return {
     ...state,

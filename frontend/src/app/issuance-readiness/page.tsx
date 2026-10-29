@@ -48,11 +48,13 @@ const fmt = (n: number) => formatINR(n, { compact: true });
 
 export default function IssuanceReadinessPage() {
   const router = useRouter();
-  const { result, selectedProduct, customization, isHydrated, setStage } = useAssessmentStore();
+  const { result, selectedProduct, customization, isHydrated, setStage, currentStage } = useAssessmentStore();
 
   useEffect(() => {
-    setStage(5);
-  }, [setStage]);
+    if (currentStage !== 5) {
+      setStage(5);
+    }
+  }, [currentStage, setStage]);
 
   // Plan fallback details if visitor navigated directly
   const planName = selectedProduct ? `${shortInsurerName(selectedProduct.insurer)} ${selectedProduct.name}` : "HDFC Life Click 2 Protect 3D Plus";
@@ -739,3 +741,4 @@ export default function IssuanceReadinessPage() {
     </div>
   );
 }
+
