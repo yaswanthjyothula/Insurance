@@ -20,6 +20,7 @@ export default function EmergencyVaultPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- state is read from browser storage or fetched after mount
     loadVault();
   }, []);
 

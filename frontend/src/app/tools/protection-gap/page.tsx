@@ -81,7 +81,7 @@ export default function ProtectionGapPage() {
             </ul>
           </Panel>
           {worst && worst.pct < 100 && <Verdict tone={worst.pct < 50 ? "bad" : "warn"}>Biggest gap: {worst.key.toLowerCase()}, with {formatINR(worst.need - worst.funded, { compact: true })} not covered.</Verdict>}
-          <Assumption>Life cover and savings are applied to debts first, then family income, then goals. Emergency money counts only toward the emergency fund. Figures are in today's rupees, with no inflation.</Assumption>
+          <Assumption>Life cover and savings are applied to debts first, then family income, then goals. Emergency money counts only toward the emergency fund. Figures are in today&apos;s rupees, with no inflation.</Assumption>
         </div>
       </div>
     </ToolShell>

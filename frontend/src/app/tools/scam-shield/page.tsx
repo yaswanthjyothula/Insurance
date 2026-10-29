@@ -49,7 +49,7 @@ export default function ScamShieldPage() {
               <li>• Hang up. Call your insurer on the number from its official website or your policy.</li>
               <li>• Never share OTPs, PINs or card details.</li>
               <li>• If you lost money, report quickly on the national cybercrime portal or call 1930.</li>
-              <li>• Complain about mis-selling through your insurer, then IRDAI's Bima Bharosa.</li>
+              <li>• Complain about mis-selling through your insurer, then IRDAI&apos;s Bima Bharosa.</li>
             </ul>
             <div className="mt-4 flex flex-wrap gap-2">
               <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-xl bg-[#7957FF] px-3.5 py-2 text-sm font-bold text-white" data-magnetic>Cybercrime portal <ExternalLink className="w-3.5 h-3.5" /></a>

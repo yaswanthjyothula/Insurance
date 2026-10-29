@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -14,17 +14,10 @@ import {
   Lock,
   BadgeCheck,
   Search,
-  HeartPulse,
   Activity,
-  FileText,
   Printer,
   Sparkles,
-  Building2,
-  Calendar,
-  CheckCircle2,
-  UserCheck,
-  Sliders,
-  Info
+  CheckCircle2
 } from "lucide-react";
 import { JourneyProgress } from "@/components/layout/journey-progress";
 import { useAssessmentStore } from "@/store/assessment-store";

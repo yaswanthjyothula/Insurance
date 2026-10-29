@@ -3,19 +3,12 @@
 import { ToolShell } from "@/components/tools/kit";
 import React, { useState } from "react";
 import Link from "next/link";
-import { 
-  Calculator, 
-  ArrowRight, 
-  ArrowLeft, 
-  CheckCircle2, 
-  HelpCircle, 
-  ShieldCheck, 
-  TrendingUp, 
-  Activity, 
-  Layers, 
+import {
+  ArrowRight,
+  ArrowLeft,
+  CheckCircle2,
+  TrendingUp,
   Sparkles,
-  Info,
-  Save,
   RotateCcw
 } from "lucide-react";
 import { formatINR } from "@/lib/utils";

@@ -2,16 +2,6 @@
 
 import { ToolShell } from "@/components/tools/kit";
 import React, { useState, useEffect } from "react";
-import { 
-  Activity, 
-  ArrowRight, 
-  AlertTriangle, 
-  ShieldCheck, 
-  TrendingDown, 
-  TrendingUp, 
-  RotateCcw,
-  Info 
-} from "lucide-react";
 import { formatINR } from "@/lib/utils";
 import { fetchFromAPI } from "@/lib/api";
 
@@ -57,6 +47,7 @@ export default function FamilySurvivalSimulatorPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- state is read from browser storage or fetched after mount
     runSimulation();
   }, []);
 

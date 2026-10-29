@@ -40,7 +40,7 @@ export default function AffordabilityPage() {
             {tone === "warn" && "Noticeable. It is affordable but worth planning for. A longer-pay plan or slightly lower cover would cost less."}
             {tone === "bad" && "A stretch. A lapsed policy pays nothing, so consider lower cover for now and raise it later."}
           </Verdict>
-          <Assumption>Estimate for a male, calibrated to ICICI's published premiums at ages 30, 40 and 50. Your real quote depends on health, occupation and insurer. The bands (3% and 6%) are a planning guideline, not a rule.</Assumption>
+          <Assumption>Estimate for a male, calibrated to ICICI&apos;s published premiums at ages 30, 40 and 50. Your real quote depends on health, occupation and insurer. The bands (3% and 6%) are a planning guideline, not a rule.</Assumption>
         </div>
       </div>
     </ToolShell>

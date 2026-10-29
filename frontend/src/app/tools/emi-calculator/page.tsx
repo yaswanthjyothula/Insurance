@@ -46,7 +46,7 @@ export default function EmiPage() {
             <p className="mt-3 text-sm text-[#4A4658]">You repay {formatINR(calc.total, { compact: true })} in all, which is {(calc.total / principal).toFixed(2)}x the amount borrowed.</p>
           </Panel>
           <Verdict tone="info">
-            To clear this loan from a life cover payout, you need cover of at least {formatINR(principal, { compact: true })} today. Indicative cost: about {formatINR(premium)} a year ({formatINR(premium / 12)} a month). Add your family's living costs on top.
+            To clear this loan from a life cover payout, you need cover of at least {formatINR(principal, { compact: true })} today. Indicative cost: about {formatINR(premium)} a year ({formatINR(premium / 12)} a month). Add your family&apos;s living costs on top.
           </Verdict>
         </div>
       </div>

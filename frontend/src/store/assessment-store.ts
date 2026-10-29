@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { AssessmentInput, AssessmentResult } from "@/types/assessment";
-import { RankedRecommendation, PolicyCustomization } from "@/types/recommendation";
+import { PolicyCustomization } from "@/types/recommendation";
 import { BookingConfirmation } from "@/types/advisory";
 import { InsuranceProduct } from "@/types/index";
 
@@ -102,6 +102,7 @@ export function useAssessmentStore() {
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- state is read from browser storage or fetched after mount
     setState(getStoredSession());
     setIsHydrated(true);
 

@@ -26,14 +26,14 @@ export function ShieldIcon({ className = "w-8 h-8" }: { className?: string }) {
 export function Logo({ className = "", variant = "full" }: LogoProps) {
   if (variant === "icon") {
     return (
-      <Link href="/" className={`inline-flex items-center gap-2 focus:ring-2 focus:ring-[#7957FF] rounded p-1 ${className}`} aria-label="LifeSure AI Home">
+      <Link href="/" className={`inline-flex items-center gap-2 outline-none focus:outline-none focus:ring-0 select-none p-1 ${className}`} aria-label="LifeSure AI Home">
         <ShieldIcon />
       </Link>
     );
   }
 
   return (
-    <Link href="/" className={`inline-flex items-center group focus:ring-2 focus:ring-[#7957FF] rounded p-1 ${className}`} aria-label="LifeSure AI Home">
+    <Link href="/" className={`inline-flex items-center group outline-none focus:outline-none focus:ring-0 select-none p-1 ${className}`} aria-label="LifeSure AI Home">
       <span className="font-extrabold text-[28px] tracking-[-0.04em] text-[#24212B] whitespace-nowrap leading-none">
         LifeSure <span className="text-[#7957FF]">AI</span>
       </span>

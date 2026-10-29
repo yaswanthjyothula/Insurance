@@ -13,6 +13,7 @@ export default function FutureCostsPage() {
   const [infl, setInfl] = useState<number>(PRESETS.education.infl);
   const [ret, setRet] = useState(8);
   const [thisYear, setThisYear] = useState<number | null>(null);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- state is read from browser storage or fetched after mount
   useEffect(() => setThisYear(new Date().getFullYear()), []);
 
   const pick = (g: keyof typeof PRESETS) => { setGoal(g); setCost(PRESETS[g].cost); setYears(PRESETS[g].years); setInfl(PRESETS[g].infl); };
@@ -40,7 +41,7 @@ export default function FutureCostsPage() {
               <Figure label="Save each month to reach it" tone="good"><Count value={monthly} format={(v) => formatINR(Math.round(v))} /></Figure>
             </div>
           </Panel>
-          <Verdict tone="info">If the person paying for this goal is also your family's earner, add {formatINR(future, { compact: true })} to the cover you need so the goal survives you.</Verdict>
+          <Verdict tone="info">If the person paying for this goal is also your family&apos;s earner, add {formatINR(future, { compact: true })} to the cover you need so the goal survives you.</Verdict>
           <Assumption>Cost rises at a steady rate and savings earn a steady return, with the first deposit at the start of month 1. Real costs and returns vary year to year.</Assumption>
         </div>
       </div>

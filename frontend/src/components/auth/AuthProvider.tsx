@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import type { Session, User } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 export interface CustomUser {
@@ -82,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed && parsed.email) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- state is read from browser storage or fetched after mount
             setUser(parsed);
           }
         }
@@ -188,6 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return { success: false, error: "Incorrect password. Please verify and try again." };
           }
           const authUser: CustomUser = {
+            // eslint-disable-next-line react-hooks/purity -- runs in an event handler, not during render
             id: `usr_${Date.now()}`,
             email: found.email,
             user_metadata: {
@@ -219,6 +221,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // 4. If password was given for any other user, log in cleanly with friendly fallback
     const authUser: CustomUser = {
+      // eslint-disable-next-line react-hooks/purity -- runs in an event handler, not during render
       id: `usr_${Date.now()}`,
       email: cleanEmail,
       user_metadata: {

@@ -23,12 +23,12 @@ export const TOOL_GUIDES: Record<string, ToolGuide> = {
   },
   "scenario-studio": {
     slug: "scenario-studio", name: "Scenario Studio", eyebrow: "What-if",
-    intro: "See how a life event changes the cover your family needs.",
+    intro: "Describe a change in your life and see the cover you would need before and after.",
     why: "Needs change when you have a child, buy a home or change jobs. Test the change before it happens.",
-    how: ["Pick a life event", "The tool reruns your needs with that change", "It shows before and after, side by side"],
-    assumes: ["Each event uses fixed, stated changes to your inputs"],
-    limits: ["Events are preset, you cannot combine several yet"],
-    next: ["Combine two events", "Custom events with your own numbers", "Share a scenario link"],
+    how: ["Enter or load your starting numbers", "Describe the change in your own words, or pick a ready-made event", "An AI model turns your words into changes to the numbers", "Fixed rules then recompute the cover, so the maths is not left to the AI"],
+    assumes: ["Your starting numbers are accurate", "The AI reads amounts correctly, so check the table of changes"],
+    limits: ["If the AI is busy, a simpler built-in reading is used and the page says so", "Premium change is an estimate, not a quote"],
+    next: ["Combine two events in one run", "Save and name scenarios", "Share a scenario link"],
   },
   "family-survival-simulator": {
     slug: "family-survival-simulator", name: "Family Survival Simulator", eyebrow: "Cash runway",

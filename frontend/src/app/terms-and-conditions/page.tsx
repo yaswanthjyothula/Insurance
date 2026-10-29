@@ -1,5 +1,4 @@
 import React from "react";
-import { FileText, ShieldAlert } from "lucide-react";
 
 export const metadata = {
   title: "Terms and Conditions | LifeSure AI",

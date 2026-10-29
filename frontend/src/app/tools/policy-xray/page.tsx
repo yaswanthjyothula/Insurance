@@ -27,6 +27,12 @@ Suicide exclusion: if death is by suicide within 12 months of the start of the p
 
 const val = (v: number | string | null, f?: (n: number) => string) => (v === null || v === undefined ? <span className="text-[#8C879A]">Not found</span> : typeof v === "number" && f ? f(v) : v);
 
+function List({ title, items, empty }: { title: string; items: string[]; empty: string }) {
+  return (
+    <Panel title={title}>{items.length ? <ul className="space-y-2 text-[15px] leading-6 text-[#24212B]">{items.map((i) => <li key={i} className="flex gap-2"><span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#7957FF]" />{i}</li>)}</ul> : <p className="text-[15px] text-[#8C879A]">{empty}</p>}</Panel>
+  );
+}
+
 export default function PolicyXRayPage() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -52,10 +58,6 @@ export default function PolicyXRayPage() {
       setError(e instanceof Error ? e.message : "Could not analyse. Is the backend running?");
     } finally { setLoading(false); }
   };
-
-  const List = ({ title, items, empty }: { title: string; items: string[]; empty: string }) => (
-    <Panel title={title}>{items.length ? <ul className="space-y-2 text-[15px] leading-6 text-[#24212B]">{items.map((i) => <li key={i} className="flex gap-2"><span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#7957FF]" />{i}</li>)}</ul> : <p className="text-[15px] text-[#8C879A]">{empty}</p>}</Panel>
-  );
 
   return (
     <ToolShell slug="policy-xray">

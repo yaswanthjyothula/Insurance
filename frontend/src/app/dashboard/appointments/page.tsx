@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Users, Calendar, CheckCircle2, Video } from "lucide-react";
+import { Users, CheckCircle2, Video } from "lucide-react";
 import { fetchFromAPI } from "@/lib/api";
 
 export default function BookAdvisorPage() {

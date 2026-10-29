@@ -42,12 +42,7 @@ from app.services.survival_simulator import SurvivalSimulator, SurvivalSimulator
 from app.services.catalog import PRODUCT_CATALOGUE, get_products_by_category, get_product_by_id
 from app.services.matching import plan_matcher, indicative_annual_premium
 from app.services.policy_xray import PolicyXRayEngine
-from app.services.resources import (
-    GLOSSARY_ITEMS,
-    INSURER_DIRECTORY,
-    CLAIM_COMPANION_GUIDE,
-    ADVISOR_DIRECTORY
-)
+from app.services.resources import ADVISOR_DIRECTORY
 from app.services.storage import storage_service
 from app.services.gemini_assistant import GeminiAssistantService
 
@@ -410,26 +405,7 @@ class ChatRequest(BaseModel):
 async def chat_assistant(req: ChatRequest):
     return await GeminiAssistantService.chat(req.message, req.context)
 
-# --- 9. Resources ---
-@api_router.get("/resources/glossary")
-def get_glossary(search: Optional[str] = None):
-    if not search:
-        return GLOSSARY_ITEMS
-    q = search.lower()
-    return [
-        g for g in GLOSSARY_ITEMS
-        if q in g["term"].lower() or q in g["definition"].lower()
-    ]
-
-@api_router.get("/resources/directory")
-def get_directory():
-    return INSURER_DIRECTORY
-
-@api_router.get("/resources/claims-guide")
-def get_claims_guide():
-    return CLAIM_COMPANION_GUIDE
-
-# --- 10. Protection Passport & Vault ---
+# --- 9. Protection Passport & Vault ---
 @api_router.get("/passport", response_model=ProtectionPassport)
 def get_protection_passport():
     scenarios = storage_service.list_scenarios()

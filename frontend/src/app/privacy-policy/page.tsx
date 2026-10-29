@@ -1,5 +1,5 @@
 import React from "react";
-import { ShieldCheck, Lock, CheckCircle2 } from "lucide-react";
+import { Lock } from "lucide-react";
 
 export const metadata = {
   title: "Privacy Policy | LifeSure AI",

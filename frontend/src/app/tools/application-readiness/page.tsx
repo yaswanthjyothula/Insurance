@@ -21,6 +21,7 @@ const ITEMS = [
 
 export default function ReadinessPage() {
   const [done, setDone] = useState<string[]>([]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- state is read from browser storage or fetched after mount
   useEffect(() => { try { const s = localStorage.getItem(KEY); if (s) setDone(JSON.parse(s)); } catch {} }, []);
   const toggle = (id: string) => setDone((d) => { const n = d.includes(id) ? d.filter((x) => x !== id) : [...d, id]; try { localStorage.setItem(KEY, JSON.stringify(n)); } catch {} return n; });
   const pct = Math.round((done.length / ITEMS.length) * 100);

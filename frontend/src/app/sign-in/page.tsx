@@ -3,22 +3,19 @@
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { 
-  Lock, 
-  Mail, 
-  ArrowRight, 
-  User as UserIcon, 
-  Eye, 
-  EyeOff, 
-  Phone, 
-  ShieldCheck, 
-  Sparkles, 
-  CheckCircle2, 
-  AlertCircle, 
+import {
+  Lock,
+  Mail,
+  ArrowRight,
+  User as UserIcon,
+  Eye,
+  EyeOff,
+  Phone,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
   Zap,
-  Fingerprint,
-  Building2,
-  FileText
+  Building2
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { useAuth, DEMO_USERS } from "@/components/auth/AuthProvider";

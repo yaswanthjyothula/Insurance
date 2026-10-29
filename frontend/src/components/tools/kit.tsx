@@ -23,22 +23,25 @@ export function ToolShell({ slug, wide, children }: { slug: string; wide?: boole
   );
 }
 
-function ToolGuideSection({ slug }: { slug: string }) {
-  const g = TOOL_GUIDES[slug];
-  const Block = ({ title, items }: { title: string; items: string[] }) => (
+function GuideBlock({ title, items }: { title: string; items: string[] }) {
+  return (
     <div className="ls-spot rounded-2xl bg-white border border-[#D9D3E8] p-5">
       <h3 className="text-sm font-bold uppercase tracking-wider text-[#7957FF]">{title}</h3>
       <ul className="mt-2 space-y-1.5 text-[15px] leading-6 text-[#24212B]">{items.map((i) => <li key={i} className="flex gap-2"><span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#D9D3E8]" />{i}</li>)}</ul>
     </div>
   );
+}
+
+function ToolGuideSection({ slug }: { slug: string }) {
+  const g = TOOL_GUIDES[slug];
   return (
     <section className="mt-14 border-t border-[#D9D3E8] pt-8" aria-label="About this tool">
       <h2 className="text-xl font-extrabold text-[#24212B]">About this tool</h2>
       <p className="mt-2 max-w-2xl text-[15px] leading-7 text-[#4A4658]"><span className="font-semibold text-[#24212B]">Why use it: </span>{g.why}</p>
       <div className="mt-5 grid gap-4 md:grid-cols-3">
-        <Block title="How it works" items={g.how} />
-        <Block title="What it assumes" items={g.assumes} />
-        <Block title="Where it stops" items={g.limits} />
+        <GuideBlock title="How it works" items={g.how} />
+        <GuideBlock title="What it assumes" items={g.assumes} />
+        <GuideBlock title="Where it stops" items={g.limits} />
       </div>
     </section>
   );
@@ -102,6 +105,7 @@ export function Count({ value, format }: { value: number; format: (v: number) =>
   const [shown, setShown] = useState(value);
   const from = useRef(value);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- state is read from browser storage or fetched after mount
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setShown(value); from.current = value; return; }
     const start = from.current, t0 = performance.now();
     let raf = 0;

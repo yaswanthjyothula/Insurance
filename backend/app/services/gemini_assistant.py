@@ -168,7 +168,7 @@ Return a single JSON object with the following schema:
                             "response_mime_type": "application/json"
                         }
                     }
-                    async with httpx.AsyncClient(timeout=14.0) as client:
+                    async with httpx.AsyncClient(timeout=30.0) as client:
                         resp = await client.post(url, json=payload)
                         if resp.status_code == 200:
                             data = resp.json()

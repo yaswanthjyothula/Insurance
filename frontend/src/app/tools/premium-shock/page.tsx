@@ -39,7 +39,7 @@ export default function CostInflationPage() {
               <Bar label="Yearly health premium" a={healthPremium} b={last.health} max={max} />
             </div>
           </Panel>
-          <Verdict tone="info">Over {years} years you would spend about {formatINR(extraLiving, { compact: true })} more on living costs than if prices stayed flat. Your family's cover and income plans should allow for this.</Verdict>
+          <Verdict tone="info">Over {years} years you would spend about {formatINR(extraLiving, { compact: true })} more on living costs than if prices stayed flat. Your family&apos;s cover and income plans should allow for this.</Verdict>
           <Assumption>Both rates are your inputs. They are illustrations to help planning, not forecasts.</Assumption>
         </div>
       </div>

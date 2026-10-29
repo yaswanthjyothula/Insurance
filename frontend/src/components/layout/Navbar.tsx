@@ -3,25 +3,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  ChevronDown, 
-  Menu, 
-  X, 
-  Search, 
-  ShieldCheck, 
-  Calculator, 
-  Layers, 
-  FileText, 
-  Activity, 
-  Compass, 
-  LayoutDashboard,
-  User,
+import {
+  ChevronDown,
+  Menu,
+  X,
+  Search,
+  ShieldCheck,
+  FileText,
   Lock,
   Calendar,
   LogOut,
   LogIn,
-  CheckCircle2,
-  Sliders
+  CheckCircle2
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -56,6 +49,7 @@ export function Navbar() {
 
   // Close menus on route change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- state is read from browser storage or fetched after mount
     setMobileMenuOpen(false);
     setActiveDropdown(null);
     setProfileOpen(false);
@@ -72,26 +66,25 @@ export function Navbar() {
   ];
 
   const journeyStages = [
-    { name: "Stage 1: Needs Assessment", href: "/assessment", icon: Calculator, badge: "Stage 1" },
-    { name: "Stage 2: Coverage Results", href: "/results", icon: ShieldCheck, badge: "Stage 2" },
-    { name: "Stage 3: Product Recommendations", href: "/products", icon: Layers, badge: "Stage 3" },
-    { name: "Stage 4: Digital Advisory", href: "/advisory", icon: FileText, badge: "Stage 4" },
+    { name: "Needs Assessment", href: "/assessment", desc: "Calculate coverage gap & liabilities" },
+    { name: "Coverage Results", href: "/results", desc: "Dual-engine actuarial gap breakdown" },
+    { name: "Product Recommendations", href: "/products", desc: "Compare verified IRDAI term plans" },
+    { name: "Digital Advisory", href: "/advisory", desc: "Fiduciary CFP® consultation room" },
   ];
 
   const smartTools = [
-    { name: "Life Cover Calculator", href: "/tools/life-cover-calculator", icon: Calculator, badge: "Flagship" },
-    { name: "Scenario Studio", href: "/tools/scenario-studio", icon: Layers, badge: "What-if" },
-    { name: "Family Survival Simulator", href: "/tools/family-survival-simulator", icon: Activity, badge: "Cashflow" },
-    { name: "Protection Gap Analyzer", href: "/tools/protection-gap", icon: ShieldCheck, badge: "Gap" },
-    { name: "Policy X-Ray", href: "/tools/policy-xray", icon: FileText, badge: "AI Document" },
-    { name: "Premium Affordability", href: "/tools/affordability-calculator", icon: Calculator, badge: "Budget" },
-    { name: "EMI & Debt Shield", href: "/tools/emi-calculator", icon: Calculator, badge: "Debt" },
-    { name: "Policy Replacement Check", href: "/tools/policy-replacement", icon: FileText, badge: "Objective" },
-    { name: "Premium Shock Simulator", href: "/tools/premium-shock", icon: Activity, badge: "Stress-test" },
-    { name: "Future Costs Reality Check", href: "/tools/future-costs", icon: Activity, badge: "Inflation" },
-    { name: "Scam Shield", href: "/tools/scam-shield", icon: ShieldCheck, badge: "Defence" },
-    { name: "Application Readiness", href: "/tools/application-readiness", icon: FileText, badge: "Underwriting" },
-    { name: "Explore All 12 Smart Tools", href: "/tools", icon: Compass, badge: "All" },
+    { name: "Life Cover Calculator", href: "/tools/life-cover-calculator", desc: "Capital Needs & HLV analysis" },
+    { name: "Scenario Studio", href: "/tools/scenario-studio", desc: "What-if life transition modeling" },
+    { name: "Family Survival Simulator", href: "/tools/family-survival-simulator", desc: "Time-based cashflow runway" },
+    { name: "Protection Gap Radar", href: "/tools/protection-gap", desc: "4-pillar resilience assessment" },
+    { name: "Policy X-Ray", href: "/tools/policy-xray", desc: "Document schedule & exclusions audit" },
+    { name: "Premium Affordability", href: "/tools/affordability-calculator", desc: "Income vs premium budget buffer" },
+    { name: "EMI & Debt Shield", href: "/tools/emi-calculator", desc: "Mortgage & loan immunization" },
+    { name: "Policy Replacement Check", href: "/tools/policy-replacement", desc: "Objective switch from endowment" },
+    { name: "Premium Shock Simulator", href: "/tools/premium-shock", desc: "Healthcare inflation stress testing" },
+    { name: "Future Costs Reality Check", href: "/tools/future-costs", desc: "10-25 yr education inflation" },
+    { name: "Insurance Scam Shield", href: "/tools/scam-shield", desc: "Detect bogus IRDAI callers & fraud" },
+    { name: "Application Readiness", href: "/tools/application-readiness", desc: "Pre-underwriting KYC & medical prep" },
   ];
 
 
@@ -127,27 +120,25 @@ export function Navbar() {
               </button>
 
               {activeDropdown === "journey" && (
-                <div className="absolute left-0 mt-2 w-96 bg-[#FFFFFF] border border-[#D9D3E8] rounded-2xl shadow-[0_30px_60px_rgba(121,87,255,0.13)] py-2 px-1 z-50">
-                  <div className="px-3 py-1 mb-1 border-b border-[#D9D3E8]">
+                <div className="absolute left-0 mt-2 w-80 bg-[#FFFFFF] border border-[#D9D3E8] rounded-2xl shadow-[0_25px_60px_rgba(121,87,255,0.14)] p-2 z-50">
+                  <div className="px-3 py-1.5 mb-1 border-b border-[#D9D3E8]">
                     <span className="text-[11px] font-bold tracking-wider text-[#7957FF] uppercase">Your 4-Stage Journey</span>
                   </div>
-                  {journeyStages.map((tool) => {
-                    const IconComp = tool.icon;
-                    return (
-                      <Link
-                        key={tool.href}
-                        href={tool.href}
-                        className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-[#E9E4FF] transition-colors"
-                        onClick={() => setActiveDropdown(null)}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <IconComp className="w-4 h-4 text-[#24212B]" />
-                          <span className="text-sm font-bold text-[#24212B]">{tool.name}</span>
-                        </div>
-                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#E9E4FF] text-[#7957FF] border border-[rgba(121,87,255,0.2)]">{tool.badge}</span>
-                      </Link>
-                    );
-                  })}
+                  {journeyStages.map((stage) => (
+                    <Link
+                      key={stage.href}
+                      href={stage.href}
+                      className="block px-3 py-2.5 rounded-xl hover:bg-[#E9E4FF] transition-colors group"
+                      onClick={() => setActiveDropdown(null)}
+                    >
+                      <div className="text-sm font-bold text-[#24212B] group-hover:text-[#7957FF] transition-colors leading-snug">
+                        {stage.name}
+                      </div>
+                      <div className="text-xs text-[#6F6A7C] leading-tight mt-0.5">
+                        {stage.desc}
+                      </div>
+                    </Link>
+                  ))}
                 </div>
               )}
             </div>
@@ -204,31 +195,34 @@ export function Navbar() {
               </button>
 
               {activeDropdown === "tools" && (
-                <div className="absolute left-0 mt-2 w-96 max-h-[70vh] overflow-y-auto bg-[#FFFFFF] border border-[#D9D3E8] rounded-2xl shadow-[0_30px_60px_rgba(121,87,255,0.13)] py-2 px-1 z-50">
+                <div className="absolute left-0 mt-2 w-80 max-h-[70vh] overflow-y-auto bg-[#FFFFFF] border border-[#D9D3E8] rounded-2xl shadow-[0_30px_60px_rgba(121,87,255,0.13)] py-2 px-1 z-50">
                   <div className="px-3 py-1 mb-1 border-b border-[#D9D3E8]">
                     <span className="text-[11px] font-bold tracking-wider text-[#7957FF] uppercase">12 Smart Tools</span>
                   </div>
-                  {smartTools.map((tool) => {
-                    const IconComp = tool.icon;
-                    return (
-                      <Link
-                        key={tool.href}
-                        href={tool.href}
-                        className="flex items-center justify-between px-3 py-2 rounded hover:bg-[#E9E4FF] transition-colors"
-                        onClick={() => setActiveDropdown(null)}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <IconComp className="w-4 h-4 text-[#24212B]" />
-                          <span className="text-sm font-bold text-[#24212B]">{tool.name}</span>
-                        </div>
-                        {tool.badge && (
-                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-[#FFFFFF] text-[#24212B] border border-[#D9D3E8]">
-                            {tool.badge}
-                          </span>
-                        )}
-                      </Link>
-                    );
-                  })}
+                  {smartTools.map((tool) => (
+                    <Link
+                      key={tool.href}
+                      href={tool.href}
+                      className="block px-3 py-2 rounded-xl hover:bg-[#E9E4FF] transition-colors group"
+                      onClick={() => setActiveDropdown(null)}
+                    >
+                      <div className="text-sm font-bold text-[#24212B] group-hover:text-[#7957FF] transition-colors">
+                        {tool.name}
+                      </div>
+                      <div className="text-xs text-[#6F6A7C]">
+                        {tool.desc}
+                      </div>
+                    </Link>
+                  ))}
+                  <div className="pt-2 mt-1 border-t border-[#D9D3E8] px-2">
+                    <Link
+                      href="/tools"
+                      className="block text-center py-1.5 text-xs font-bold text-[#7957FF] hover:underline"
+                      onClick={() => setActiveDropdown(null)}
+                    >
+                      Explore All 12 Smart Tools →
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>

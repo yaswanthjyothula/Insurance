@@ -2,28 +2,24 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  ShieldCheck, 
-  User, 
-  Users, 
-  Landmark, 
-  Target, 
-  FileCheck2, 
-  ArrowRight, 
-  ArrowLeft, 
-  Plus, 
-  Trash2, 
-  Info, 
-  CheckCircle2, 
-  AlertCircle, 
-  RotateCcw, 
+import {
+  ShieldCheck,
+  User,
+  Users,
+  Landmark,
+  Target,
+  FileCheck2,
+  ArrowRight,
+  ArrowLeft,
+  Plus,
+  Trash2,
+  Info,
+  CheckCircle2,
+  AlertCircle,
+  RotateCcw,
   Check,
-  Building2,
   Zap,
   Lock,
-  ExternalLink,
-  CreditCard,
-  Sparkles,
   X,
   ChevronRight,
   RefreshCw
@@ -33,9 +29,20 @@ import { useAssessmentStore } from "@/store/assessment-store";
 import { formatINR } from "@/lib/utils";
 import { fetchFromAPI } from "@/lib/api";
 import {
-  ASSUMPTIONS, BLANK_FORM, BLANK_GOAL, DEMO_FORM, GOAL_TYPES,
-  digitsOnly, fromInput, fromBankProfile, groupIN, toInput, validate, validateAll,
-  type Errors, type FormState, type GoalForm,
+  ASSUMPTIONS,
+  BLANK_FORM,
+  BLANK_GOAL,
+  DEMO_FORM,
+  digitsOnly,
+  fromInput,
+  fromBankProfile,
+  groupIN,
+  toInput,
+  validate,
+  validateAll,
+  type Errors,
+  type FormState,
+  type GoalForm
 } from "@/lib/assessment-form";
 import type { BankProfile } from "@/types/banking";
 

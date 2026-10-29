@@ -1,5 +1,4 @@
 import React from "react";
-import { CheckCircle2 } from "lucide-react";
 
 export const metadata = {
   title: "Refund Policy | LifeSure AI",
