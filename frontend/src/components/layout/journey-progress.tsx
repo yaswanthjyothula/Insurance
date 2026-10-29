@@ -41,7 +41,7 @@ export function JourneyProgress({ currentStage }: JourneyProgressProps) {
 
   return (
     <div className="w-full border-b border-[#D9D3E8] bg-[rgba(255,255,255,0.6)]" data-no-reveal>
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-4 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
         {stages.map((stage) => {
           const isCompleted = currentStage > stage.num;
           const isCurrent = currentStage === stage.num;

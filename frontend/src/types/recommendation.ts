@@ -20,6 +20,8 @@ export interface RankedRecommendation {
   eligibility_status: string;
   estimated_annual_premium: number;
   estimated_monthly_premium: number;
+  rule_percent: number;
+  model_percent?: number | null;
   grounded_explanation: string;
   pros: string[];
   cons: string[];
@@ -28,6 +30,7 @@ export interface RankedRecommendation {
 export interface RecommendationResponse {
   recommendation_id: string;
   model_version: string;
+  ranking_method?: string;
   recommendations: RankedRecommendation[];
   total_evaluated: number;
   eligible_count: number;

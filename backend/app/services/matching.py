@@ -15,9 +15,10 @@ from app.schemas.products import (
     RecommendationResponse,
     ScoreFactor,
 )
+from app.ml import ranker as ml_ranker
 from app.services.catalog import get_products_by_category
 
-MODEL_VERSION = "transparent-scoring-v1"
+MODEL_VERSION = "rules-v1 + hgb-ranker-synthetic-v1"
 
 WEIGHTS = {
     "claims": 0.30,
@@ -168,29 +169,36 @@ class PlanMatcher:
             parts.append(f"payout options: {', '.join(p.death_benefit_options[:3])}")
         return score, "; ".join(parts).capitalize() + "."
 
+    def score_plan(self, p: InsuranceProduct, req: RecommendationRequest, budget: float):
+        """Everything the ranking needs for one plan. Used both when serving and when generating training data."""
+        sa, term = self.offered(p, req)
+        annual = indicative_annual_premium(sa, req.age, req.smoker_status, term)
+        monthly = round(annual / 12.0, 2)
+        scored = {
+            "claims": self.f_claims(p),
+            "strength": self.f_strength(p),
+            "cover_fit": self.f_cover_fit(p, req),
+            "affordability": self.f_affordability(monthly, budget),
+            "features": self.f_features(p, req),
+        }
+        return sa, term, annual, monthly, scored
+
     # ---- main --------------------------------------------------------
     def recommend(self, req: RecommendationRequest) -> RecommendationResponse:
         products = get_products_by_category(req.preferred_category)
         budget = req.budget_monthly if req.budget_monthly and req.budget_monthly > 0 else (req.annual_income / 12.0) * 0.05
 
         ranked: List[RankedRecommendation] = []
+        vectors: List[Optional[List[float]]] = []
         eligible_count = 0
         for p in products:
             ok, reasons = self.eligibility(p, req)
             unverified = ok and (p.min_entry_age is None or p.max_entry_age is None)
-            sa, term = self.offered(p, req)
-            annual = indicative_annual_premium(sa, req.age, req.smoker_status, term)
-            monthly = round(annual / 12.0, 2)
-
-            scored = {
-                "claims": self.f_claims(p),
-                "strength": self.f_strength(p),
-                "cover_fit": self.f_cover_fit(p, req),
-                "affordability": self.f_affordability(monthly, budget),
-                "features": self.f_features(p, req),
-            }
+            sa, term, annual, monthly, scored = self.score_plan(p, req, budget)
             factors = [ScoreFactor(key=k, label=LABELS[k], weight=WEIGHTS[k], score=round(v[0], 3), detail=v[1]) for k, v in scored.items()]
             total = sum(WEIGHTS[k] * v[0] for k, v in scored.items())
+            rule_total = total
+            vectors.append(ml_ranker.build_vector({k: v[0] for k, v in scored.items()}, annual, req.annual_income, req.age, req.coverage_gap, req.dependents_count, req.smoker_status, term, req.priority) if ok else None)
             if not ok:
                 total *= 0.1
             elif not unverified:
@@ -227,6 +235,7 @@ class PlanMatcher:
                 product=p,
                 suitability_score=round(total, 3),
                 match_percent=int(round(total * 100)),
+                rule_percent=int(round(rule_total * 100)),
                 score_breakdown=factors,
                 suggested_sum_assured=sa,
                 suggested_term_years=term,
@@ -239,6 +248,21 @@ class PlanMatcher:
                 cons=cons,
             ))
 
+        # Blend in the trained model for plans the user can actually buy (entry-age rules always come first)
+        idx = [i for i, v in enumerate(vectors) if v is not None]
+        probs = ml_ranker.predict([vectors[i] for i in idx]) if idx else None
+        method = "rules"
+        if probs:
+            top = max(probs) or 1.0
+            for i, pr in zip(idx, probs):
+                r = ranked[i]
+                rel = pr / top
+                r.model_percent = int(round(rel * 100))
+                blended = 0.5 * (r.rule_percent / 100.0) + 0.5 * rel
+                r.suitability_score = round(blended, 3)
+                r.match_percent = int(round(blended * 100))
+            method = "rules+trained-model"
+
         def tier(r: RankedRecommendation) -> int:
             return 0 if r.eligibility_status == "eligible" else 1 if r.eligibility_status == "eligibility_unconfirmed" else 2
 
@@ -249,6 +273,7 @@ class PlanMatcher:
         return RecommendationResponse(
             recommendation_id=str(uuid.uuid4()),
             model_version=MODEL_VERSION,
+            ranking_method=method,
             recommendations=ranked,
             total_evaluated=len(products),
             eligible_count=eligible_count,
@@ -257,14 +282,15 @@ class PlanMatcher:
                 + ", ".join(f"{LABELS[k].lower()} {int(w * 100)}%" for k, w in WEIGHTS.items())
                 + ". Claim and solvency figures come from IRDAI and insurer disclosures; each is shown with its source. "
                 "Premiums are indicative estimates calibrated to one insurer's published sample prices and applied the same way to every plan, so they do not favour any insurer. "
-                "Always get an exact quote from the insurer before buying."
+                + (" Each plan is then also scored by a scikit-learn model trained on synthetic households for your stated priority (" + ml_ranker.PRIORITY_LABELS.get(req.priority, "Balanced") + "). The final match is half the rule score and half the model fit. The model was not trained on real purchases, see its disclosure." if method == "rules+trained-model" else "")
+                + " Always get an exact quote from the insurer before buying."
             ),
         )
 
     def methodology(self) -> dict:
         return {
             "version": MODEL_VERSION,
-            "type": "transparent weighted scoring (no trained model)",
+            "type": "transparent weighted scoring blended with a scikit-learn ranker trained on synthetic data",
             "weights": WEIGHTS,
             "factors": LABELS,
         }

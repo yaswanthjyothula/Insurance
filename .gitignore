@@ -19,3 +19,6 @@ backend/data_store/*.json
 .env
 .env.*
 !**/.env.example
+
+# Trained model is rebuilt on first run (python -m app.ml.train); metrics.json is kept
+backend/model_artifacts/*.joblib

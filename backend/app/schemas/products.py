@@ -53,6 +53,7 @@ class RecommendationRequest(BaseModel):
     preferred_category: Optional[str] = "term"
     budget_monthly: Optional[float] = None
     preferred_features: List[str] = Field(default_factory=list)
+    priority: str = Field("balanced", description="balanced | lowest_cost | strongest_insurer | most_features")
 
 class ScoreFactor(BaseModel):
     key: str
@@ -73,6 +74,8 @@ class RankedRecommendation(BaseModel):
     eligibility_status: str # "eligible" or "unsuitable_criteria"
     estimated_annual_premium: float
     estimated_monthly_premium: float
+    rule_percent: int = 0  # transparent rule score, 0 to 100
+    model_percent: Optional[int] = None  # trained model fit to the user's priority, 100 = best of the eligible plans
     grounded_explanation: str
     pros: List[str]
     cons: List[str]
@@ -84,6 +87,7 @@ class RecommendationResponse(BaseModel):
     total_evaluated: int
     eligible_count: int
     methodology_note: str
+    ranking_method: str = "rules"  # "rules" or "rules+trained-model"
 
 class ProductCompareRequest(BaseModel):
     product_ids: List[str]

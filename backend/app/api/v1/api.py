@@ -59,6 +59,12 @@ def api_health():
         "engine": "deterministic_python"
     }
 
+@api_router.get("/recommendations/model-info")
+def recommendation_model_info():
+    """Trained ranker details: how it was trained, how well it does, and its limits."""
+    from app.ml.ranker import model_info
+    return model_info()
+
 # --- 1. Assessments & Calculations ---
 @api_router.post("/assessments", response_model=AssessmentResult)
 def create_assessment(inp: AssessmentInput):

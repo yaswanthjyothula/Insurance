@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Award, ArrowRight, Scale, RefreshCw, Info, Check, X, ExternalLink, AlertCircle, ShieldCheck, ChevronDown, FileText, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, Scale, RefreshCw, Info, Check, X, ExternalLink, AlertCircle, ShieldCheck, ChevronDown, FileText, SlidersHorizontal } from "lucide-react";
 import { JourneyProgress } from "@/components/layout/journey-progress";
 import { useAssessmentStore } from "@/store/assessment-store";
 import { formatINR, shortInsurerName } from "@/lib/utils";
@@ -41,6 +41,16 @@ const STATUS = {
   partially_sourced: { label: "Partly verified", short: "Partly verified", cls: "bg-[#FFF4D6] text-[#8A6100]" },
   unverified_sample: { label: "Sample, not verified", short: "Sample", cls: "bg-[#F1EEF8] text-[#6F6A7C]" },
 } as const;
+
+type Priority = "balanced" | "lowest_cost" | "strongest_insurer" | "most_features";
+const PRIORITIES: { value: Priority; label: string; hint: string }[] = [
+  { value: "balanced", label: "Balanced", hint: "A mix of claims record, cover fit, price and features" },
+  { value: "lowest_cost", label: "Lowest cost", hint: "Weights price most. Our price estimate is the same shape for every plan, so this separates plans only a little." },
+  { value: "strongest_insurer", label: "Strongest insurer", hint: "Weights claims record and solvency most" },
+  { value: "most_features", label: "Most features", hint: "Weights riders and payout options most" },
+];
+type MetricBlock = { model: { top1: number; top3: number }; fixed_rule_baseline: { top1: number; top3: number }; ceiling_known_preferences: { top1: number }; random: { top1: number } };
+type MlInfo = { available: boolean; model?: string; training_households?: number; training_rows?: number; evaluation?: { overall: MetricBlock }; feature_importance?: { feature: string; importance: number }[]; disclosure?: string[] };
 
 const label = "block text-[11px] font-bold uppercase tracking-[0.12em] text-[#6F6A7C]";
 
@@ -83,6 +93,7 @@ function Details({ rec, monthly }: { rec: RankedRecommendation; monthly: number 
 
       <div className="flex flex-col gap-3.5">
         <div className="text-[14px] leading-normal text-[#4A4553]">{rec.grounded_explanation}</div>
+        {rec.model_percent != null && <div className="text-[13px] p-3 rounded-xl bg-[#FAF9F6] border border-[#D9D3E8]"><strong>How the match is made:</strong> rule score {rec.rule_percent}% (the five factors below) and trained-model fit {rec.model_percent}% for your priority, averaged to {rec.match_percent}%. The model was trained on synthetic data.</div>}
         {rec.score_breakdown.map((f) => (
           <div key={f.key}>
             <div className="flex justify-between text-[13px] font-semibold"><span>{f.label} <span className="font-medium text-[#6F6A7C]">· {Math.round(f.weight * 100)}%</span></span><span className="tabular-nums">{Math.round(f.score * 100)}%</span></div>
@@ -107,31 +118,31 @@ function PlanRow({ rec, monthly, selected, open, compared, onChoose, onToggleOpe
   const st = STATUS[p.data_status ?? "unverified_sample"];
   const unconfirmed = rec.eligibility_status === "eligibility_unconfirmed";
   return (
-    <article className={`rounded-2xl border bg-[#FFFFFF] p-5 sm:p-6 transition-all ${selected ? "border-[#7957FF] shadow-[0_4px_0_#7957FF]" : "border-[#D9D3E8] shadow-[0_3px_0_#E9E4FF,0_4px_0_#D9D3E8]"}`}>
-      <div className="grid gap-x-6 gap-y-4 items-center sm:grid-cols-[minmax(0,1.6fr)_auto_auto_auto_auto]">
-        <div className="flex items-center gap-3.5 min-w-0">
-          <span className="flex-none w-9 h-9 rounded-lg grid place-items-center text-[14px] font-extrabold bg-[#F1EEF8] text-[#24212B]">{rec.rank}</span>
-          <div className="min-w-0">
-            <h3 className="m-0 text-[17px] font-extrabold tracking-[-0.01em] truncate">{p.name}</h3>
-            <div className="text-[13px] text-[#6F6A7C] truncate">{shortInsurer(p.insurer)} · <span className={`font-semibold ${st.cls.split(" ")[1]}`}>{st.short}</span></div>
-          </div>
+    <article className={`flex flex-col rounded-2xl border bg-[#FFFFFF] p-5 transition-all ${open ? "sm:col-span-2 lg:col-span-3" : ""} ${selected ? "border-[#7957FF] shadow-[0_4px_0_#7957FF]" : "border-[#D9D3E8] shadow-[0_3px_0_#E9E4FF,0_4px_0_#D9D3E8] hover:-translate-y-0.5"}`}>
+      <div className="flex items-start gap-3">
+        <span className="flex-none w-9 h-9 rounded-lg grid place-items-center text-[14px] font-extrabold bg-[#F1EEF8] text-[#24212B]">{rec.rank}</span>
+        <div className="min-w-0 flex-1">
+          <h3 className="m-0 text-[17px] font-extrabold tracking-[-0.01em] leading-snug">{p.name}</h3>
+          <div className="text-[13px] text-[#6F6A7C]">{shortInsurer(p.insurer)} · <span className={`font-semibold ${st.cls.split(" ")[1]}`}>{st.short}</span></div>
         </div>
-        <Stat title="Match" value={`${rec.match_percent}%`} />
-        <Stat title="Claims paid" value={p.claim_settlement_ratio != null ? `${p.claim_settlement_ratio}%` : "n/a"} />
-        <Stat title="Est. / month" value={`≈ ${formatINR(monthly)}`} />
-        <button type="button" onClick={onChoose} className={`h-11 px-5 rounded-lg text-[15px] font-bold border transition-all whitespace-nowrap ${selected ? "bg-[#7957FF] text-[#FFFFFF] border-[#7957FF]" : "bg-[#FFFFFF] text-[#24212B] border-[#D9D3E8] shadow-[0_3px_0_#D9D3E8] hover:-translate-y-0.5"}`}>
-          {selected ? <span className="inline-flex items-center gap-1.5"><Check className="w-4 h-4" strokeWidth={3} />Selected</span> : "Choose"}
-        </button>
+        <label className="flex items-center gap-1.5 cursor-pointer text-[13px] font-semibold shrink-0"><input type="checkbox" checked={compared} onChange={onToggleCompare} className="w-4 h-4 accent-[#7957FF]" />Compare</label>
       </div>
 
-      {unconfirmed && <div className="mt-4 flex items-start gap-2.5 p-3 rounded-xl bg-[#FFF4D6] text-[#7A5600] text-[13.5px]"><AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />Entry age limits couldn&apos;t be confirmed, so we can&apos;t say you qualify. Check with the insurer.</div>}
+      <p className="m-0 mt-3 text-[14px] leading-normal text-[#5A5566] line-clamp-3 flex-1">{p.tagline}</p>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="m-0 text-[14px] text-[#5A5566] flex-1 min-w-[220px]">{p.tagline}</p>
-        <div className="flex items-center gap-4 text-[13.5px]">
-          <label className="flex items-center gap-2 cursor-pointer font-semibold"><input type="checkbox" checked={compared} onChange={onToggleCompare} className="w-4 h-4 accent-[#7957FF]" />Compare</label>
-          <button type="button" onClick={onToggleOpen} aria-expanded={open} className="inline-flex items-center gap-1 font-semibold text-[#7957FF] hover:underline">{open ? "Hide details" : "Details & why"}<ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} /></button>
-        </div>
+      <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-[#FAF9F6] border border-[#E9E4FF] p-3 [&_div.text-lg]:text-[16px] [&_div.text-lg]:whitespace-nowrap [&_span]:text-[10px]">
+        <Stat title="Match" value={`${rec.match_percent}%`} />
+        <Stat title="Claims" value={p.claim_settlement_ratio != null ? `${p.claim_settlement_ratio}%` : "n/a"} />
+        <Stat title="Per month" value={`≈ ${formatINR(monthly)}`} />
+      </div>
+
+      {unconfirmed && <div className="mt-3 flex items-start gap-2.5 p-3 rounded-xl bg-[#FFF4D6] text-[#7A5600] text-[13px]"><AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />Entry age limits couldn&apos;t be confirmed, so we can&apos;t say you qualify. Check with the insurer.</div>}
+
+      <div className="mt-auto pt-4 flex items-center justify-between gap-3">
+        <button type="button" onClick={onToggleOpen} aria-expanded={open} className="inline-flex items-center gap-1 text-[13.5px] font-semibold text-[#7957FF] hover:underline">{open ? "Hide details" : "Details & why"}<ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} /></button>
+        <button type="button" onClick={onChoose} className={`h-10 px-5 rounded-lg text-[15px] font-bold border transition-all whitespace-nowrap ${selected ? "bg-[#7957FF] text-[#FFFFFF] border-[#7957FF]" : "bg-[#FFFFFF] text-[#24212B] border-[#D9D3E8] shadow-[0_3px_0_#D9D3E8] hover:border-[#7957FF]"}`}>
+          {selected ? <span className="inline-flex items-center gap-1.5"><Check className="w-4 h-4" strokeWidth={3} />Selected</span> : "Choose"}
+        </button>
       </div>
 
       {open && <Details rec={rec} monthly={monthly} />}
@@ -165,6 +176,8 @@ export default function ProductsPage() {
   const [comparison, setComparison] = useState<(ProductCompareResponse & { error?: boolean }) | { error: true } | null>(null);
   const [isComparing, setIsComparing] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [priority, setPriority] = useState<Priority>("balanced");
+  const [mlInfo, setMlInfo] = useState<MlInfo | null>(null);
 
   useEffect(() => {
     if (isHydrated && !result) router.replace("/assessment");
@@ -192,7 +205,7 @@ export default function ProductsPage() {
     /* eslint-enable react-hooks/set-state-in-effect */
     const timer = setTimeout(() => fetchFromAPI("/recommendations", {
       method: "POST",
-      body: JSON.stringify({ age: input.age, annual_income: input.annual_income, coverage_gap: gap, dependents_count: input.dependents_count, desired_tenure_years: tenureYears, smoker_status: input.smoker_status || false, preferred_category: "term" }),
+      body: JSON.stringify({ age: input.age, annual_income: input.annual_income, coverage_gap: gap, dependents_count: input.dependents_count, desired_tenure_years: tenureYears, smoker_status: input.smoker_status || false, preferred_category: "term", priority }),
     })
       .then((res: RecommendationResponse) => {
         if (cancelled) return;
@@ -206,7 +219,7 @@ export default function ProductsPage() {
       })
       .finally(() => !cancelled && setIsLoading(false)), 250);
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [isHydrated, result, restored, input, gap, tenureYears, reloadKey]);
+  }, [isHydrated, result, restored, input, gap, tenureYears, reloadKey, priority]);
 
   useEffect(() => {
     if (!adjustOpen && !comparison) return;
@@ -214,6 +227,10 @@ export default function ProductsPage() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [adjustOpen, comparison]);
+
+  useEffect(() => {
+    fetchFromAPI("/recommendations/model-info").then(setMlInfo).catch(() => setMlInfo(null));
+  }, []);
 
   const recs = data?.recommendations ?? [];
   const available = recs.filter((r) => r.eligibility_status === "eligible" || r.eligibility_status === "eligibility_unconfirmed");
@@ -287,18 +304,41 @@ export default function ProductsPage() {
     <div className="min-h-screen flex flex-col text-[#24212B]">
       <JourneyProgress currentStage={3} />
 
-      <main className="flex-1 max-w-[1040px] w-full mx-auto px-5 sm:px-8 pt-10 pb-16 flex flex-col gap-7">
+      <main className="flex-1 max-w-[1200px] w-full mx-auto px-5 sm:px-8 pt-6 pb-32 flex flex-col gap-6">
         {/* Header */}
-        <header className="flex flex-col gap-3">
-          <div className="inline-flex items-center gap-2 self-start px-3 py-1.5 rounded-md bg-[#E9E4FF] text-[#7957FF] shadow-[0_3px_0_#D9D3E8] text-[12.5px] font-bold uppercase tracking-[0.14em]"><Award className="w-3.5 h-3.5" />Stage 3 of 4 · Choose a plan</div>
-          <h1 className="m-0 text-[clamp(30px,3.4vw,44px)] leading-[1.05] font-extrabold tracking-[-0.04em]" style={{ color: "#24212B" }}>Plans matched to you</h1>
-          <p className="m-0 text-[17px] leading-[1.55] text-[#5A5566] max-w-[680px]">
-            {gap > 0 ? <>You need about <strong className="text-[#24212B]">{fmt(gap)}</strong> of extra cover.</> : <>Your cover already meets your estimated need.</>} Here are real term plans, best match first.
+        <header className="flex flex-col gap-2">
+          <h1 className="m-0 text-[clamp(26px,2.8vw,36px)] leading-[1.1] font-extrabold tracking-[-0.03em]" style={{ color: "#24212B" }}>Plans matched to you</h1>
+          <p className="m-0 text-[16px] leading-[1.5] text-[#5A5566] max-w-[720px]">
+            {gap > 0 ? <>You need about <strong className="text-[#24212B]">{fmt(gap)}</strong> of extra cover.</> : <>Your cover already meets your estimated need.</>} Real term plans, best match first.
           </p>
           <details className="group text-[14px] text-[#5A5566] max-w-[760px]" data-no-reveal>
             <summary className="list-none cursor-pointer inline-flex items-center gap-1.5 font-semibold text-[#7957FF]"><Info className="w-4 h-4" />Where this data comes from<ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" /></summary>
-            <p className="mt-2 mb-0 leading-normal">Plan details and the claim and solvency ratios are copied from each insurer&apos;s own documents and filings{asOf && <> (checked {dateFmt(asOf)})</>}, with sources in each plan&apos;s details. Premiums are <strong>estimates</strong>, so only the insurer can give an exact quote. Plans are scored on claims record (30%), financial strength (15%), fit to your cover and term (25%), affordability (15%) and riders and payout options (15%). We don&apos;t sell insurance.</p>
+            <p className="mt-2 mb-0 leading-normal"><strong>Coverage:</strong> we compare {recs.length} term plans from {new Set(recs.map((r) => r.product.insurer)).size} of the 24 life insurers registered with IRDAI. It is a checked selection, not every plan on the market. Plan details and the claim and solvency ratios are copied from each insurer&apos;s own documents and filings{asOf && <> (checked {dateFmt(asOf)})</>}, with sources in each plan&apos;s details. Premiums are <strong>estimates</strong>, so only the insurer can give an exact quote. Plans are scored on claims record (30%), financial strength (15%), fit to your cover and term (25%), affordability (15%) and riders and payout options (15%). We don&apos;t sell insurance.</p>
           </details>
+
+          <div className="mt-2 flex flex-col gap-2" data-no-reveal>
+            <span className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#6F6A7C]">What matters most to you?</span>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="What matters most">
+              {PRIORITIES.map((o) => (
+                <button key={o.value} type="button" onClick={() => setPriority(o.value)} aria-pressed={priority === o.value} title={o.hint}
+                  className={`h-10 px-4 rounded-lg border text-[14.5px] font-semibold transition-all ${priority === o.value ? "bg-[#7957FF] border-[#7957FF] text-[#FFFFFF]" : "bg-[#FFFFFF] border-[#D9D3E8] text-[#24212B] hover:border-[#7957FF]"}`}>{o.label}</button>
+              ))}
+            </div>
+            <p className="m-0 text-[13.5px] text-[#6F6A7C]">{PRIORITIES.find((o) => o.value === priority)?.hint}</p>
+          </div>
+
+          {mlInfo?.available && data?.ranking_method === "rules+trained-model" && (
+            <details className="group text-[14px] text-[#5A5566] max-w-[820px]" data-no-reveal>
+              <summary className="list-none cursor-pointer inline-flex items-center gap-1.5 font-semibold text-[#7957FF]"><Info className="w-4 h-4" />How these plans are ranked (trained model, synthetic data)<ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" /></summary>
+              <div className="mt-2 flex flex-col gap-2.5 leading-normal">
+                <p className="m-0">The match is <strong>half a transparent rule score and half a scikit-learn model</strong> ({mlInfo.model}) trained on {mlInfo.training_households?.toLocaleString("en-IN")} <strong>synthetic</strong> households. Entry-age rules are applied first, and the model never overrides them.</p>
+                {mlInfo.evaluation && (
+                  <p className="m-0">On {mlInfo.evaluation.overall.model.top1 != null ? "households it had not seen (also synthetic)" : ""}, it picks the simulated buyer&apos;s plan first {Math.round(mlInfo.evaluation.overall.model.top1 * 100)}% of the time, against {Math.round(mlInfo.evaluation.overall.fixed_rule_baseline.top1 * 100)}% for a fixed rule and {Math.round(mlInfo.evaluation.overall.random.top1 * 100)}% for random. The best any model could do with the simulation&apos;s random choice noise is {Math.round(mlInfo.evaluation.overall.ceiling_known_preferences.top1 * 100)}%.</p>
+                )}
+                <ul className="m-0 pl-5 flex flex-col gap-1">{mlInfo.disclosure?.map((d) => <li key={d}>{d}</li>)}</ul>
+              </div>
+            </details>
+          )}
         </header>
 
         {loadError && (
@@ -317,33 +357,32 @@ export default function ProductsPage() {
             {best && (
               <section aria-label="Best match" className="flex flex-col gap-3">
                 <h2 className="m-0 text-[13px] font-bold uppercase tracking-[0.16em] text-[#7957FF]">Best match for you</h2>
-                <div className="rounded-3xl p-7 sm:p-9 text-[#FFFFFF] flex flex-col gap-6 shadow-[inset_0_2px_0_rgba(255,255,255,0.35),0_8px_0_#5B3BE6,0_40px_70px_-34px_rgba(121,87,255,0.6)]" style={{ background: "linear-gradient(150deg,#8A6CFF 0%,#7957FF 55%,#6A47F5 100%)" }}>
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <div className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#E9E4FF]">{shortInsurer(best.product.insurer)}</div>
-                      <h3 className="m-0 mt-1 text-[clamp(26px,3vw,36px)] font-extrabold tracking-[-0.03em]" style={{ color: "#FFFFFF" }}>{best.product.name}</h3>
-                      <p className="m-0 mt-2 text-[15px] text-[#F1EEFF] max-w-[560px]">{best.product.tagline}</p>
+                <div className="rounded-3xl p-6 sm:p-8 text-[#FFFFFF] shadow-[0_18px_40px_-24px_rgba(121,87,255,0.7)]" style={{ background: "linear-gradient(150deg,#8A6CFF 0%,#7957FF 55%,#6A47F5 100%)" }}>
+                  <div className="grid gap-6 lg:grid-cols-[1.25fr_1fr] items-center">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#E9E4FF]">{shortInsurer(best.product.insurer)}</span>
+                        <span className="rounded-full bg-[rgba(255,255,255,0.2)] px-2.5 py-0.5 text-[12px] font-bold">{best.match_percent}% match</span>
+                      </div>
+                      <h3 className="m-0 text-[clamp(26px,3vw,36px)] leading-[1.1] font-extrabold tracking-[-0.03em]" style={{ color: "#FFFFFF" }}>{best.product.name}</h3>
+                      <p className="m-0 text-[15px] leading-normal text-[#F1EEFF]">{best.product.tagline}</p>
+                      <p className="m-0 text-[14px] leading-normal text-[#E9E4FF]">{best.grounded_explanation}</p>
+                      <div className="mt-1 flex flex-wrap items-center gap-3">
+                        <button type="button" onClick={() => choose(best)} className="h-11 px-6 rounded-lg bg-[#FFFFFF] text-[#7957FF] font-bold hover:-translate-y-0.5 transition-all inline-flex items-center gap-2">{activeId === best.product.id ? <><Check className="w-4 h-4" strokeWidth={3} />Selected</> : "Choose this plan"}</button>
+                        <button type="button" onClick={() => setOpenId(openId === best.product.id ? null : best.product.id)} className="h-11 px-5 rounded-lg border border-[rgba(255,255,255,0.45)] text-[#FFFFFF] font-semibold hover:bg-[rgba(255,255,255,0.12)]">{openId === best.product.id ? "Hide details" : "Details & why"}</button>
+                        <label className="flex items-center gap-2 text-[14px] font-semibold cursor-pointer"><input type="checkbox" checked={compareList.includes(best.product.id)} onChange={() => toggleCompare(best.product.id)} className="w-4 h-4 accent-white" />Compare</label>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-black text-[44px] leading-none tracking-[-0.04em] ls-extrude-on-violet" style={{ color: "#FFFFFF" }}>{best.match_percent}%</div>
-                      <div className="text-[13px] text-[#E9E4FF]">match</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        ["Claims paid", best.product.claim_settlement_ratio != null ? `${best.product.claim_settlement_ratio}%` : "n/a"],
+                        ["Solvency", best.product.solvency_ratio != null ? `${best.product.solvency_ratio}x` : "n/a"],
+                        ["Est. per month", `≈ ${formatINR(bestMonthly)}`],
+                        ["Cover", fmt(best.suggested_sum_assured)],
+                      ].map(([k, v]) => (
+                        <div key={k} className="rounded-xl bg-[rgba(255,255,255,0.14)] px-4 py-3"><div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#E9E4FF]">{k}</div><div className="text-xl font-extrabold tabular-nums mt-0.5 whitespace-nowrap">{v}</div></div>
+                      ))}
                     </div>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {[
-                      ["Claims paid", best.product.claim_settlement_ratio != null ? `${best.product.claim_settlement_ratio}%` : "n/a"],
-                      ["Solvency", best.product.solvency_ratio != null ? `${best.product.solvency_ratio}x` : "n/a"],
-                      ["Est. per month", `≈ ${formatINR(bestMonthly)}`],
-                      ["Cover", fmt(best.suggested_sum_assured)],
-                    ].map(([k, v]) => (
-                      <div key={k} className="rounded-xl bg-[rgba(255,255,255,0.14)] px-4 py-3"><div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#E9E4FF]">{k}</div><div className="text-xl font-extrabold tabular-nums mt-0.5">{v}</div></div>
-                    ))}
-                  </div>
-                  <p className="m-0 text-[14.5px] leading-normal text-[#F1EEFF]">{best.grounded_explanation}</p>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button type="button" onClick={() => choose(best)} className="h-12 px-6 rounded-lg bg-[#FFFFFF] text-[#7957FF] font-bold shadow-[0_5px_0_#D9D3E8] hover:-translate-y-0.5 active:translate-y-[3px] transition-all inline-flex items-center gap-2">{activeId === best.product.id ? <><Check className="w-4 h-4" strokeWidth={3} />Selected</> : "Choose this plan"}</button>
-                    <button type="button" onClick={() => setOpenId(openId === best.product.id ? null : best.product.id)} className="h-12 px-5 rounded-lg border border-[rgba(255,255,255,0.45)] text-[#FFFFFF] font-semibold hover:bg-[rgba(255,255,255,0.12)]">{openId === best.product.id ? "Hide details" : "Details & why"}</button>
-                    <label className="flex items-center gap-2 text-[14px] font-semibold ml-1 cursor-pointer"><input type="checkbox" checked={compareList.includes(best.product.id)} onChange={() => toggleCompare(best.product.id)} className="w-4 h-4 accent-white" />Compare</label>
                   </div>
                   {openId === best.product.id && (
                     <div className="rounded-2xl bg-[#FFFFFF] text-[#24212B] p-6"><Details rec={best} monthly={bestMonthly} /></div>
@@ -355,7 +394,7 @@ export default function ProductsPage() {
             {rest.length > 0 && (
               <section aria-label="Other plans" className="flex flex-col gap-3">
                 <h2 className="m-0 text-[13px] font-bold uppercase tracking-[0.16em] text-[#7957FF]">Other plans ({rest.length})</h2>
-                <div className="flex flex-col gap-3.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
                   {rest.map((r) => (
                     <PlanRow key={r.product.id} rec={r} monthly={monthlyFor(r)} selected={activeId === r.product.id} open={openId === r.product.id} compared={compareList.includes(r.product.id)}
                       onChoose={() => choose(r)} onToggleOpen={() => setOpenId(openId === r.product.id ? null : r.product.id)} onToggleCompare={() => toggleCompare(r.product.id)} />
