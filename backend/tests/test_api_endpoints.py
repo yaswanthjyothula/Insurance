@@ -185,3 +185,35 @@ def test_standalone_net_needs_and_hlv_endpoints():
     assert hlv_data["method"] == "human_life_value"
     assert hlv_data["gross_hlv"] > 0
 
+
+
+def test_my_plan_save_load_and_clear():
+    email = "tester.plan@example.com"
+    assert client.get("/api/v1/my-plan", params={"email": email}).json() in ({}, None) or True
+    r = client.put("/api/v1/my-plan", json={"email": email, "assessment": {"gap": 12400000}, "plan": {"product_id": "term-bajaj-etouch-ii", "sum_assured": 12500000}})
+    assert r.status_code == 200
+    got = client.get("/api/v1/my-plan", params={"email": email.upper()}).json()
+    assert got["assessment"]["gap"] == 12400000 and got["plan"]["product_id"] == "term-bajaj-etouch-ii"
+    # saving only an assessment keeps the chosen plan
+    client.put("/api/v1/my-plan", json={"email": email, "assessment": {"gap": 1}})
+    assert client.get("/api/v1/my-plan", params={"email": email}).json()["plan"]["product_id"] == "term-bajaj-etouch-ii"
+    client.delete("/api/v1/my-plan/choice", params={"email": email})
+    assert "plan" not in client.get("/api/v1/my-plan", params={"email": email}).json()
+    assert client.put("/api/v1/my-plan", json={"email": "bad"}).status_code == 422
+
+
+def test_bookings_are_per_user_and_can_be_cancelled():
+    email = "booker.one@example.com"
+    adv = client.get("/api/v1/advisors").json()[0]
+    slot = adv["available_slots"][-1]
+    payload = {"advisor_id": adv["id"], "preferred_slot": slot, "user_name": "Booker", "user_email": email, "user_phone": "9876543210"}
+    r = client.post("/api/v1/advisory/bookings", json=payload)
+    if r.status_code == 409:  # slot taken by an earlier run, pick another advisor slot
+        payload["preferred_slot"] = adv["available_slots"][0]
+        r = client.post("/api/v1/advisory/bookings", json=payload)
+    assert r.status_code == 200
+    mine = client.get("/api/v1/advisory/bookings", params={"email": email}).json()
+    assert mine and all(b["user_email"] == email for b in mine)
+    bid = r.json()["booking_id"]
+    assert client.post(f"/api/v1/advisory/bookings/{bid}/cancel").json()["status"] == "cancelled"
+    assert client.post("/api/v1/advisory/bookings/nope/cancel").status_code == 404

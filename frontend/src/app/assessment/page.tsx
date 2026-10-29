@@ -2,28 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ShieldCheck,
-  User,
-  Users,
-  Landmark,
-  Target,
-  FileCheck2,
-  ArrowRight,
-  ArrowLeft,
-  Plus,
-  Trash2,
-  Info,
-  CheckCircle2,
-  AlertCircle,
-  RotateCcw,
-  Check,
-  RefreshCw
-} from "lucide-react";
+import { User, Users, Landmark, Target, FileCheck2, ArrowRight, ArrowLeft, Plus, Trash2, Info, CheckCircle2, AlertCircle, RotateCcw, Check } from "lucide-react";
 import { JourneyProgress } from "@/components/layout/journey-progress";
 import { useAssessmentStore } from "@/store/assessment-store";
 import { formatINR } from "@/lib/utils";
 import { fetchFromAPI } from "@/lib/api";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { saveMyPlan, summariseAssessment } from "@/lib/my-plan";
 import {
   ASSUMPTIONS,
   BLANK_FORM,
@@ -127,6 +112,7 @@ const money = (v: string, suffix = "") => (v ? `${formatINR(Number(v), { compact
 
 export default function AssessmentPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { input, result, setInput, setResult, setStage, resetAll, isHydrated } = useAssessmentStore();
   const [form, setForm] = useState<FormState>(BLANK_FORM);
   const [step, setStep] = useState(0);
@@ -228,6 +214,7 @@ export default function AssessmentPage() {
       const response = await fetchFromAPI("/assessments", { method: "POST", body: JSON.stringify(payload) });
       setInput(payload);
       setResult(response);
+      saveMyPlan(user?.email, { assessment: summariseAssessment(response) });
       setStage(2);
       router.push("/results");
     } catch (err) {

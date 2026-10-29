@@ -6,6 +6,8 @@ import { ArrowRight, Scale, RefreshCw, Info, Check, X, ExternalLink, AlertCircle
 import { JourneyProgress } from "@/components/layout/journey-progress";
 import { useAssessmentStore } from "@/store/assessment-store";
 import { formatINR, shortInsurerName } from "@/lib/utils";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { saveMyPlan, summarisePlan } from "@/lib/my-plan";
 import { fetchFromAPI } from "@/lib/api";
 import { indicativeAnnualPremium } from "@/lib/premium";
 import type { RankedRecommendation, RecommendationResponse, PolicyCustomization, ProductCompareResponse, ComparedProductItem } from "@/types/recommendation";
@@ -154,6 +156,7 @@ function PlanRow({ rec, monthly, selected, open, compared, onChoose, onToggleOpe
 
 export default function ProductsPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { input, result, selectedProduct, customization, setSelectedProduct, setCustomization, setStage, isHydrated } = useAssessmentStore();
 
   const gap = result?.net_needs?.net_coverage_gap ?? 0;
@@ -280,6 +283,7 @@ export default function ProductsPage() {
     };
     setSelectedProduct(ap);
     setCustomization(cfg);
+    saveMyPlan(user?.email, { plan: summarisePlan(ap, cfg) });
     setStage(4);
     router.push("/advisory");
   };

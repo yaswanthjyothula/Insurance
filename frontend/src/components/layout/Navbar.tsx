@@ -3,23 +3,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  ChevronDown,
-  Menu,
-  X,
-  Search,
-  ShieldCheck,
-  FileText,
-  Lock,
-  Calendar,
-  LogOut,
-  LogIn,
-  CheckCircle2
-} from "lucide-react";
+import { ChevronDown, Menu, X, Search, FileText, Calendar, LogOut, LogIn } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useAssessmentStore } from "@/store/assessment-store";
-import { formatINR } from "@/lib/utils";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -284,15 +271,15 @@ export function Navbar() {
                 aria-expanded={profileOpen}
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#7957FF] to-[#9A80FF] text-white flex items-center justify-center font-bold text-xs shadow-sm relative">
-                  {user ? (user.email?.[0]?.toUpperCase() || "U") : (input.annual_income > 0 ? "P" : "G")}
+                  {user ? (user.email?.[0]?.toUpperCase() || "U") : "G"}
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#0E9F7E] border-2 border-white rounded-full"></span>
                 </div>
                 <div className="text-left hidden xl:block">
                   <div className="text-xs font-bold text-[#24212B] leading-none group-hover:text-[#7957FF] transition-colors">
-                    {user ? (user.user_metadata?.full_name || user.email?.split("@")[0]) : (input.annual_income > 0 ? "Praveen Sharma" : "Guest Client")}
+                    {user ? (user.user_metadata?.full_name || user.email?.split("@")[0]) : "Guest"}
                   </div>
                   <div className="text-[10px] text-[#6F6A7C] leading-tight font-medium mt-0.5">
-                    {user ? "Verified Account" : (input.annual_income > 0 ? "Profile Active" : "Get Started")}
+                    {user ? "My account" : "Sign in"}
                   </div>
                 </div>
                 <ChevronDown className={`w-3.5 h-3.5 text-[#6F6A7C] transition-transform duration-200 ${profileOpen ? "rotate-180" : ""}`} />
@@ -301,94 +288,27 @@ export function Navbar() {
               {/* Profile Flyout Popover */}
               {profileOpen && (
                 <div className="absolute right-0 mt-2.5 w-80 bg-white border border-[#D9D3E8] rounded-3xl shadow-[0_25px_60px_rgba(121,87,255,0.18)] p-4 z-50 animate-in fade-in zoom-in-95 duration-150 text-[#24212B]">
-                  {/* Identity Header */}
+                  {/* Identity */}
                   <div className="flex items-center gap-3 pb-3 border-b border-[#D9D3E8]">
-                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#7957FF] to-[#9A80FF] text-white flex items-center justify-center font-extrabold text-base shadow-sm">
-                      {user ? (user.email?.[0]?.toUpperCase() || "U") : (input.annual_income > 0 ? "PS" : "GC")}
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#7957FF] to-[#9A80FF] text-white flex items-center justify-center font-extrabold text-base shrink-0">
+                      {user ? (user.email?.[0]?.toUpperCase() || "U") : "G"}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-extrabold text-[#24212B] truncate block">
-                          {user ? (user.user_metadata?.full_name || user.email?.split("@")[0]) : (input.annual_income > 0 ? "Praveen Sharma" : "Guest Client")}
-                        </span>
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#0E9F7E] flex-shrink-0" />
-                      </div>
-                      <span className="text-[11px] text-[#6F6A7C] truncate block">
-                        {user ? user.email : (input.annual_income > 0 ? "praveen.sharma@example.com" : "Assessment in progress")}
-                      </span>
-                      <span className="inline-block mt-0.5 text-[9.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#E9E4FF] text-[#7957FF]">
-                        {user ? "Retail Banking Client" : "Assessment Active"}
-                      </span>
+                      <span className="text-sm font-extrabold text-[#24212B] truncate block">{user ? (user.user_metadata?.full_name || user.email?.split("@")[0]) : "Guest"}</span>
+                      <span className="text-[12px] text-[#6F6A7C] truncate block">{user ? user.email : "Sign in to save your plan"}</span>
                     </div>
                   </div>
 
-                  {/* Financial Snapshot Card */}
-                  <div className="my-3 p-3 rounded-2xl bg-[#FAF9F6] border border-[#D9D3E8]/80 space-y-2">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-[#6F6A7C]">
-                      <span>Financial Profile Details</span>
-                      <Link 
-                        href="/assessment" 
-                        onClick={() => setProfileOpen(false)}
-                        className="text-[#7957FF] hover:underline"
-                      >
-                        Edit
+                  <div className="space-y-1 pt-3">
+                    {user && (
+                      <Link href="/dashboard" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors">
+                        <FileText className="w-4 h-4 text-[#7957FF]" />
+                        <span>My plan and appointments</span>
                       </Link>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="p-2 rounded-xl bg-white border border-[#D9D3E8]/60">
-                        <span className="text-[10px] text-[#6F6A7C] block">Age / Dependents</span>
-                        <span className="font-extrabold text-[#24212B] mt-0.5 block">
-                          {input.age || 32} yrs • {input.dependents_count || 2} dep
-                        </span>
-                      </div>
-                      <div className="p-2 rounded-xl bg-white border border-[#D9D3E8]/60">
-                        <span className="text-[10px] text-[#6F6A7C] block">Annual Income</span>
-                        <span className="font-extrabold text-[#24212B] mt-0.5 block">
-                          {input.annual_income ? formatINR(input.annual_income) : "₹18,00,000"}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-2 rounded-xl bg-white border border-[#D9D3E8]/60 flex items-center justify-between">
-                      <span className="text-[10px] text-[#6F6A7C]">Calculated Gap</span>
-                      <span className="text-xs font-extrabold text-[#7957FF]">
-                        {result?.net_needs?.net_coverage_gap ? formatINR(result.net_needs.net_coverage_gap) : "₹1.35 Crore"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* User Profile Links */}
-                  <div className="space-y-1 pt-1">
-                    <Link
-                      href="/dashboard/protection-passport"
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
-                    >
-                      <ShieldCheck className="w-4 h-4 text-[#7957FF]" />
-                      <span>My Protection Passport</span>
-                    </Link>
-                    <Link
-                      href="/dashboard/insurance-vault"
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
-                    >
-                      <Lock className="w-4 h-4 text-[#7957FF]" />
-                      <span>Emergency Insurance Vault</span>
-                    </Link>
-                    <Link
-                      href="/dashboard/appointments"
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
-                    >
+                    )}
+                    <Link href="/assessment" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors">
                       <Calendar className="w-4 h-4 text-[#7957FF]" />
-                      <span>Consultation Bookings</span>
-                    </Link>
-                    <Link
-                      href="/dashboard/policies"
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
-                    >
-                      <FileText className="w-4 h-4 text-[#7957FF]" />
-                      <span>My Policies & Quotes</span>
+                      <span>{input.annual_income > 0 ? "Update my answers" : "Start the needs assessment"}</span>
                     </Link>
                   </div>
 
@@ -475,34 +395,24 @@ export function Navbar() {
             <div className="p-3 rounded-2xl bg-[#FAF9F6] border border-[#D9D3E8] space-y-2.5">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#7957FF] to-[#9A80FF] text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                  {user ? (user.email?.[0]?.toUpperCase() || "U") : (input.annual_income > 0 ? "PS" : "GC")}
+                  {user ? (user.email?.[0]?.toUpperCase() || "U") : "G"}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-bold text-[#24212B] truncate">
-                    {user ? (user.user_metadata?.full_name || user.email?.split("@")[0]) : (input.annual_income > 0 ? "Praveen Sharma" : "Guest Client")}
+                    {user ? (user.user_metadata?.full_name || user.email?.split("@")[0]) : "Guest"}
                   </div>
                   <div className="text-[10px] text-[#6F6A7C] truncate">
-                    {user ? user.email : (input.annual_income > 0 ? "praveen.sharma@example.com" : "Assessment in progress")}
+                    {user ? user.email : "Not signed in"}
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-1.5 pt-1 text-[11px]">
-                <Link
-                  href="/dashboard/protection-passport"
-                  className="p-2 rounded-xl bg-white border border-[#D9D3E8] font-bold text-[#24212B] flex items-center gap-1.5"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#7957FF]" />
-                  <span>Passport</span>
+              {user && (
+                <Link href="/dashboard" className="p-2 rounded-xl bg-white border border-[#D9D3E8] font-bold text-[#24212B] flex items-center gap-1.5 text-[12px]">
+                  <FileText className="w-3.5 h-3.5 text-[#7957FF]" />
+                  <span>My plan and appointments</span>
                 </Link>
-                <Link
-                  href="/dashboard/insurance-vault"
-                  className="p-2 rounded-xl bg-white border border-[#D9D3E8] font-bold text-[#24212B] flex items-center gap-1.5"
-                >
-                  <Lock className="w-3.5 h-3.5 text-[#7957FF]" />
-                  <span>Vault</span>
-                </Link>
-              </div>
+              )}
             </div>
 
             {user ? (
@@ -560,8 +470,8 @@ export function Navbar() {
                 onClick={() => setSearchOpen(false)}
                 className="flex items-center justify-between px-3 py-2 rounded hover:bg-[#E9E4FF]"
               >
-                <span className="text-sm font-bold text-[#24212B]">Dashboard Overview</span>
-                <span className="text-xs font-bold text-[#FFFFFF] bg-[#7957FF] px-2 py-0.5 rounded">Portal</span>
+                <span className="text-sm font-bold text-[#24212B]">My plan and appointments</span>
+                <span className="text-xs font-bold text-[#FFFFFF] bg-[#7957FF] px-2 py-0.5 rounded">Account</span>
               </Link>
               <Link
                 href="/tools/scenario-studio"

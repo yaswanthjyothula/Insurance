@@ -25,7 +25,7 @@ type Mode = "signin" | "signup" | "forgot";
 function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/dashboard/protection-passport";
+  const next = searchParams.get("next") || "/dashboard";
   const initialMode = (searchParams.get("mode") as Mode) || "signin";
 
   const { user, signIn, signUp, signInDemo, signOut } = useAuth();
@@ -219,7 +219,7 @@ function SignInContent() {
           </h1>
           <p className="text-xs text-[#6F6A7C] max-w-sm mx-auto">
             {mode === "signin"
-              ? "Access your Protection Passport, saved scenarios, and certified advisory."
+              ? "Save your plan and see your advisor appointments."
               : mode === "signup"
               ? "Join thousands of Indian families planning life cover with 0% sales hype."
               : "Enter your registered email address and we'll dispatch a secure reset key."}

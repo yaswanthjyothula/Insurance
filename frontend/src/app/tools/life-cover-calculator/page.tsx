@@ -609,10 +609,10 @@ export default function LifeCoverCalculatorPage() {
                 Simulate Scenarios with this Cover →
               </Link>
               <Link
-                href="/dashboard/protection-passport"
+                href="/dashboard"
                 className="px-5 py-2.5 text-sm font-bold text-white bg-[#7957FF] rounded-xl hover:bg-[#6444E6]"
               >
-                Save to Protection Passport
+                Save to My plan
               </Link>
             </div>
           </div>

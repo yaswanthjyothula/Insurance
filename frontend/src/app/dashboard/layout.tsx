@@ -1,21 +1,17 @@
 import { Suspense } from "react";
-import { AuthGuard } from "@/components/auth/AuthGuard";
 import type { Metadata } from "next";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 export const metadata: Metadata = {
-  title: "Dashboard | LifeSure AI",
-  description: "Manage your Protection Passport, policies, vault and advisor appointments.",
+  title: "My plan | LifeSure AI",
+  description: "Your saved cover need, chosen plan and advisor appointments.",
 };
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <Suspense fallback={<div className="min-h-[50vh]" />}>
       <AuthGuard>
-        <div className="max-w-[1360px] mx-auto px-5 sm:px-8 lg:px-10 pt-11 pb-24 flex flex-col md:flex-row gap-8 md:gap-[clamp(24px,3vw,48px)] items-start">
-          <DashboardSidebar />
-          <div className="flex-1 min-w-0">{children}</div>
-        </div>
+        <div className="max-w-5xl mx-auto px-5 sm:px-8 pt-10 pb-24">{children}</div>
       </AuthGuard>
     </Suspense>
   );

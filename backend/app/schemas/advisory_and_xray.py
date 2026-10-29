@@ -63,17 +63,3 @@ class AdvisorBookingConfirmation(BaseModel):
     meeting_link: str
     calendar_ics_url: str
     created_at: str
-
-# Protection Passport Schemas
-class ProtectionPassport(BaseModel):
-    user_id: str
-    full_name: str
-    email: str
-    latest_assessment_id: Optional[str] = None
-    total_coverage_gap: float
-    recommended_sum_assured: float
-    active_policies_count: int
-    emergency_readiness_score: float
-    last_health_check_date: str
-    dependents_mapped: int
-    declared_policies: List[Dict[str, Any]]

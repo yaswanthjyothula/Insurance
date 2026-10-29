@@ -12,12 +12,11 @@ class StorageService:
         self.assessments_file = os.path.join(DATA_DIR, "assessments.json")
         self.scenarios_file = os.path.join(DATA_DIR, "scenarios.json")
         self.bookings_file = os.path.join(DATA_DIR, "bookings.json")
-        self.policies_file = os.path.join(DATA_DIR, "policies.json")
-        self.vault_file = os.path.join(DATA_DIR, "vault.json")
+        self.my_plans_file = os.path.join(DATA_DIR, "my_plans.json")
         self._init_files()
 
     def _init_files(self):
-        for f in [self.assessments_file, self.scenarios_file, self.bookings_file, self.policies_file, self.vault_file]:
+        for f in [self.assessments_file, self.scenarios_file, self.bookings_file, self.my_plans_file]:
             if not os.path.exists(f):
                 with open(f, "w") as fp:
                     json.dump({}, fp)
@@ -80,44 +79,44 @@ class StorageService:
         self._write_data(self.bookings_file, data)
         return bid
 
-    def list_bookings(self) -> List[Dict[str, Any]]:
+    def list_bookings(self, email: Optional[str] = None) -> List[Dict[str, Any]]:
+        items = list(self._read_data(self.bookings_file).values())
+        if email:
+            items = [b for b in items if self._key(b.get("user_email", "")) == self._key(email)]
+        return sorted(items, key=lambda b: b.get("created_at", ""), reverse=True)
+
+    # Each signed-in user's saved plan (assessment summary and the plan they chose)
+    @staticmethod
+    def _key(email: str) -> str:
+        return (email or "").strip().lower()
+
+    def save_my_plan(self, email: str, plan: Dict[str, Any]) -> Dict[str, Any]:
+        data = self._read_data(self.my_plans_file)
+        key = self._key(email)
+        merged = {**data.get(key, {}), **plan, "email": key, "updated_at": datetime.now().isoformat(timespec="seconds")}
+        data[key] = merged
+        self._write_data(self.my_plans_file, data)
+        return merged
+
+    def get_my_plan(self, email: str) -> Optional[Dict[str, Any]]:
+        return self._read_data(self.my_plans_file).get(self._key(email))
+
+    def delete_my_plan_choice(self, email: str) -> bool:
+        data = self._read_data(self.my_plans_file)
+        key = self._key(email)
+        if key not in data:
+            return False
+        data[key].pop("plan", None)
+        data[key]["updated_at"] = datetime.now().isoformat(timespec="seconds")
+        self._write_data(self.my_plans_file, data)
+        return True
+
+    def cancel_booking(self, booking_id: str) -> Optional[Dict[str, Any]]:
         data = self._read_data(self.bookings_file)
-        return list(data.values())
-
-    # User declared policies
-    def save_policy(self, policy_dict: Dict[str, Any]) -> str:
-        data = self._read_data(self.policies_file)
-        pid = policy_dict.get("policy_id") or str(uuid.uuid4())
-        policy_dict["policy_id"] = pid
-        policy_dict["created_at"] = datetime.now().isoformat()
-        data[pid] = policy_dict
-        self._write_data(self.policies_file, data)
-        return pid
-
-    def list_policies(self) -> List[Dict[str, Any]]:
-        data = self._read_data(self.policies_file)
-        return list(data.values())
-
-    # Vault documents
-    def save_vault_item(self, doc_dict: Dict[str, Any]) -> str:
-        data = self._read_data(self.vault_file)
-        doc_id = doc_dict.get("doc_id") or str(uuid.uuid4())
-        doc_dict["doc_id"] = doc_id
-        doc_dict["uploaded_at"] = datetime.now().isoformat()
-        data[doc_id] = doc_dict
-        self._write_data(self.vault_file, data)
-        return doc_id
-
-    def list_vault_items(self) -> List[Dict[str, Any]]:
-        data = self._read_data(self.vault_file)
-        return list(data.values())
-
-    def delete_vault_item(self, doc_id: str) -> bool:
-        data = self._read_data(self.vault_file)
-        if doc_id in data:
-            del data[doc_id]
-            self._write_data(self.vault_file, data)
-            return True
-        return False
+        if booking_id not in data:
+            return None
+        data[booking_id]["status"] = "cancelled"
+        self._write_data(self.bookings_file, data)
+        return data[booking_id]
 
 storage_service = StorageService()

@@ -23,7 +23,7 @@ export function Footer() {
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-2 text-xs font-bold text-[#24212B]">
               <span className="flex items-center gap-1.5"><Shield className="w-4 h-4 text-[#24212B]" /> Explainable Matching</span>
-              <span className="flex items-center gap-1.5"><Lock className="w-4 h-4 text-[#24212B]" /> Private Vault</span>
+              <span className="flex items-center gap-1.5"><Lock className="w-4 h-4 text-[#24212B]" /> Private by default</span>
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#24212B]" /> IRDAI Benchmarks</span>
             </div>
           </div>

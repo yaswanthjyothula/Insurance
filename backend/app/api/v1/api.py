@@ -33,7 +33,6 @@ from app.schemas.advisory_and_xray import (
     PolicyAnalysisRequest,
     AdvisorBookingRequest,
     AdvisorBookingConfirmation,
-    ProtectionPassport
 )
 
 from app.services.financial_engine import FinancialEngine
@@ -356,8 +355,15 @@ def book_advisor(req: AdvisorBookingRequest):
 
 @api_router.get("/advisory/bookings")
 @api_router.get("/advisor-bookings")
-def get_bookings():
-    return storage_service.list_bookings()
+def get_bookings(email: Optional[str] = None):
+    return storage_service.list_bookings(email)
+
+@api_router.post("/advisory/bookings/{booking_id}/cancel")
+def cancel_booking(booking_id: str):
+    booking = storage_service.cancel_booking(booking_id)
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    return booking
 
 # --- 8. Conversational Assistant ---
 class ChatRequest(BaseModel):
@@ -368,54 +374,25 @@ class ChatRequest(BaseModel):
 async def chat_assistant(req: ChatRequest):
     return await GeminiAssistantService.chat(req.message, req.context)
 
-# --- 9. Protection Passport & Vault ---
-@api_router.get("/passport", response_model=ProtectionPassport)
-def get_protection_passport():
-    scenarios = storage_service.list_scenarios()
-    policies = storage_service.list_policies()
-    
-    # Calculate passport status
-    return ProtectionPassport(
-        user_id="usr_demo_882",
-        full_name="Praveen Sharma",
-        email="praveen.sharma@example.com",
-        latest_assessment_id="ast_active_01",
-        total_coverage_gap=12500000.0, # ₹1.25 Cr
-        recommended_sum_assured=20000000.0, # ₹2.0 Cr
-        active_policies_count=len(policies) or 1,
-        emergency_readiness_score=85.0,
-        last_health_check_date="October 2026",
-        dependents_mapped=3,
-        declared_policies=policies or [
-            {
-                "policy_id": "pol-existing-01",
-                "insurer": "HDFC Life",
-                "sum_assured": 7500000.0,
-                "annual_premium": 12800.0,
-                "due_date": "2027-04-15"
-            }
-        ]
-    )
+# --- 9. My plan (saved assessment and chosen plan per signed-in user) ---
+class MyPlanPayload(BaseModel):
+    email: str
+    assessment: Optional[Dict[str, Any]] = None
+    plan: Optional[Dict[str, Any]] = None
 
-@api_router.get("/vault/documents")
-def list_vault():
-    return storage_service.list_vault_items()
+@api_router.put("/my-plan")
+def save_my_plan(payload: MyPlanPayload):
+    if "@" not in payload.email:
+        raise HTTPException(status_code=422, detail="A valid email is required")
+    data = {k: v for k, v in {"assessment": payload.assessment, "plan": payload.plan}.items() if v is not None}
+    return storage_service.save_my_plan(payload.email, data)
 
-@api_router.post("/vault/upload")
-async def upload_vault_doc(title: str = Form(...), category: str = Form(...), file: Optional[UploadFile] = File(None)):
-    filename = file.filename if file else "document.pdf"
-    doc_id = storage_service.save_vault_item({
-        "title": title,
-        "category": category,
-        "filename": filename,
-        "size_kb": 240,
-        "is_encrypted": True
-    })
-    return {"message": "Document secured in private vault", "doc_id": doc_id}
+@api_router.get("/my-plan")
+def get_my_plan(email: str):
+    return storage_service.get_my_plan(email) or {}
 
-@api_router.delete("/vault/documents/{doc_id}")
-def delete_vault_doc(doc_id: str):
-    deleted = storage_service.delete_vault_item(doc_id)
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Document not found")
-    return {"message": "Document permanently removed"}
+@api_router.delete("/my-plan/choice")
+def clear_chosen_plan(email: str):
+    storage_service.delete_my_plan_choice(email)
+    return {"cleared": True}
+

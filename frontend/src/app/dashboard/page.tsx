@@ -1,145 +1,204 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { BadgeCheck, SlidersHorizontal, FileText, Vault, CalendarClock, ArrowRight, Check } from "lucide-react";
+import { ArrowRight, CalendarClock, CheckCircle2, ExternalLink, Loader2, RefreshCw, Trash2 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useAssessmentStore } from "@/store/assessment-store";
+import { fetchFromAPI } from "@/lib/api";
 import { formatINR } from "@/lib/utils";
+import { saveMyPlan, summariseAssessment, summarisePlan, type MyPlanData } from "@/lib/my-plan";
 
-const shortcuts = [
-  { ic: BadgeCheck, title: "My Protection Passport", desc: "Verified safety record, gap and readiness score", href: "/dashboard/protection-passport" },
-  { ic: SlidersHorizontal, title: "Saved Scenarios", desc: "New child, early retirement, loan clearance what-ifs", href: "/tools/scenario-studio" },
-  { ic: FileText, title: "Insurance Safety Net", desc: "Declared policies, renewals and nominees", href: "/dashboard/policies" },
-  { ic: Vault, title: "Emergency Insurance Vault", desc: "Encrypted policy schedules and family letters", href: "/dashboard/insurance-vault" },
-  { ic: CalendarClock, title: "Book Fiduciary Advisor", desc: "Fee-only CFP consultation", href: "/dashboard/appointments" },
-];
-
-function greeting() {
-  const h = new Date().getHours();
-  return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+interface Booking {
+  booking_id: string;
+  advisor_name: string;
+  slot: string;
+  status: string;
+  consultation_mode?: string;
+  created_at?: string;
 }
 
-export default function DashboardHubPage() {
+const MODE: Record<string, string> = { video: "Video call", voice: "Phone call", chat: "Chat" };
+const dateLabel = (iso?: string) => {
+  if (!iso) return "";
+  const d = new Date(iso.includes("T") ? iso : iso.replace(" ", "T"));
+  return isNaN(d.getTime()) ? iso : d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+};
+
+const card = "rounded-3xl bg-[#FFFFFF] border border-[#D9D3E8] p-6 sm:p-7";
+const h2 = "m-0 text-[13px] font-bold uppercase tracking-[0.14em] text-[#7957FF]";
+
+export default function MyPlanPage() {
   const { user } = useAuth();
-  const { result, input, selectedProduct, booking, isHydrated } = useAssessmentStore();
-  const first = ((user?.user_metadata?.full_name as string | undefined) || user?.email?.split("@")[0] || "there").split(" ")[0];
+  const store = useAssessmentStore();
+  const email = user?.email;
+  const [saved, setSaved] = useState<MyPlanData | null>(null);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const need = result?.net_needs.total_gross_need ?? 0;
-  const gap = result?.net_needs.net_coverage_gap ?? 0;
-  const covered = Math.min(100, need > 0 ? Math.round(((need - gap) / need) * 100) : 0);
+  const load = useCallback(async () => {
+    if (!email) return;
+    setError(null);
+    try {
+      const q = encodeURIComponent(email);
+      const [mine, appts] = await Promise.all([fetchFromAPI(`/my-plan?email=${q}`), fetchFromAPI(`/advisory/bookings?email=${q}`)]);
+      setSaved(mine ?? {});
+      setBookings(Array.isArray(appts) ? appts : []);
+    } catch {
+      setError("We couldn't reach the server, so your saved plan may not be showing. Make sure the backend is running and try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, [email]);
 
-  const stages = [
-    { label: "Needs assessment", done: Boolean(result), href: "/assessment" },
-    { label: "Coverage results", done: Boolean(result), href: "/results" },
-    { label: "Product selection", done: Boolean(selectedProduct), href: "/products" },
-    { label: "Advisor consultation", done: Boolean(booking), href: "/advisory" },
-  ];
-  const next = stages.find((s) => !s.done);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetched after mount
+    load();
+  }, [load]);
 
-  const stat = "px-[clamp(18px,2.4vw,36px)] py-[clamp(18px,2.4vw,32px)] flex flex-col gap-3";
-  const big = "font-black text-[clamp(26px,3.2vw,48px)] tracking-[-0.045em] leading-none tabular-nums";
+  // Work done in this browser before signing in is saved to the account the first time it is empty there
+  useEffect(() => {
+    if (!email || !store.isHydrated || loading || error || !saved) return;
+    const patch: Parameters<typeof saveMyPlan>[1] = {};
+    if (!saved.assessment && store.result) patch.assessment = summariseAssessment(store.result);
+    if (!saved.plan && store.selectedProduct && store.customization) patch.plan = summarisePlan(store.selectedProduct, store.customization);
+    if (patch.assessment || patch.plan) {
+      saveMyPlan(email, patch);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reflect what was just saved
+      setSaved((s) => ({ ...(s ?? {}), ...patch }));
+    }
+  }, [email, store.isHydrated, store.result, store.selectedProduct, store.customization, loading, error, saved]);
+
+  const removePlan = async () => {
+    if (!email) return;
+    await fetchFromAPI(`/my-plan/choice?email=${encodeURIComponent(email)}`, { method: "DELETE" }).catch(() => undefined);
+    setSaved((s) => (s ? { ...s, plan: undefined } : s));
+  };
+
+  const cancel = async (id: string) => {
+    if (!window.confirm("Cancel this appointment?")) return;
+    try {
+      const b = await fetchFromAPI(`/advisory/bookings/${id}/cancel`, { method: "POST" });
+      setBookings((list) => list.map((x) => (x.booking_id === id ? { ...x, status: b.status } : x)));
+    } catch {
+      setError("Could not cancel that appointment. Try again.");
+    }
+  };
+
+  const name = user?.user_metadata?.full_name || email?.split("@")[0] || "there";
+  const a = saved?.assessment;
+  const plan = saved?.plan;
+  const upcoming = bookings.filter((b) => b.status !== "cancelled");
+  const cancelled = bookings.filter((b) => b.status === "cancelled");
 
   return (
-    <div className="flex flex-col gap-10 w-full min-w-0">
-      <header className="flex flex-wrap gap-5 items-end justify-between">
-        <div className="flex flex-col gap-2">
-          <span className="text-lg text-[#5A5566]">{greeting()}, {first}</span>
-          <h1 className="m-0 font-extrabold text-[clamp(34px,3.6vw,48px)] leading-none tracking-[-0.045em]" style={{ color: "#24212B" }}>Your protection</h1>
-        </div>
-        <Link href={next ? next.href : "/assessment"} className="h-14 px-7 bg-[#7957FF] text-white rounded-lg flex items-center gap-3.5 font-bold text-base">
-          {next ? `Continue: ${next.label}` : "Re-run assessment"} <ArrowRight className="w-5 h-5" />
-        </Link>
+    <div className="flex flex-col gap-6">
+      <header>
+        <h1 className="m-0 text-[clamp(26px,3vw,36px)] leading-[1.1] font-extrabold tracking-[-0.03em] text-[#24212B]">My plan</h1>
+        <p className="m-0 mt-2 text-[16px] text-[#5A5566]">Hi {name}. Your cover need, the plan you chose and your advisor appointments, all in one place.</p>
       </header>
 
-      <section className="ls-persp" aria-label="Cover summary">
-        <div data-scroll-tilt="5" className="ls-lip bg-white border border-[#D9D3E8] rounded-3xl overflow-hidden [transform-origin:bottom_center]">
-          {!isHydrated ? (
-            <div className="p-9 text-[#5A5566]">Loading your numbers…</div>
-          ) : result ? (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-3">
-                <div className={`${stat} sm:border-r border-b border-[#D9D3E8]`}>
-                  <span className="text-[15px] font-semibold text-[#5A5566]">Cover you need</span>
-                  <span className={big}>{formatINR(need, { compact: true })}</span>
-                  <span className="text-sm text-[#5A5566]">from your needs assessment</span>
-                </div>
-                <div className={`${stat} sm:border-r border-b border-[#D9D3E8]`}>
-                  <span className="text-[15px] font-semibold text-[#5A5566]">Cover you have</span>
-                  <span className={big}>{formatINR(input.existing_cover + input.eligible_assets, { compact: true })}</span>
-                  <span className="text-sm text-[#5A5566]">policies and liquid assets</span>
-                </div>
-                <div className={`${stat} border-b border-[#D9D3E8] bg-[#E9E4FF]`}>
-                  <span className="text-[15px] font-semibold text-[#5A5566]">Gap to close</span>
-                  <span className={`${big} ls-extrude`}>{formatINR(gap, { compact: true })}</span>
-                  <span className="text-sm text-[#5A5566]">recommended additional term cover</span>
-                </div>
-              </div>
-              <div className="px-9 pt-7 pb-8 flex flex-col gap-3.5">
-                <div className="flex justify-between gap-3 text-[15.5px]">
-                  <span className="text-[#5A5566]"><strong className="text-[#24212B]">{covered}%</strong> of your need is covered</span>
-                  <span className="font-semibold text-[#7957FF]">{100 - covered}% open</span>
-                </div>
-                <div className="h-[18px] rounded-[9px] bg-[#F1EEF8] shadow-[inset_0_2px_4px_rgba(36,33,43,0.1)] overflow-hidden" role="progressbar" aria-valuenow={covered} aria-valuemin={0} aria-valuemax={100}>
-                  <div className="h-full rounded-[9px] shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_3px_8px_rgba(121,87,255,0.4)]" style={{ width: `${covered}%`, background: "linear-gradient(180deg,#9A80FF,#7957FF 60%,#6A47F5)" }} />
-                </div>
-                {typeof result.protection_health_score === "number" && Number.isFinite(result.protection_health_score) && (
-                  <span className="text-sm text-[#5A5566]">Protection score {Math.round(result.protection_health_score)}/100</span>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="p-9 flex flex-wrap items-center justify-between gap-5">
-              <div>
-                <h2 className="text-xl font-bold">No assessment yet</h2>
-                <p className="text-[#5A5566] mt-1">Answer a few questions to see how much cover your family needs.</p>
-              </div>
-              <Link href="/assessment" className="h-[52px] px-6 bg-[#7957FF] text-white rounded-lg flex items-center gap-3 font-semibold">Start assessment <ArrowRight className="w-5 h-5" /></Link>
-            </div>
-          )}
+      {error && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl border border-[#C23B3B] text-[#C23B3B] font-semibold">
+          <span>{error}</span>
+          <button type="button" onClick={() => { setLoading(true); load(); }} className="inline-flex items-center gap-1.5 underline"><RefreshCw className="w-4 h-4" />Try again</button>
         </div>
-      </section>
+      )}
 
-      <div className="flex flex-wrap gap-9 items-start">
-        <section className="flex-[1_1_320px] min-w-0 flex flex-col gap-4" aria-label="Your journey">
-          <span className="text-[13px] font-bold tracking-[0.2em] uppercase">Your Journey</span>
-          <div className="flex flex-col gap-3 ls-persp">
-            {stages.map((j) => {
-              const isNext = j === next;
-              return (
-                <Link
-                  key={j.label}
-                  href={j.href}
-                  className={`flex items-center gap-4 px-[22px] py-5 rounded-[14px] border transition-transform hover:-translate-y-0.5 ${
-                    isNext
-                      ? "bg-[#E9E4FF] border-[#7957FF] shadow-[0_5px_0_#7957FF,0_18px_28px_-16px_rgba(121,87,255,0.6)]"
-                      : "bg-white border-[#D9D3E8] shadow-[0_3px_0_#D9D3E8]"
-                  }`}
-                >
-                  <span className={`flex-none w-8 h-8 rounded-full grid place-items-center text-[15px] font-extrabold border-2 border-[#7957FF] ${j.done ? "bg-[#7957FF] text-white" : "bg-white text-white"}`}>{j.done ? <Check className="w-4 h-4" strokeWidth={3} /> : null}</span>
-                  <span className={`flex-1 text-[17px] font-semibold ${j.done ? "text-[#5A5566]" : "text-[#24212B]"}`}>{j.label}</span>
-                  {isNext && <span className="text-sm font-bold text-[#7957FF]">Next</span>}
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="flex-[1.4_1_400px] min-w-0 flex flex-col gap-4" aria-label="Your tools">
-          <span className="text-[13px] font-bold tracking-[0.2em] uppercase">Your Tools</span>
-          <div className="flex flex-col gap-3 ls-persp">
-            {shortcuts.map((t) => (
-              <Link key={t.href} href={t.href} className="ls-lift flex items-center gap-[18px] px-[22px] py-5 bg-white border border-[#D9D3E8] rounded-[14px] text-[#24212B] shadow-[0_4px_0_#D9D3E8,0_18px_30px_-20px_rgba(36,33,43,0.3)]">
-                <span className="flex-none w-[46px] h-[46px] rounded-xl grid place-items-center text-[#7957FF] shadow-[inset_0_1px_0_#fff,0_3px_0_#D9D3E8]" style={{ background: "linear-gradient(160deg,#FFFFFF,#E9E4FF)" }}><t.ic className="w-5 h-5" strokeWidth={1.8} /></span>
-                <div className="flex-1 flex flex-col gap-1 min-w-0">
-                  <span className="font-bold text-[17px]">{t.title}</span>
-                  <span className="text-[14.5px] text-[#5A5566]">{t.desc}</span>
+      {loading ? (
+        <div className={`${card} flex items-center gap-3 text-[#5A5566]`} role="status"><Loader2 className="w-5 h-5 animate-spin text-[#7957FF]" />Loading your plan…</div>
+      ) : (
+        <>
+          <section className={card} aria-label="Cover need">
+            <h2 className={h2}>1. Your cover need</h2>
+            {a ? (
+              <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <div className="text-[13px] text-[#6F6A7C]">Extra cover your family needs</div>
+                  <div className="text-[34px] font-extrabold tracking-[-0.03em] text-[#24212B]">{formatINR(a.net_coverage_gap, { compact: true })}</div>
+                  <div className="text-[13px] text-[#6F6A7C]">Worked out on {dateLabel(a.saved_at)}{a.dependents != null ? ` · ${a.dependents} dependents` : ""}</div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-[#7957FF]" />
-              </Link>
-            ))}
-          </div>
-        </section>
-      </div>
+                <div className="flex flex-wrap gap-2.5">
+                  <Link href="/results" className="h-11 px-5 rounded-lg border border-[#D9D3E8] bg-[#FFFFFF] font-semibold inline-flex items-center">See full results</Link>
+                  <Link href="/assessment" className="h-11 px-5 rounded-lg border border-[#D9D3E8] bg-[#FFFFFF] font-semibold inline-flex items-center">Update my answers</Link>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
+                <p className="m-0 text-[16px] text-[#5A5566]">You haven&apos;t worked out your cover need yet. It takes about two minutes.</p>
+                <Link href="/assessment" className="h-11 px-5 rounded-lg bg-[#7957FF] text-[#FFFFFF] font-bold inline-flex items-center gap-2">Start the assessment<ArrowRight className="w-4 h-4" /></Link>
+              </div>
+            )}
+          </section>
+
+          <section className={card} aria-label="Chosen plan">
+            <h2 className={h2}>2. Your chosen plan</h2>
+            {plan ? (
+              <div className="mt-3 flex flex-col gap-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="text-[22px] font-extrabold tracking-[-0.02em] text-[#24212B]">{plan.product_name}</div>
+                    <div className="text-[14px] text-[#6F6A7C]">{plan.insurer} · saved {dateLabel(plan.saved_at)}</div>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E9E4FF] px-3 py-1 text-[13px] font-bold text-[#7957FF]"><CheckCircle2 className="w-4 h-4" />Saved</span>
+                </div>
+                <dl className="m-0 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[["Cover", formatINR(plan.sum_assured, { compact: true })], ["Term", `${plan.tenure_years} years`], ["Est. per month", `≈ ${formatINR(plan.monthly_premium)}`], ["Riders", plan.riders.length ? `${plan.riders.length} added` : "None"]].map(([k, v]) => (
+                    <div key={k} className="rounded-xl bg-[#FAF9F6] border border-[#E9E4FF] px-4 py-3"><dt className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#6F6A7C]">{k}</dt><dd className="m-0 mt-0.5 text-[18px] font-extrabold tabular-nums">{v}</dd></div>
+                  ))}
+                </dl>
+                <p className="m-0 text-[13px] text-[#6F6A7C]">The monthly figure is an estimate. Only the insurer can give an exact price.</p>
+                <div className="flex flex-wrap gap-2.5">
+                  <Link href="/advisory" className="h-11 px-5 rounded-lg bg-[#7957FF] text-[#FFFFFF] font-bold inline-flex items-center gap-2">Talk to an advisor<ArrowRight className="w-4 h-4" /></Link>
+                  {(plan.quote_url || plan.product_page_url) && <a href={(plan.quote_url || plan.product_page_url) as string} target="_blank" rel="noreferrer" className="h-11 px-5 rounded-lg border border-[#D9D3E8] bg-[#FFFFFF] font-semibold inline-flex items-center gap-1.5">Get the exact price<ExternalLink className="w-4 h-4" /></a>}
+                  <Link href="/products" className="h-11 px-5 rounded-lg border border-[#D9D3E8] bg-[#FFFFFF] font-semibold inline-flex items-center">Change plan</Link>
+                  <button type="button" onClick={removePlan} className="h-11 px-4 rounded-lg text-[#C23B3B] font-semibold inline-flex items-center gap-1.5 hover:bg-[#FDECEF]"><Trash2 className="w-4 h-4" />Remove</button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
+                <p className="m-0 text-[16px] text-[#5A5566]">{a ? "You haven't chosen a plan yet. Compare plans matched to your cover need." : "Work out your cover need first, then compare plans."}</p>
+                <Link href={a ? "/products" : "/assessment"} className="h-11 px-5 rounded-lg bg-[#7957FF] text-[#FFFFFF] font-bold inline-flex items-center gap-2">{a ? "See matched plans" : "Start the assessment"}<ArrowRight className="w-4 h-4" /></Link>
+              </div>
+            )}
+          </section>
+
+          <section className={card} aria-label="Appointments">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className={h2}>3. Your appointments</h2>
+              <Link href="/advisory" className="text-[14px] font-bold text-[#7957FF] hover:underline">Book {bookings.length ? "another" : "an advisor"}</Link>
+            </div>
+            {bookings.length === 0 ? (
+              <p className="m-0 mt-3 text-[16px] text-[#5A5566]">No appointments yet. Book a session and it will appear here.</p>
+            ) : (
+              <div className="mt-3 flex flex-col gap-5">
+                {([["Upcoming", upcoming], ["Cancelled", cancelled]] as [string, Booking[]][]).map(([title, list]) => list.length > 0 && (
+                  <div key={title}>
+                    <div className="text-[12px] font-bold uppercase tracking-[0.14em] text-[#6F6A7C]">{title}</div>
+                    <ul className="m-0 mt-2 p-0 list-none flex flex-col gap-2.5">
+                      {list.map((b) => (
+                        <li key={b.booking_id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#D9D3E8] px-4 py-3.5">
+                          <div className="flex items-start gap-3">
+                            <span className="mt-0.5 grid h-9 w-9 place-items-center rounded-lg bg-[#E9E4FF] text-[#7957FF]"><CalendarClock className="w-5 h-5" /></span>
+                            <div>
+                              <div className="font-bold text-[#24212B]">{b.advisor_name}</div>
+                              <div className="text-[14px] text-[#5A5566]">{b.slot} · {MODE[b.consultation_mode ?? ""] ?? "Video call"}</div>
+                              <div className="text-[12.5px] text-[#6F6A7C]">Booked {dateLabel(b.created_at)} · ref {b.booking_id.slice(0, 8).toUpperCase()}</div>
+                            </div>
+                          </div>
+                          {b.status !== "cancelled" ? <button type="button" onClick={() => cancel(b.booking_id)} className="h-10 px-4 rounded-lg border border-[#D9D3E8] text-[14px] font-semibold hover:border-[#C23B3B] hover:text-[#C23B3B]">Cancel</button> : <span className="text-[13px] font-semibold text-[#6F6A7C]">Cancelled</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="m-0 mt-4 text-[12.5px] text-[#6F6A7C]">Advisor sessions are a prototype booking and are not sent to a real advisor yet.</p>
+          </section>
+        </>
+      )}
     </div>
   );
 }

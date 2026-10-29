@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Users, Video, Phone, MessageSquare, AlertCircle, Send, RefreshCw, BadgeCheck, Check, ArrowLeft, ArrowRight, Info, CalendarCheck, Printer, ShieldCheck } from "lucide-react";
+import { Users, Video, Phone, MessageSquare, AlertCircle, Send, RefreshCw, BadgeCheck, Check, ArrowLeft, ArrowRight, Info, CalendarCheck, Printer } from "lucide-react";
 import { JourneyProgress } from "@/components/layout/journey-progress";
 import { useAssessmentStore } from "@/store/assessment-store";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -283,7 +283,7 @@ export default function AdvisoryPage() {
                 ) : <p className="m-0 text-[14.5px] text-[#5A5566]">No plan chosen yet. <Link href="/products" className="text-[#7957FF] font-semibold hover:underline">Choose one</Link> and your advisor can review it.</p>}
               </div>
               <div className="flex flex-col gap-2.5">
-                <Link href="/dashboard" className="h-12 rounded-lg bg-[#7957FF] text-white font-bold inline-flex items-center justify-center gap-2">Go to dashboard<ArrowRight className="w-4 h-4" /></Link>
+                <Link href="/dashboard" className="h-12 rounded-lg bg-[#7957FF] text-white font-bold inline-flex items-center justify-center gap-2">View my plan<ArrowRight className="w-4 h-4" /></Link>
                 <button type="button" onClick={() => window.print()} className="h-12 rounded-lg border border-[#D9D3E8] bg-white font-semibold inline-flex items-center justify-center gap-2 shadow-[0_3px_0_#D9D3E8]"><Printer className="w-4 h-4 text-[#7957FF]" />Print this summary</button>
                 <button type="button" onClick={rebook} className="text-[14px] font-semibold text-[#7957FF] hover:underline py-1">Book a different time</button>
               </div>
