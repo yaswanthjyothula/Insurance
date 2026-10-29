@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Check, ShieldCheck, Calculator, Award, Users, FileCheck } from "lucide-react";
+import { Check, ShieldCheck, Calculator, Award, Users } from "lucide-react";
 
 interface JourneyProgressProps {
-  currentStage: 1 | 2 | 3 | 4 | 5;
+  currentStage: 1 | 2 | 3 | 4;
 }
 
 export function JourneyProgress({ currentStage }: JourneyProgressProps) {
@@ -36,13 +36,6 @@ export function JourneyProgress({ currentStage }: JourneyProgressProps) {
       shortDesc: "Fiduciary Consultation",
       href: "/advisory",
       icon: Users
-    },
-    {
-      num: 5,
-      label: "Issuance Readiness",
-      shortDesc: "Instant CKYC & Underwriting",
-      href: "/issuance-readiness",
-      icon: FileCheck
     }
   ];
 

@@ -84,7 +84,7 @@ export function Navbar() {
     { name: "Premium Shock Simulator", href: "/tools/premium-shock", desc: "Healthcare inflation stress testing" },
     { name: "Future Costs Reality Check", href: "/tools/future-costs", desc: "10-25 yr education inflation" },
     { name: "Insurance Scam Shield", href: "/tools/scam-shield", desc: "Detect bogus IRDAI callers & fraud" },
-    { name: "Application Readiness", href: "/tools/application-readiness", desc: "Pre-underwriting KYC & medical prep" },
+    { name: "Application Readiness", href: "/tools/application-readiness", desc: "Documents and answers to have ready" },
   ];
 
 

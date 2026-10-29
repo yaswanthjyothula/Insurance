@@ -388,7 +388,6 @@ export default function ProductsPage() {
                 {compareList.length >= 2 && <button type="button" onClick={runComparison} disabled={isComparing} className="h-12 px-4 rounded-lg border border-[#D9D3E8] bg-[#FFFFFF] font-semibold inline-flex items-center gap-2 shadow-[0_3px_0_#D9D3E8] disabled:opacity-60"><Scale className="w-4 h-4 text-[#7957FF]" />Compare {compareList.length}</button>}
                 <button type="button" onClick={() => setAdjustOpen(true)} className="h-12 px-4 rounded-lg border border-[#D9D3E8] bg-[#FFFFFF] font-semibold inline-flex items-center gap-2 shadow-[0_3px_0_#D9D3E8]"><SlidersHorizontal className="w-4 h-4 text-[#7957FF]" />Adjust cover &amp; term</button>
                 <button type="button" onClick={proceed} className="h-12 px-6 rounded-lg bg-[#7957FF] text-[#FFFFFF] font-bold inline-flex items-center gap-2">Talk to an advisor<ArrowRight className="w-4 h-4" /></button>
-                <button type="button" onClick={() => { proceed(); router.push("/issuance-readiness"); }} className="h-12 px-5 rounded-lg bg-[#0E7A5F] text-white font-bold inline-flex items-center gap-2 shadow-[0_3px_0_#095340] hover:bg-[#0A6750] transition-all"><ShieldCheck className="w-4 h-4" />Instant Underwriting<ArrowRight className="w-4 h-4" /></button>
               </div>
             </div>
           </div>

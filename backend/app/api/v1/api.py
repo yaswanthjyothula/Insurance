@@ -49,15 +49,6 @@ from app.services.gemini_assistant import GeminiAssistantService
 api_router = APIRouter()
 
 
-from app.schemas.underwriting import (
-    CKYCLookupRequest,
-    CKYCLookupResponse,
-    MedicalTriageInput,
-    UnderwritingDecision,
-    PolicyIssuanceRequest,
-    PolicyIssuanceResponse,
-)
-from app.services.underwriting_service import UnderwritingService
 
 @api_router.get("/health")
 def api_health():
@@ -67,25 +58,6 @@ def api_health():
         "timestamp": "2026-10-28",
         "engine": "deterministic_python"
     }
-
-# --- 0. End-to-End Medical Underwriting & Instant CKYC Simulation ---
-@api_router.post("/underwriting/ckyc-lookup", response_model=CKYCLookupResponse)
-def lookup_ckyc_endpoint(req: CKYCLookupRequest):
-    """Simulates live Central KYC (CKYC) registry and Income Tax PAN verification."""
-    try:
-        return UnderwritingService.lookup_ckyc(req)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@api_router.post("/underwriting/evaluate", response_model=UnderwritingDecision)
-def evaluate_underwriting_endpoint(req: MedicalTriageInput):
-    """Evaluates dynamic medical underwriting triage questions and computes rate adjustments."""
-    return UnderwritingService.evaluate_medical_triage(req)
-
-@api_router.post("/underwriting/issue-policy", response_model=PolicyIssuanceResponse)
-def issue_policy_endpoint(req: PolicyIssuanceRequest):
-    """Generates an instant policy schedule and digital policy certificate."""
-    return UnderwritingService.issue_policy(req)
 
 # --- 1. Assessments & Calculations ---
 @api_router.post("/assessments", response_model=AssessmentResult)

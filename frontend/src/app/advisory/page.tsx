@@ -236,12 +236,6 @@ export default function AdvisoryPage() {
                 <div key={k} className="rounded-xl bg-[rgba(255,255,255,0.14)] px-4 py-3"><div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#E9E4FF]">{k}</div><div className="text-lg font-extrabold mt-0.5 flex items-center gap-2">{k === "How" && <ModeIcon className="w-4 h-4" />}{v}</div></div>
               ))}
             </div>
-            <div className="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[rgba(255,255,255,0.2)]">
-              <span className="text-[13.5px] text-[#E9E4FF]">Ready to verify identity and get instant policy issuance readiness?</span>
-              <Link href="/issuance-readiness" className="h-10 px-4 rounded-xl bg-white text-[#7957FF] font-extrabold text-[13.5px] inline-flex items-center gap-1.5 shadow-md hover:bg-[#F7F4FF] transition-all">
-                <ShieldCheck className="w-4 h-4" /> Stage 5: Instant Issuance Readiness <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
           </div>
 
           {demoNote}
@@ -289,9 +283,6 @@ export default function AdvisoryPage() {
                 ) : <p className="m-0 text-[14.5px] text-[#5A5566]">No plan chosen yet. <Link href="/products" className="text-[#7957FF] font-semibold hover:underline">Choose one</Link> and your advisor can review it.</p>}
               </div>
               <div className="flex flex-col gap-2.5">
-                <Link href="/issuance-readiness" className="h-12 rounded-lg bg-[#0E7A5F] text-white font-bold inline-flex items-center justify-center gap-2 shadow-[0_3px_0_#095340] hover:bg-[#0A6750] transition-all">
-                  <ShieldCheck className="w-4 h-4" /> Stage 5: Instant Policy Issuance <ArrowRight className="w-4 h-4" />
-                </Link>
                 <Link href="/dashboard" className="h-12 rounded-lg bg-[#7957FF] text-white font-bold inline-flex items-center justify-center gap-2">Go to dashboard<ArrowRight className="w-4 h-4" /></Link>
                 <button type="button" onClick={() => window.print()} className="h-12 rounded-lg border border-[#D9D3E8] bg-white font-semibold inline-flex items-center justify-center gap-2 shadow-[0_3px_0_#D9D3E8]"><Printer className="w-4 h-4 text-[#7957FF]" />Print this summary</button>
                 <button type="button" onClick={rebook} className="text-[14px] font-semibold text-[#7957FF] hover:underline py-1">Book a different time</button>
@@ -313,10 +304,9 @@ export default function AdvisoryPage() {
 
       <main className="flex-1 max-w-[1100px] w-full mx-auto px-5 sm:px-8 pt-10 pb-20 flex flex-col gap-7">
         <header className="flex flex-col gap-3">
-          <div className="inline-flex items-center gap-2 self-start px-3 py-1.5 rounded-md bg-[#E9E4FF] text-[#7957FF] shadow-[0_3px_0_#D9D3E8] text-[12.5px] font-bold uppercase tracking-[0.14em]"><Users className="w-3.5 h-3.5" />Stage 4 of 5 · Advisory session</div>
+          <div className="inline-flex items-center gap-2 self-start px-3 py-1.5 rounded-md bg-[#E9E4FF] text-[#7957FF] shadow-[0_3px_0_#D9D3E8] text-[12.5px] font-bold uppercase tracking-[0.14em]"><Users className="w-3.5 h-3.5" />Stage 4 of 4 · Advisory session</div>
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <h1 className="m-0 text-[clamp(30px,3.4vw,44px)] leading-[1.05] font-extrabold tracking-[-0.04em]" style={{ color: "#24212B" }}>Book a session with an advisor</h1>
-            <Link href="/issuance-readiness" className="text-sm font-bold text-[#7957FF] hover:underline inline-flex items-center gap-1">Skip to Stage 5: Instant Underwriting <ArrowRight className="w-3.5 h-3.5" /></Link>
           </div>
           <p className="m-0 text-[17px] leading-[1.55] text-[#5A5566] max-w-[640px]">Three quick steps. Your advisor can review your needs and chosen plan with you.</p>
         </header>

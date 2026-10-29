@@ -55,7 +55,7 @@ interface AssessmentStoreState {
   selectedProduct: InsuranceProduct | null;
   customization: PolicyCustomization | null;
   booking: BookingConfirmation | null;
-  currentStage: number; // 1: Assessment, 2: Results, 3: Products, 4: Advisory, 5: Issuance Readiness
+  currentStage: number; // 1: Assessment, 2: Results, 3: Products, 4: Advisory
 }
 
 const initialStoreState: AssessmentStoreState = {
