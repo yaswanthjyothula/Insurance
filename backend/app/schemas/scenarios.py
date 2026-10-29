@@ -1,0 +1,33 @@
+from typing import Dict, Any, Optional
+from pydantic import BaseModel, Field
+from app.schemas.financial import AssessmentInput, AssessmentResult
+
+class ScenarioInput(BaseModel):
+    scenario_type: str = Field(..., description="another_child, retire_55, income_drop_20, loan_cleared, add_home_loan, custom")
+    title: str = Field(..., description="Human-readable scenario title")
+    description: str = Field("", description="Context or user notes")
+    overrides: Dict[str, Any] = Field(default_factory=dict, description="Fields modified in the baseline AssessmentInput")
+
+class ScenarioDiff(BaseModel):
+    field: str
+    label: str
+    baseline_value: Any
+    scenario_value: Any
+    difference_str: str
+
+class ScenarioComparisonResult(BaseModel):
+    scenario_id: str
+    scenario_type: str
+    title: str
+    description: str
+    baseline_result: AssessmentResult
+    scenario_result: AssessmentResult
+    diffs: list[ScenarioDiff]
+    cover_difference: float
+    estimated_premium_difference: float
+    explanation: str
+
+class ScenarioCompareRequest(BaseModel):
+    baseline_input: AssessmentInput
+    scenario: ScenarioInput
+
