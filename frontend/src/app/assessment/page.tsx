@@ -18,10 +18,6 @@ import {
   AlertCircle,
   RotateCcw,
   Check,
-  Zap,
-  Lock,
-  X,
-  ChevronRight,
   RefreshCw
 } from "lucide-react";
 import { JourneyProgress } from "@/components/layout/journey-progress";
@@ -35,7 +31,6 @@ import {
   DEMO_FORM,
   digitsOnly,
   fromInput,
-  fromBankProfile,
   groupIN,
   toInput,
   validate,
@@ -44,7 +39,6 @@ import {
   type FormState,
   type GoalForm
 } from "@/lib/assessment-form";
-import type { BankProfile } from "@/types/banking";
 
 const DRAFT_KEY = "lifesure_assessment_draft";
 const STEPS = [
@@ -55,120 +49,6 @@ const STEPS = [
   { label: "Review", icon: FileCheck2 },
 ];
 
-const FALLBACK_BANK_PROFILES: BankProfile[] = [
-  {
-    id: "hdfc_corporate",
-    bank_name: "HDFC Bank",
-    bank_code: "HDFC",
-    account_type: "Corporate Classic Salary Account",
-    masked_account: "•••• 4819",
-    holder_name: "Praveen Sharma",
-    kyc_status: "Verified (CKYC Compliant)",
-    cibil_score: 785,
-    monthly_salary_credit: 150000,
-    annual_income: 1800000,
-    monthly_expenses_inferred: 60000,
-    annual_expenses: 720000,
-    age: 32,
-    employment_type: "salaried",
-    dependents_count: 2,
-    active_home_loan_balance: 3500000,
-    active_other_loans_balance: 0,
-    liquid_savings_balance: 650000,
-    existing_term_cover: 5000000,
-    support_horizon_years: 20,
-    buffer_months: 6,
-    retirement_age: 60,
-    smoker_status: "no",
-    future_goals: [{ type: "education", name: "Child Higher Education Fund", cost: "2500000", years: "14" }],
-    verification_badge: "RBI Account Aggregator (Anumati AA) Verified",
-    consent_statement: "Consent ID: AA-HDFC-991204 granted via Anumati Account Aggregator for automated financial planning assessment."
-  },
-  {
-    id: "icici_wealth",
-    bank_name: "ICICI Bank",
-    bank_code: "ICICI",
-    account_type: "Wealth Management Executive Salary",
-    masked_account: "•••• 8902",
-    holder_name: "Ananya Sen",
-    kyc_status: "Verified (CKYC Compliant)",
-    cibil_score: 810,
-    monthly_salary_credit: 250000,
-    annual_income: 3000000,
-    monthly_expenses_inferred: 100000,
-    annual_expenses: 1200000,
-    age: 38,
-    employment_type: "salaried",
-    dependents_count: 3,
-    active_home_loan_balance: 6500000,
-    active_other_loans_balance: 800000,
-    liquid_savings_balance: 1500000,
-    existing_term_cover: 10000000,
-    support_horizon_years: 22,
-    buffer_months: 9,
-    retirement_age: 58,
-    smoker_status: "no",
-    future_goals: [{ type: "education", name: "Two Children Higher Education", cost: "5000000", years: "10" }],
-    verification_badge: "ICICI iMobile Direct Bureau Sync (CIBIL 810)",
-    consent_statement: "Direct net-banking API integration linked to verified PAN and salary statement."
-  },
-  {
-    id: "sbi_csp",
-    bank_name: "State Bank of India",
-    bank_code: "SBI",
-    account_type: "Corporate Salary Package (Gold)",
-    masked_account: "•••• 3144",
-    holder_name: "Rahul Verma",
-    kyc_status: "Verified (CKYC Compliant)",
-    cibil_score: 760,
-    monthly_salary_credit: 95000,
-    annual_income: 1140000,
-    monthly_expenses_inferred: 40000,
-    annual_expenses: 480000,
-    age: 29,
-    employment_type: "salaried",
-    dependents_count: 1,
-    active_home_loan_balance: 2200000,
-    active_other_loans_balance: 200000,
-    liquid_savings_balance: 350000,
-    existing_term_cover: 2500000,
-    support_horizon_years: 25,
-    buffer_months: 6,
-    retirement_age: 60,
-    smoker_status: "no",
-    future_goals: [{ type: "property", name: "Home Renovation & Expansion", cost: "1500000", years: "8" }],
-    verification_badge: "YONO SBI Open Banking & Account Aggregator",
-    consent_statement: "Consent authenticated via SBI YONO Open Banking secure token."
-  },
-  {
-    id: "axis_burgundy",
-    bank_name: "Axis Bank",
-    bank_code: "AXIS",
-    account_type: "Burgundy Corporate Salary Account",
-    masked_account: "•••• 7261",
-    holder_name: "Meera Nair",
-    kyc_status: "Verified (CKYC Compliant)",
-    cibil_score: 795,
-    monthly_salary_credit: 185000,
-    annual_income: 2220000,
-    monthly_expenses_inferred: 75000,
-    annual_expenses: 900000,
-    age: 34,
-    employment_type: "salaried",
-    dependents_count: 2,
-    active_home_loan_balance: 4500000,
-    active_other_loans_balance: 450000,
-    liquid_savings_balance: 800000,
-    existing_term_cover: 5000000,
-    support_horizon_years: 20,
-    buffer_months: 6,
-    retirement_age: 60,
-    smoker_status: "no",
-    future_goals: [{ type: "education", name: "International Master's Education", cost: "3500000", years: "12" }],
-    verification_badge: "Axis Open Banking & Experian Bureau Link",
-    consent_statement: "Verified payroll direct deposit history & Experian active credit lines."
-  }
-];
 
 const labelCls = "block text-[13.5px] font-bold text-[#24212B] uppercase tracking-[0.12em] mb-3";
 const hintCls = "text-[14.5px] text-[#5A5566] font-medium mt-2.5 block";
@@ -181,7 +61,6 @@ function Field({
   optional, 
   hint, 
   error, 
-  verified,
   children 
 }: { 
   id: string; 
@@ -189,7 +68,6 @@ function Field({
   optional?: boolean; 
   hint?: React.ReactNode; 
   error?: string; 
-  verified?: boolean;
   children: React.ReactNode 
 }) {
   return (
@@ -199,12 +77,6 @@ function Field({
           {label}
           {optional && <span className="ml-2 normal-case tracking-normal font-medium text-[#6F6A7C]">optional</span>}
         </label>
-        {verified && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#E8F8F0] text-[#0F5132] border border-[#10B981]/30">
-            <CheckCircle2 className="w-3 h-3 text-[#10B981]" />
-            NetBanking Verified
-          </span>
-        )}
       </div>
       {children}
       {error ? (
@@ -266,26 +138,6 @@ export default function AssessmentPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
-
-  // Retail Banking 1-Click Pre-fill States
-  const [bankProfiles, setBankProfiles] = useState<BankProfile[]>(FALLBACK_BANK_PROFILES);
-  const [selectedBankModal, setSelectedBankModal] = useState<BankProfile | null>(null);
-  const [connectedBank, setConnectedBank] = useState<BankProfile | null>(null);
-  const [isPreFilling, setIsPreFilling] = useState(false);
-  const [preFillMessage, setPreFillMessage] = useState<string | null>(null);
-
-  // Load verified banking profiles from API
-  useEffect(() => {
-    fetchFromAPI("/banking/profiles")
-      .then((data: BankProfile[]) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setBankProfiles(data);
-        }
-      })
-      .catch(() => {
-        // Fallback initialized by default
-      });
-  }, []);
 
   // Restore earlier answers
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -396,8 +248,6 @@ export default function AssessmentPage() {
     setAttempted({});
     setVisited({ 0: true });
     setRestored(false);
-    setConnectedBank(null);
-    setPreFillMessage(null);
     setStep(0);
     setFormError(null);
     resetAll();
@@ -408,23 +258,7 @@ export default function AssessmentPage() {
     setForm(DEMO_FORM);
     setErrors({});
     setRestored(false);
-    setConnectedBank(null);
     setFormError(null);
-  };
-
-  // Perform 1-Click Pre-fill from selected bank
-  const handleApplyBankPreFill = (profile: BankProfile) => {
-    setIsPreFilling(true);
-    setTimeout(() => {
-      const newForm = fromBankProfile(profile);
-      setForm(newForm);
-      setConnectedBank(profile);
-      setSelectedBankModal(null);
-      setIsPreFilling(false);
-      setErrors({});
-      setFormError(null);
-      setPreFillMessage(`Verified data successfully imported from ${profile.bank_name} (${profile.masked_account}) via RBI Account Aggregator.`);
-    }, 700);
   };
 
   const isEmpty = JSON.stringify(form) === JSON.stringify(BLANK_FORM);
@@ -459,7 +293,7 @@ export default function AssessmentPage() {
                 Life Insurance Needs Assessment
               </h1>
               <p className="text-[17px] leading-[1.55] text-[#5A5566] mt-3 mb-0">
-                Answer a few questions about your finances and family, or connect your retail bank account for instant 1-click pre-fill.
+                Answer a few questions about your finances and family. It takes about two minutes.
               </p>
             </div>
             <button
@@ -472,106 +306,6 @@ export default function AssessmentPage() {
           </div>
         </div>
 
-        {/* ⚡ 1-Click Retail Banking Pre-Fill Bar */}
-        <div className="bg-[#FFFFFF] rounded-3xl border border-[#D9D3E8] p-6 sm:p-8 shadow-sm space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E8E5F0]">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-[#E9E4FF] text-[#7957FF]">
-                  <Zap className="w-3 h-3 fill-[#7957FF]" />
-                  BFSI Banking Integration
-                </span>
-                <span className="text-[11px] font-bold text-[#10B981] bg-[#E8F8F0] px-2 py-0.5 rounded-full border border-[#10B981]/30">
-                  RBI Account Aggregator (AA) Supported
-                </span>
-              </div>
-              <h3 className="text-lg font-extrabold text-[#24212B]">
-                1-Click NetBanking Salary & Credit Bureau Pre-Fill
-              </h3>
-              <p className="text-xs text-[#5A5566] mt-0.5">
-                Bypass manual data entry. Connect your salary bank account to import verified monthly payroll, active home loans, and savings balance.
-              </p>
-            </div>
-
-            {connectedBank ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-[#0F5132] bg-[#E8F8F0] px-3 py-1.5 rounded-xl border border-[#10B981]/40 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
-                  Connected: {connectedBank.bank_name}
-                </span>
-                <button
-                  type="button"
-                  onClick={clearForm}
-                  className="text-xs text-[#6F6A7C] hover:text-[#C23B3B] font-semibold underline px-2 py-1"
-                >
-                  Disconnect
-                </button>
-              </div>
-            ) : null}
-          </div>
-
-          {/* Bank Selection Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {bankProfiles.map((bank) => {
-              const isSelected = connectedBank?.id === bank.id;
-              return (
-                <button
-                  key={bank.id}
-                  type="button"
-                  onClick={() => setSelectedBankModal(bank)}
-                  className={`p-4 rounded-2xl text-left border transition-all relative group ${
-                    isSelected
-                      ? "border-2 border-[#7957FF] bg-[#F7F5FF] shadow-sm"
-                      : "border-[#D9D3E8] bg-[#FAFAFE] hover:border-[#7957FF]/60 hover:bg-[#FFFFFF]"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-black uppercase tracking-wider text-[#7957FF] flex items-center gap-1.5">
-                      <Landmark className="w-3.5 h-3.5 text-[#7957FF]" />
-                      {bank.bank_name}
-                    </span>
-                    <span className="text-[10px] font-bold text-[#5A5566] bg-[#FFFFFF] px-2 py-0.5 rounded-md border border-[#E8E5F0]">
-                      {bank.masked_account}
-                    </span>
-                  </div>
-
-                  <div className="text-sm font-extrabold text-[#24212B] truncate mb-0.5">
-                    {bank.holder_name}
-                  </div>
-                  <div className="text-xs text-[#5A5566] mb-3">
-                    Salary: <span className="font-bold text-[#24212B]">{formatINR(bank.monthly_salary_credit, { compact: true })}/mo</span>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-[#E8E5F0] text-[11px]">
-                    <span className="text-[#0F5132] font-extrabold bg-[#E8F8F0] px-1.5 py-0.5 rounded">
-                      CIBIL {bank.cibil_score}
-                    </span>
-                    <span className="text-[#7957FF] font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                      {isSelected ? "Active" : "Pre-fill"} <ChevronRight className="w-3 h-3" />
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Pre-fill Notification Banner */}
-        {preFillMessage && (
-          <div className="p-4 rounded-2xl bg-[#E8F8F0] border border-[#10B981]/40 text-[#0F5132] flex items-center justify-between gap-3 text-sm font-semibold animate-fadeIn">
-            <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0" />
-              <span>{preFillMessage}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => goTo(4)}
-              className="px-3 py-1.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-[#FFFFFF] text-xs font-bold shrink-0 transition-colors"
-            >
-              Review All Imported Values →
-            </button>
-          </div>
-        )}
 
         {/* Step tabs */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3" role="tablist" aria-label="Assessment steps" data-no-reveal>
@@ -601,7 +335,7 @@ export default function AssessmentPage() {
           })}
         </div>
 
-        {restored && !connectedBank && (
+        {restored && (
           <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 rounded-xl bg-[#E9E4FF] border border-[#D9D3E8] text-[15px]" data-no-reveal>
             <span className="flex items-center gap-2.5"><Info className="w-4 h-4 text-[#7957FF]" />We restored the answers you entered earlier.</span>
             <button type="button" onClick={clearForm} className="inline-flex items-center gap-1.5 font-bold text-[#7957FF] hover:underline"><RotateCcw className="w-4 h-4" />Start over</button>
@@ -621,10 +355,10 @@ export default function AssessmentPage() {
             <>
               <StepHeader icon={User} n={1} title="Personal & employment" desc="Your age and earning horizon set how long your family would need income support." />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-11 gap-y-9">
-                <Field id="age" label="Current age" error={e("age")} hint="Between 18 and 75" verified={Boolean(connectedBank)}>
+                <Field id="age" label="Current age" error={e("age")} hint="Between 18 and 75">
                   <TextInput id="age" value={form.age} onChange={(v) => set("age", v)} placeholder="e.g. 32" suffix="years" error={e("age")} max={2} />
                 </Field>
-                <Field id="employment" label="Employment type" error={e("employment")} verified={Boolean(connectedBank)}>
+                <Field id="employment" label="Employment type" error={e("employment")}>
                   <select
                     id="employment"
                     value={form.employment}
@@ -639,10 +373,10 @@ export default function AssessmentPage() {
                     <option value="other">Other / Freelance</option>
                   </select>
                 </Field>
-                <Field id="income" label="Annual gross income" error={e("income")} hint={money(form.income, " per year") ?? "Total yearly income before tax"} verified={Boolean(connectedBank)}>
+                <Field id="income" label="Annual gross income" error={e("income")} hint={money(form.income, " per year") ?? "Total yearly income before tax"}>
                   <TextInput id="income" money prefix="₹" value={form.income} onChange={(v) => set("income", v)} placeholder="e.g. 18,00,000" error={e("income")} />
                 </Field>
-                <Field id="expenses" label="Annual living expenses" error={e("expenses")} hint={money(form.expenses, " per year") ?? "Annual household expenditure excluding EMIs"} verified={Boolean(connectedBank)}>
+                <Field id="expenses" label="Annual living expenses" error={e("expenses")} hint={money(form.expenses, " per year") ?? "Annual household expenditure excluding EMIs"}>
                   <TextInput id="expenses" money prefix="₹" value={form.expenses} onChange={(v) => set("expenses", v)} placeholder="e.g. 7,20,000" error={e("expenses")} />
                 </Field>
                 <Field id="retire" label="Planned retirement age" optional error={e("retire")} hint="Defaults to 60 if left blank">
@@ -674,7 +408,7 @@ export default function AssessmentPage() {
             <>
               <StepHeader icon={Users} n={2} title="Family & financial dependents" desc="Calculate the horizon over which your family will require income replacement." />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-11 gap-y-9">
-                <Field id="dependents" label="Number of financial dependents" error={e("dependents")} hint="Children, non-earning spouse, or dependent parents" verified={Boolean(connectedBank)}>
+                <Field id="dependents" label="Number of financial dependents" error={e("dependents")} hint="Children, non-earning spouse, or dependent parents">
                   <TextInput id="dependents" value={form.dependents} onChange={(v) => set("dependents", v)} placeholder="e.g. 2" max={2} error={e("dependents")} />
                 </Field>
                 <Field id="supportYears" label="Years of dependency support" optional error={e("supportYears")} hint="Defaults to the window until retirement">
@@ -691,16 +425,16 @@ export default function AssessmentPage() {
             <>
               <StepHeader icon={Landmark} n={3} title="Debt liabilities & existing assets" desc="Existing loans must be shielded, while liquid assets reduce the net gap." />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-11 gap-y-9">
-                <Field id="homeLoan" label="Outstanding Home Loan" optional error={e("homeLoan")} hint={money(form.homeLoan) ?? "Principal balance on mortgage"} verified={Boolean(connectedBank)}>
+                <Field id="homeLoan" label="Outstanding Home Loan" optional error={e("homeLoan")} hint={money(form.homeLoan) ?? "Principal balance on mortgage"}>
                   <TextInput id="homeLoan" money prefix="₹" value={form.homeLoan} onChange={(v) => set("homeLoan", v)} placeholder="e.g. 35,00,000" error={e("homeLoan")} />
                 </Field>
-                <Field id="otherLoans" label="Personal / Vehicle / Education Loans" optional error={e("otherLoans")} hint={money(form.otherLoans) ?? "Other outstanding liabilities"} verified={Boolean(connectedBank)}>
+                <Field id="otherLoans" label="Personal / Vehicle / Education Loans" optional error={e("otherLoans")} hint={money(form.otherLoans) ?? "Other outstanding liabilities"}>
                   <TextInput id="otherLoans" money prefix="₹" value={form.otherLoans} onChange={(v) => set("otherLoans", v)} placeholder="e.g. 5,00,000" error={e("otherLoans")} />
                 </Field>
-                <Field id="existingCover" label="Existing Active Life Cover" optional error={e("existingCover")} hint={money(form.existingCover) ?? "Current sum assured across all active policies"} verified={Boolean(connectedBank)}>
+                <Field id="existingCover" label="Existing Active Life Cover" optional error={e("existingCover")} hint={money(form.existingCover) ?? "Current sum assured across all active policies"}>
                   <TextInput id="existingCover" money prefix="₹" value={form.existingCover} onChange={(v) => set("existingCover", v)} placeholder="e.g. 50,00,000" error={e("existingCover")} />
                 </Field>
-                <Field id="liquidAssets" label="Eligible Liquid Assets & FDs" optional error={e("liquidAssets")} hint={money(form.liquidAssets) ?? "Savings, mutual funds, FDs (exclude primary home)"} verified={Boolean(connectedBank)}>
+                <Field id="liquidAssets" label="Eligible Liquid Assets & FDs" optional error={e("liquidAssets")} hint={money(form.liquidAssets) ?? "Savings, mutual funds, FDs (exclude primary home)"}>
                   <TextInput id="liquidAssets" money prefix="₹" value={form.liquidAssets} onChange={(v) => set("liquidAssets", v)} placeholder="e.g. 10,00,000" error={e("liquidAssets")} />
                 </Field>
               </div>
@@ -788,19 +522,6 @@ export default function AssessmentPage() {
             <>
               <StepHeader icon={FileCheck2} n={5} title="Review your answers" desc="Check everything below. Use Edit to change a section, then calculate your coverage." />
               
-              {connectedBank && (
-                <div className="p-4 rounded-2xl bg-[#E8F8F0] border border-[#10B981]/40 text-[#0F5132] text-xs font-semibold flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0" />
-                    <span>
-                      Data Source: <strong>{connectedBank.bank_name}</strong> ({connectedBank.masked_account}) • CIBIL Score: <strong>{connectedBank.cibil_score}</strong> ({connectedBank.kyc_status})
-                    </span>
-                  </div>
-                  <span className="text-[11px] font-black uppercase tracking-wider bg-[#10B981]/15 text-[#0F5132] px-2.5 py-0.5 rounded-full">
-                    Account Aggregator Verified
-                  </span>
-                </div>
-              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {[
@@ -854,104 +575,6 @@ export default function AssessmentPage() {
           </div>
         </div>
       </main>
-
-      {/* Account Aggregator Consent & Pre-Fill Modal */}
-      {selectedBankModal && (
-        <div className="fixed inset-0 z-50 bg-[#24212B]/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#FFFFFF] border border-[#D9D3E8] rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative animate-scaleIn">
-            <button
-              onClick={() => setSelectedBankModal(null)}
-              className="absolute top-5 right-5 text-[#6F6A7C] hover:text-[#24212B] p-1.5 rounded-full hover:bg-[#F4F0FF]"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-black uppercase tracking-wider text-[#7957FF] flex items-center gap-1.5">
-                  <Landmark className="w-4 h-4 text-[#7957FF]" />
-                  {selectedBankModal.bank_name}
-                </span>
-                <span className="text-[10px] font-bold text-[#0F5132] bg-[#E8F8F0] px-2 py-0.5 rounded-full">
-                  CIBIL {selectedBankModal.cibil_score}
-                </span>
-              </div>
-              <h2 className="text-xl font-extrabold text-[#24212B]">
-                Authenticate & Pre-Fill Assessment
-              </h2>
-              <p className="text-xs text-[#5A5566]">
-                Review the verified banking and credit bureau parameters that will be imported into your advisory assessment.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-[#F8F7FC] border border-[#E8E5F0] space-y-3 text-xs">
-              <div className="flex justify-between items-center py-1 border-b border-[#E8E5F0]">
-                <span className="text-[#5A5566]">Account Holder:</span>
-                <span className="font-extrabold text-[#24212B]">{selectedBankModal.holder_name}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#E8E5F0]">
-                <span className="text-[#5A5566]">Account:</span>
-                <span className="font-bold text-[#24212B]">{selectedBankModal.account_type} ({selectedBankModal.masked_account})</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#E8E5F0]">
-                <span className="text-[#5A5566]">Verified Monthly Salary Credit:</span>
-                <span className="font-extrabold text-[#7957FF]">₹{selectedBankModal.monthly_salary_credit.toLocaleString("en-IN")}/mo (₹{selectedBankModal.annual_income.toLocaleString("en-IN")}/yr)</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#E8E5F0]">
-                <span className="text-[#5A5566]">Inferred Living Debits:</span>
-                <span className="font-bold text-[#24212B]">₹{selectedBankModal.annual_expenses.toLocaleString("en-IN")}/yr</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#E8E5F0]">
-                <span className="text-[#5A5566]">Active Debt (CIBIL Bureau):</span>
-                <span className="font-extrabold text-[#24212B]">₹{selectedBankModal.active_home_loan_balance.toLocaleString("en-IN")}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-[#E8E5F0]">
-                <span className="text-[#5A5566]">Liquid Savings & FDs:</span>
-                <span className="font-bold text-[#24212B]">₹{selectedBankModal.liquid_savings_balance.toLocaleString("en-IN")}</span>
-              </div>
-              <div className="flex justify-between items-center py-1">
-                <span className="text-[#5A5566]">Existing Life Cover:</span>
-                <span className="font-bold text-[#24212B]">₹{selectedBankModal.existing_term_cover.toLocaleString("en-IN")}</span>
-              </div>
-            </div>
-
-            <div className="p-3 rounded-xl bg-[#F4F0FF] border border-[#7957FF]/20 flex items-start gap-2.5 text-[11px] text-[#5A5566]">
-              <Lock className="w-4 h-4 text-[#7957FF] shrink-0 mt-0.5" />
-              <span>
-                {selectedBankModal.consent_statement} Compliant with Indian DPDP Act, 2023. No credentials stored.
-              </span>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setSelectedBankModal(null)}
-                className="px-5 py-2.5 rounded-xl border border-[#D9D3E8] text-xs font-bold text-[#5A5566] hover:bg-[#F8F7FC]"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={isPreFilling}
-                onClick={() => handleApplyBankPreFill(selectedBankModal)}
-                className="px-6 py-2.5 rounded-xl bg-[#7957FF] hover:bg-[#6444E6] text-[#FFFFFF] text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-md transition-all"
-              >
-                {isPreFilling ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#FFFFFF]" />
-                    <span>Verifying AA Token...</span>
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-3.5 h-3.5 fill-[#FFFFFF]" />
-                    <span>Confirm & Pre-fill Form</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

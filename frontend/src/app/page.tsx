@@ -12,7 +12,8 @@ import {
   ListChecks,
   Headset,
   ArrowRight,
-  LogIn
+  LogIn,
+  Compass
 } from "lucide-react";
 import { formatINR } from "@/lib/utils";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -109,6 +110,16 @@ export default function HomePage() {
       href: "/insurance/other",
       metric: "Instant Issuance"
     }
+  ];
+
+  const insuranceQuestions = [
+    { q: "My family depends on my income", href: "/insurance/term", tag: "Term" },
+    { q: "I want hospital bills covered", href: "/insurance/health", tag: "Health" },
+    { q: "I want guaranteed savings for a goal", href: "/insurance/life", tag: "Life" },
+    { q: "I want to invest long term and have cover", href: "/insurance/investment-linked", tag: "ULIP" },
+    { q: "I own a home or drive a vehicle", href: "/insurance/general", tag: "General" },
+    { q: "I run a company", href: "/insurance/business", tag: "Business" },
+    { q: "I worry about online fraud", href: "/insurance/other", tag: "Other" },
   ];
 
   const tools = [
@@ -398,6 +409,30 @@ export default function HomePage() {
                 <div className="flex justify-between gap-3 pt-[18px] border-t border-[#D9D3E8] text-[15px] font-bold"><span>{c.metric}</span><span className="text-[#7957FF]">Explore →</span></div>
               </Link>
             ))}
+          </div>
+
+          {/* Not sure where to start? */}
+          <div className="flex flex-col gap-5 pt-10 border-t border-[#D9D3E8]">
+            <h3 className="m-0 text-[22px] font-extrabold tracking-[-0.025em] flex items-center gap-3">
+              <span className="w-8 h-8 rounded-full bg-[#E9E4FF] text-[#7957FF] flex items-center justify-center">
+                <Compass className="w-4 h-4" />
+              </span>
+              Not sure where to start?
+            </h3>
+            <div className="flex flex-wrap gap-3">
+              {insuranceQuestions.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="inline-flex items-center gap-2.5 min-h-12 px-5 py-2.5 rounded-2xl border border-[#D9D3E8] bg-white font-semibold text-[15px] shadow-[0_3px_0_#D9D3E8] hover:-translate-y-0.5 hover:border-[#7957FF] hover:shadow-[0_4px_0_#7957FF,0_8px_16px_rgba(121,87,255,0.12)] transition-all"
+                >
+                  <span>{item.q}</span>
+                  <span className="text-[12px] font-bold px-2.5 py-0.5 rounded-lg bg-[#E9E4FF] text-[#7957FF]">
+                    {item.tag}
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>
