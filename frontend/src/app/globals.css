@@ -589,9 +589,6 @@
   .h-\[52px\] {
     height: 52px;
   }
-  .h-\[54px\] {
-    height: 54px;
-  }
   .h-\[56px\] {
     height: 56px;
   }
@@ -693,9 +690,6 @@
   }
   .w-12 {
     width: calc(var(--spacing) * 12);
-  }
-  .w-14 {
-    width: calc(var(--spacing) * 14);
   }
   .w-16 {
     width: calc(var(--spacing) * 16);
@@ -1109,11 +1103,11 @@
   .gap-x-6 {
     column-gap: calc(var(--spacing) * 6);
   }
+  .gap-x-9 {
+    column-gap: calc(var(--spacing) * 9);
+  }
   .gap-x-10 {
     column-gap: calc(var(--spacing) * 10);
-  }
-  .gap-x-11 {
-    column-gap: calc(var(--spacing) * 11);
   }
   :where(.space-x-0\.5 > :not(:last-child)) {
     --tw-space-x-reverse: 0;
@@ -1156,8 +1150,8 @@
   .gap-y-6 {
     row-gap: calc(var(--spacing) * 6);
   }
-  .gap-y-9 {
-    row-gap: calc(var(--spacing) * 9);
+  .gap-y-7 {
+    row-gap: calc(var(--spacing) * 7);
   }
   :where(.divide-y > :not(:last-child)) {
     --tw-divide-y-reverse: 0;
@@ -1730,9 +1724,6 @@
   .py-9 {
     padding-block: calc(var(--spacing) * 9);
   }
-  .py-10 {
-    padding-block: calc(var(--spacing) * 10);
-  }
   .py-12 {
     padding-block: calc(var(--spacing) * 12);
   }
@@ -2020,6 +2011,9 @@
   .text-\[clamp\(22px\,2\.4vw\,30px\)\] {
     font-size: clamp(22px, 2.4vw, 30px);
   }
+  .text-\[clamp\(26px\,2\.8vw\,36px\)\] {
+    font-size: clamp(26px, 2.8vw, 36px);
+  }
   .text-\[clamp\(26px\,3\.2vw\,48px\)\] {
     font-size: clamp(26px, 3.2vw, 48px);
   }
@@ -2046,9 +2040,6 @@
   }
   .text-\[clamp\(30px\,3\.8vw\,56px\)\] {
     font-size: clamp(30px, 3.8vw, 56px);
-  }
-  .text-\[clamp\(32px\,3\.6vw\,48px\)\] {
-    font-size: clamp(32px, 3.6vw, 48px);
   }
   .text-\[clamp\(34px\,3\.6vw\,48px\)\] {
     font-size: clamp(34px, 3.6vw, 48px);
@@ -2083,6 +2074,10 @@
     --tw-leading: calc(var(--spacing) * 7);
     line-height: calc(var(--spacing) * 7);
   }
+  .leading-\[1\.1\] {
+    --tw-leading: 1.1;
+    line-height: 1.1;
+  }
   .leading-\[1\.02\] {
     --tw-leading: 1.02;
     line-height: 1.02;
@@ -2090,10 +2085,6 @@
   .leading-\[1\.3\] {
     --tw-leading: 1.3;
     line-height: 1.3;
-  }
-  .leading-\[1\.04\] {
-    --tw-leading: 1.04;
-    line-height: 1.04;
   }
   .leading-\[1\.05\] {
     --tw-leading: 1.05;
@@ -3064,9 +3055,6 @@
     .sm\:p-10 {
       padding: calc(var(--spacing) * 10);
     }
-    .sm\:p-11 {
-      padding: calc(var(--spacing) * 11);
-    }
     .sm\:px-6 {
       padding-inline: calc(var(--spacing) * 6);
     }
@@ -3253,6 +3241,10 @@
   --bg-primary: #FFFFFF;
   --text-main: #24212B;
   --accent-purple: #7957FF;
+}
+html {
+  color-scheme: light only;
+  background-color: #FFFFFF;
 }
 body {
   background-color: var(--bg-primary);

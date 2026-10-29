@@ -19,6 +19,12 @@
   --color-brand-border: #E8E5F0;
 }
 
+/* Light-only site: stop dark-mode browsers and extensions from darkening the page, form fields or scrollbars */
+html {
+  color-scheme: light only;
+  background-color: #FFFFFF;
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-main);

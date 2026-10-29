@@ -113,8 +113,8 @@ function TextInput({ id, value, onChange, placeholder, error, prefix, suffix, mo
 
 function StepHeader({ icon: Icon, n, title, desc }: { icon: React.ComponentType<{ className?: string }>; n: number; title: string; desc: string }) {
   return (
-    <div className="flex gap-4 items-start pb-7 border-b border-[#D9D3E8]">
-      <span className="flex-none w-14 h-14 rounded-2xl grid place-items-center text-white bg-gradient-to-br from-[#9A80FF] to-[#7957FF] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_4px_0_#5B3BE6,0_14px_22px_-8px_rgba(121,87,255,0.7)]"><Icon className="w-6 h-6" /></span>
+    <div className="flex gap-4 items-start pb-5 border-b border-[#D9D3E8]">
+      <span className="flex-none w-12 h-12 rounded-2xl grid place-items-center text-white bg-gradient-to-br from-[#9A80FF] to-[#7957FF] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_4px_0_#5B3BE6,0_14px_22px_-8px_rgba(121,87,255,0.7)]"><Icon className="w-6 h-6" /></span>
       <div className="flex flex-col gap-1.5">
         <h2 className="m-0 text-[clamp(22px,2.4vw,30px)] font-extrabold tracking-[-0.03em] text-[#24212B]">Step {n}: {title}</h2>
         <p className="m-0 text-base leading-normal text-[#5A5566]">{desc}</p>
@@ -279,27 +279,23 @@ export default function AssessmentPage() {
     <div className="min-h-screen flex flex-col bg-[#F8F7FC] text-[#24212B]">
       <JourneyProgress currentStage={1} />
 
-      <main className="flex-1 max-w-[1100px] w-full mx-auto px-5 sm:px-8 pt-12 pb-28 flex flex-col gap-8">
+      <main className="flex-1 max-w-[1100px] w-full mx-auto px-5 sm:px-8 pt-6 pb-24 flex flex-col gap-5">
         
         {/* Header */}
         <div className="ls-persp">
-          <div data-scroll-tilt="5" className="ls-lip flex flex-col sm:flex-row sm:items-center justify-between gap-7 bg-[#FFFFFF] px-8 sm:px-11 py-10 rounded-3xl border border-[#D9D3E8] [transform-origin:bottom_center]">
+          <div data-scroll-tilt="5" className="ls-lip flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#FFFFFF] px-6 sm:px-8 py-6 rounded-3xl border border-[#D9D3E8] [transform-origin:bottom_center]">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-[#E9E4FF] text-[#7957FF] shadow-[0_3px_0_#D9D3E8] text-[13px] font-bold uppercase tracking-[0.14em] mb-4">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Stage 1 of 4: Assessment Questionnaire
-              </div>
-              <h1 className="m-0 text-[clamp(32px,3.6vw,48px)] leading-[1.04] font-extrabold tracking-[-0.04em]" style={{ color: "#24212B" }}>
+              <h1 className="m-0 text-[clamp(26px,2.8vw,36px)] leading-[1.1] font-extrabold tracking-[-0.04em]" style={{ color: "#24212B" }}>
                 Life Insurance Needs Assessment
               </h1>
-              <p className="text-[17px] leading-[1.55] text-[#5A5566] mt-3 mb-0">
+              <p className="text-[16px] leading-[1.5] text-[#5A5566] mt-2 mb-0">
                 Answer a few questions about your finances and family. It takes about two minutes.
               </p>
             </div>
             <button
               onClick={loadDemo}
               type="button"
-              className="inline-flex items-center justify-center gap-2 h-[54px] px-6 rounded-lg bg-[#FFFFFF] text-[#7957FF] text-base font-bold border border-[#D9D3E8] shrink-0 shadow-[0_4px_0_#D9D3E8,0_16px_28px_-14px_rgba(36,33,43,0.25)] hover:-translate-y-0.5 active:translate-y-[3px] active:shadow-[0_1px_0_#D9D3E8] transition-all"
+              className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-lg bg-[#FFFFFF] text-[#7957FF] text-[15px] font-bold border border-[#D9D3E8] shrink-0 shadow-[0_4px_0_#D9D3E8,0_16px_28px_-14px_rgba(36,33,43,0.25)] hover:-translate-y-0.5 active:translate-y-[3px] active:shadow-[0_1px_0_#D9D3E8] transition-all"
             >
               See a sample profile
             </button>
@@ -318,7 +314,7 @@ export default function AssessmentPage() {
                 aria-selected={active}
                 onClick={() => goTo(i)}
                 type="button"
-                className={`flex items-center justify-center gap-2.5 h-[60px] px-2 rounded-[10px] text-base font-semibold transition-all border ${
+                className={`flex items-center justify-center gap-2.5 h-12 px-2 rounded-[10px] text-[15px] font-semibold transition-all border ${
                   active
                     ? "bg-[#7957FF] text-[#FFFFFF] border-[#7957FF]"
                     : bad
@@ -350,11 +346,11 @@ export default function AssessmentPage() {
         )}
 
         {/* Form Body */}
-        <div ref={formRef} className="ls-lip bg-[#FFFFFF] rounded-3xl border border-[#D9D3E8] p-7 sm:p-11 flex flex-col gap-9" data-no-reveal>
+        <div ref={formRef} className="ls-lip bg-[#FFFFFF] rounded-3xl border border-[#D9D3E8] p-6 sm:p-9 flex flex-col gap-7" data-no-reveal>
           {step === 0 && (
             <>
               <StepHeader icon={User} n={1} title="Personal & employment" desc="Your age and earning horizon set how long your family would need income support." />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-11 gap-y-9">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-9 gap-y-7">
                 <Field id="age" label="Current age" error={e("age")} hint="Between 18 and 75">
                   <TextInput id="age" value={form.age} onChange={(v) => set("age", v)} placeholder="e.g. 32" suffix="years" error={e("age")} max={2} />
                 </Field>
@@ -407,7 +403,7 @@ export default function AssessmentPage() {
           {step === 1 && (
             <>
               <StepHeader icon={Users} n={2} title="Family & financial dependents" desc="Calculate the horizon over which your family will require income replacement." />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-11 gap-y-9">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-9 gap-y-7">
                 <Field id="dependents" label="Number of financial dependents" error={e("dependents")} hint="Children, non-earning spouse, or dependent parents">
                   <TextInput id="dependents" value={form.dependents} onChange={(v) => set("dependents", v)} placeholder="e.g. 2" max={2} error={e("dependents")} />
                 </Field>
@@ -424,7 +420,7 @@ export default function AssessmentPage() {
           {step === 2 && (
             <>
               <StepHeader icon={Landmark} n={3} title="Debt liabilities & existing assets" desc="Existing loans must be shielded, while liquid assets reduce the net gap." />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-11 gap-y-9">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-9 gap-y-7">
                 <Field id="homeLoan" label="Outstanding Home Loan" optional error={e("homeLoan")} hint={money(form.homeLoan) ?? "Principal balance on mortgage"}>
                   <TextInput id="homeLoan" money prefix="₹" value={form.homeLoan} onChange={(v) => set("homeLoan", v)} placeholder="e.g. 35,00,000" error={e("homeLoan")} />
                 </Field>
