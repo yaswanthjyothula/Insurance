@@ -289,6 +289,9 @@
   .top-3\.5 {
     top: calc(var(--spacing) * 3.5);
   }
+  .top-5 {
+    top: calc(var(--spacing) * 5);
+  }
   .top-12 {
     top: calc(var(--spacing) * 12);
   }
@@ -306,6 +309,9 @@
   }
   .right-4 {
     right: calc(var(--spacing) * 4);
+  }
+  .right-5 {
+    right: calc(var(--spacing) * 5);
   }
   .bottom-0 {
     bottom: 0px;
@@ -441,6 +447,9 @@
   }
   .mb-0 {
     margin-bottom: 0px;
+  }
+  .mb-0\.5 {
+    margin-bottom: calc(var(--spacing) * 0.5);
   }
   .mb-1 {
     margin-bottom: var(--spacing);
@@ -915,10 +924,6 @@
     --tw-translate-y: calc(calc(1 / 2 * 100%) * -1);
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
-  .translate-y-\[3px\] {
-    --tw-translate-y: 3px;
-    translate: var(--tw-translate-x) var(--tw-translate-y);
-  }
   .\[translate\:0_-50\%\] {
     translate: 0 -50%;
   }
@@ -1127,9 +1132,6 @@
   .gap-x-6 {
     column-gap: calc(var(--spacing) * 6);
   }
-  .gap-x-8 {
-    column-gap: calc(var(--spacing) * 8);
-  }
   .gap-x-10 {
     column-gap: calc(var(--spacing) * 10);
   }
@@ -1293,16 +1295,18 @@
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 1px;
   }
-  .border-dashed {
-    --tw-border-style: dashed;
-    border-style: dashed;
-  }
   .border-none {
     --tw-border-style: none;
     border-style: none;
   }
   .border-\[\#0E7A5F\] {
     border-color: #0E7A5F;
+  }
+  .border-\[\#10B981\]\/30 {
+    border-color: color-mix(in oklab, #10B981 30%, transparent);
+  }
+  .border-\[\#10B981\]\/40 {
+    border-color: color-mix(in oklab, #10B981 40%, transparent);
   }
   .border-\[\#7957FF\] {
     border-color: #7957FF;
@@ -1409,6 +1413,12 @@
   .bg-\[\#9A80FF\]\/25 {
     background-color: color-mix(in oklab, #9A80FF 25%, transparent);
   }
+  .bg-\[\#10B981\] {
+    background-color: #10B981;
+  }
+  .bg-\[\#10B981\]\/15 {
+    background-color: color-mix(in oklab, #10B981 15%, transparent);
+  }
   .bg-\[\#6444E6\] {
     background-color: #6444E6;
   }
@@ -1433,6 +1443,9 @@
   .bg-\[\#E7F6F0\] {
     background-color: #E7F6F0;
   }
+  .bg-\[\#E8F8F0\] {
+    background-color: #E8F8F0;
+  }
   .bg-\[\#E9E4FF\] {
     background-color: #E9E4FF;
   }
@@ -1450,6 +1463,9 @@
   }
   .bg-\[\#F7F4FF\] {
     background-color: #F7F4FF;
+  }
+  .bg-\[\#F7F5FF\] {
+    background-color: #F7F5FF;
   }
   .bg-\[\#F8F7FC\] {
     background-color: #F8F7FC;
@@ -1639,6 +1655,9 @@
   .fill-\[\#7957FF\] {
     fill: #7957FF;
   }
+  .fill-\[\#FFFFFF\] {
+    fill: #FFFFFF;
+  }
   .fill-amber-300 {
     fill: var(--color-amber-300);
   }
@@ -1698,6 +1717,9 @@
   }
   .px-1 {
     padding-inline: var(--spacing);
+  }
+  .px-1\.5 {
+    padding-inline: calc(var(--spacing) * 1.5);
   }
   .px-2 {
     padding-inline: calc(var(--spacing) * 2);
@@ -2301,6 +2323,9 @@
   .text-\[\#0E9F7E\] {
     color: #0E9F7E;
   }
+  .text-\[\#0F5132\] {
+    color: #0F5132;
+  }
   .text-\[\#4A4553\] {
     color: #4A4553;
   }
@@ -2483,10 +2508,6 @@
   }
   .shadow-2xl {
     --tw-shadow: 0 25px 50px -12px var(--tw-shadow-color, rgb(0 0 0 / 0.25));
-    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-  }
-  .shadow-\[0_1px_0_\#CFC5F5\] {
-    --tw-shadow: 0 1px 0 var(--tw-shadow-color, #CFC5F5);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
   .shadow-\[0_2px_10px_rgba\(121\,87\,255\,0\.15\)\] {
@@ -2897,6 +2918,9 @@
     .hover\:border-\[\#7957FF\]\/50:hover {
       border-color: color-mix(in oklab, #7957FF 50%, transparent);
     }
+    .hover\:border-\[\#7957FF\]\/60:hover {
+      border-color: color-mix(in oklab, #7957FF 60%, transparent);
+    }
     .hover\:border-\[\#D9D3E8\]:hover {
       border-color: #D9D3E8;
     }
@@ -2906,6 +2930,9 @@
     .hover\:bg-\[\#7957FF\]:hover {
       background-color: #7957FF;
     }
+    .hover\:bg-\[\#059669\]:hover {
+      background-color: #059669;
+    }
     .hover\:bg-\[\#E9E4FF\]:hover {
       background-color: #E9E4FF;
     }
@@ -2914,6 +2941,9 @@
     }
     .hover\:bg-\[\#F1EEF8\]:hover {
       background-color: #F1EEF8;
+    }
+    .hover\:bg-\[\#F4F0FF\]:hover {
+      background-color: #F4F0FF;
     }
     .hover\:bg-\[\#F8F7FC\]:hover {
       background-color: #F8F7FC;

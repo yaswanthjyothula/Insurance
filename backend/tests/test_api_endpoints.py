@@ -9,6 +9,19 @@ def test_health_check_endpoint():
     assert response.status_code == 200
     assert response.json()["status"] == "healthy"
 
+def test_banking_profiles_endpoints():
+    response = client.get("/api/v1/banking/profiles")
+    assert response.status_code == 200
+    profiles = response.json()
+    assert len(profiles) >= 4
+    hdfc = next(p for p in profiles if p["bank_code"] == "HDFC")
+    assert hdfc["annual_income"] == 1800000.0
+    assert hdfc["cibil_score"] == 785
+
+    single_resp = client.get("/api/v1/banking/profiles/hdfc_corporate")
+    assert single_resp.status_code == 200
+    assert single_resp.json()["bank_name"] == "HDFC Bank"
+
 def test_create_assessment_endpoint():
     payload = {
         "age": 30,

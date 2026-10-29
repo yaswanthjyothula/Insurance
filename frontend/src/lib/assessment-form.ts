@@ -181,5 +181,29 @@ export const DEMO_FORM: FormState = {
   goals: [{ type: "education", name: "Child higher education", cost: "2500000", years: "14" }],
 };
 
+export function fromBankProfile(p: any): FormState {
+  return {
+    age: String(p.age ?? 32),
+    employment: (p.employment_type as FormState["employment"]) || "salaried",
+    income: String(p.annual_income ?? 1800000),
+    expenses: String(p.annual_expenses ?? 720000),
+    retire: String(p.retirement_age ?? 60),
+    smoker: p.smoker_status === "yes" ? "yes" : "no",
+    dependents: String(p.dependents_count ?? 2),
+    supportYears: String(p.support_horizon_years ?? 20),
+    bufferMonths: String(p.buffer_months ?? 6),
+    homeLoan: p.active_home_loan_balance > 0 ? String(p.active_home_loan_balance) : "",
+    otherLoans: p.active_other_loans_balance > 0 ? String(p.active_other_loans_balance) : "",
+    existingCover: p.existing_term_cover > 0 ? String(p.existing_term_cover) : "",
+    liquidAssets: p.liquid_savings_balance > 0 ? String(p.liquid_savings_balance) : "",
+    goals: Array.isArray(p.future_goals) ? p.future_goals.map((g: any) => ({
+      type: (g.type as GoalForm["type"]) || "education",
+      name: g.name || "Higher Education",
+      cost: String(g.cost || "2500000"),
+      years: String(g.years || "14"),
+    })) : [],
+  };
+}
+
 export const digitsOnly = (v: string, max = 12) => v.replace(/[^\d]/g, "").slice(0, max);
 export const groupIN = (v: string) => (v === "" ? "" : Number(v).toLocaleString("en-IN"));

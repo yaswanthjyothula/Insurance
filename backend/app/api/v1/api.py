@@ -53,6 +53,9 @@ from app.services.gemini_assistant import GeminiAssistantService
 
 api_router = APIRouter()
 
+from app.schemas.banking import BankProfile
+from app.services.banking_service import BankingService
+
 @api_router.get("/health")
 def api_health():
     return {
@@ -61,6 +64,19 @@ def api_health():
         "timestamp": "2026-10-28",
         "engine": "deterministic_python"
     }
+
+# --- 0. Retail Banking 1-Click Pre-fill ---
+@api_router.get("/banking/profiles", response_model=List[BankProfile])
+def list_banking_profiles():
+    """Returns verified retail banking salary profiles for 1-click assessment pre-fill."""
+    return BankingService.list_profiles()
+
+@api_router.get("/banking/profiles/{profile_id}", response_model=BankProfile)
+def get_banking_profile(profile_id: str):
+    profile = BankingService.get_profile(profile_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Bank profile not found")
+    return profile
 
 # --- 1. Assessments & Calculations ---
 @api_router.post("/assessments", response_model=AssessmentResult)
