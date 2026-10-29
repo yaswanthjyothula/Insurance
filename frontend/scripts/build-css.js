@@ -34,8 +34,9 @@ if (process.argv.includes('--watch')) {
   console.log('[build-css] Watching src/ for changes...');
   let timeout = null;
   fs.watch(path.join(rootDir, 'src'), { recursive: true }, (event, filename) => {
-    if (!filename || filename === 'app/globals.css' || filename === 'globals.css') return;
-    if (filename.endsWith('.tsx') || filename.endsWith('.ts') || filename.endsWith('.css')) {
+    const norm = filename ? filename.replace(/\\/g, '/') : '';
+    if (!norm || norm === 'app/globals.css' || norm === 'globals.css' || norm.endsWith('globals.css')) return;
+    if (norm.endsWith('.tsx') || norm.endsWith('.ts') || norm.endsWith('.css')) {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         build();

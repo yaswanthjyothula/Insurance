@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, ShieldAlert, TrendingUp, ArrowRight, ArrowLeft, RefreshCw, Sliders, Info, AlertCircle, CheckCircle2, ChevronDown } from "lucide-react";
+import { ShieldCheck, ShieldAlert, TrendingUp, ArrowRight, ArrowLeft, RefreshCw, Sliders, Info, AlertCircle, CheckCircle2, ChevronDown, Sparkles } from "lucide-react";
 import { JourneyProgress } from "@/components/layout/journey-progress";
 import { useAssessmentStore } from "@/store/assessment-store";
 import { formatINR } from "@/lib/utils";
@@ -246,7 +246,16 @@ export default function ResultsPage() {
               <h2 className="m-0 text-[22px] font-extrabold tracking-[-0.02em] flex items-center gap-3"><Sliders className="w-5 h-5 text-[#7957FF]" />Simulate life events</h2>
               <p className="m-0 mt-1.5 text-[15px] text-[#5A5566]">See how a change would move your gap. Your own answers are never changed.</p>
             </div>
-            {isScenarioLoading && <RefreshCw className="w-5 h-5 text-[#7957FF] animate-spin" aria-label="Running scenario" />}
+            <div className="flex items-center gap-2">
+              <Link
+                href="/tools/scenario-studio"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F4F0FF] hover:bg-[#EFEBFF] text-[#7957FF] text-xs font-bold transition-all border border-[#7957FF]/30"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                <span>Custom Real-Life Scenario (AI)</span>
+              </Link>
+              {isScenarioLoading && <RefreshCw className="w-5 h-5 text-[#7957FF] animate-spin" aria-label="Running scenario" />}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">

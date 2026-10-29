@@ -144,20 +144,62 @@ class ScenarioEngine:
                 "Taking on a new ₹50 Lakh home mortgage creates an immediate liability that your family would need protected."
             )
 
-        elif stype == "custom":
-            # Apply explicit user overrides
+        elif stype in ("custom", "ai_custom"):
+            # Check for added goals
+            if "added_goals" in scenario.overrides:
+                current_goals = list(sc_input_dict.get("future_goals", []))
+                for g in scenario.overrides["added_goals"]:
+                    current_goals.append(g)
+                    diffs.append(ScenarioDiff(
+                        field="future_goals",
+                        label="New Goal Added",
+                        baseline_value="-",
+                        scenario_value=g.get("name", "Goal"),
+                        difference_str=f"+₹{g.get('cost_today', 0):,.0f} ({g.get('name', 'Goal')})"
+                    ))
+                sc_input_dict["future_goals"] = current_goals
+
+            # Apply explicit user/AI overrides
+            money_fields = {"annual_income", "annual_expenses", "outstanding_liabilities", "existing_cover", "eligible_assets"}
             for key, val in scenario.overrides.items():
+                if key == "added_goals":
+                    continue
                 if key in sc_input_dict and sc_input_dict[key] != val:
                     old_v = sc_input_dict[key]
                     sc_input_dict[key] = val
+                    
+                    if key in money_fields:
+                        old_num = float(old_v or 0.0)
+                        diff_num = float(val) - old_num
+                        diff_str = f"{'+' if diff_num >= 0 else ''}₹{diff_num:,.0f} (₹{old_num:,.0f} → ₹{val:,.0f})"
+                        base_val_fmt = f"₹{old_num:,.0f}"
+                        scen_val_fmt = f"₹{val:,.0f}"
+                    elif key in ("dependents_count", "retirement_age", "support_horizon_years"):
+                        if old_v is None:
+                            diff_str = f"Set to {val}"
+                            base_val_fmt = "-"
+                        else:
+                            diff_num = int(val) - int(old_v)
+                            diff_str = f"{'+' if diff_num >= 0 else ''}{diff_num} ({old_v} → {val})"
+                            base_val_fmt = old_v
+                        scen_val_fmt = val
+                    else:
+                        diff_str = f"{old_v} → {val}"
+                        base_val_fmt = old_v if old_v is not None else "-"
+                        scen_val_fmt = val
+
                     diffs.append(ScenarioDiff(
                         field=key,
                         label=key.replace("_", " ").title(),
-                        baseline_value=old_v,
-                        scenario_value=val,
-                        difference_str=f"{old_v} -> {val}"
+                        baseline_value=base_val_fmt,
+                        scenario_value=scen_val_fmt,
+                        difference_str=diff_str
                     ))
-            explanation_parts.append("Custom user modifications applied to baseline financial parameters.")
+            
+            if scenario.description:
+                explanation_parts.append(scenario.description)
+            else:
+                explanation_parts.append("Custom life scenario adjustments applied to baseline parameters.")
 
         # Re-construct validated scenario input
         scenario_input = AssessmentInput(**sc_input_dict)

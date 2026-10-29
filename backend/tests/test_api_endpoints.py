@@ -69,6 +69,28 @@ def test_scenarios_endpoint():
     data = response.json()
     assert data["scenario_result"]["net_needs"]["outstanding_liabilities"] == 0.0
 
+def test_ai_custom_scenario_endpoint():
+    baseline_payload = {
+        "age": 32,
+        "annual_income": 1500000.0,
+        "annual_expenses": 600000.0,
+        "dependents_count": 1,
+        "outstanding_liabilities": 3000000.0,
+        "existing_cover": 5000000.0,
+        "eligible_assets": 1000000.0
+    }
+    payload = {
+        "user_scenario_prompt": "We are having twins next year and taking a 40 Lakh home loan.",
+        "baseline_input": baseline_payload
+    }
+    response = client.post("/api/v1/scenarios/ai-custom", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "scenario_comparison" in data
+    assert "ai_title" in data
+    assert "ai_analysis" in data
+    assert len(data["actionable_recommendations"]) > 0
+
 def test_products_list_endpoint():
     response = client.get("/api/v1/products")
     assert response.status_code == 200

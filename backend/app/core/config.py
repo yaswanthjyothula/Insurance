@@ -1,6 +1,12 @@
 import os
 from typing import List
 from pydantic import BaseModel
+from dotenv import load_dotenv
+
+# Search for .env in backend directory and root directory
+_backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+load_dotenv(os.path.join(_backend_dir, ".env"))
+load_dotenv()
 
 class Settings(BaseModel):
     PROJECT_NAME: str = "LifeSure AI API"

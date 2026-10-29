@@ -3,7 +3,6 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollEffects } from "@/components/layout/ScrollEffects";
-import { CursorEffects } from "@/components/layout/CursorEffects";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 
 export const metadata: Metadata = {
@@ -42,7 +41,6 @@ export default function RootLayout({
 
         <AuthProvider>
         <ScrollEffects />
-        <CursorEffects />
         <Navbar />
         
         <main id="main-content" className="flex-grow">

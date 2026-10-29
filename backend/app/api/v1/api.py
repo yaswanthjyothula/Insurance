@@ -13,7 +13,13 @@ from app.schemas.financial import (
     FutureCostsInput,
     ProtectionGapRadarResult
 )
-from app.schemas.scenarios import ScenarioInput, ScenarioComparisonResult, ScenarioCompareRequest
+from app.schemas.scenarios import (
+    ScenarioInput,
+    ScenarioComparisonResult,
+    ScenarioCompareRequest,
+    AICustomScenarioRequest,
+    AICustomScenarioResponse
+)
 from app.schemas.products import (
     InsuranceProduct,
     RecommendationRequest,
@@ -132,6 +138,36 @@ def compare_scenario_endpoint(req: ScenarioCompareRequest):
     res = ScenarioEngine.apply_scenario(req.baseline_input, req.scenario)
     storage_service.save_scenario(res.model_dump())
     return res
+
+@api_router.post("/scenarios/ai-custom", response_model=AICustomScenarioResponse)
+async def ai_custom_scenario_endpoint(req: AICustomScenarioRequest):
+    ai_result = await GeminiAssistantService.interpret_custom_scenario(
+        req.user_scenario_prompt,
+        req.baseline_input
+    )
+    
+    overrides_with_goals = dict(ai_result.get("overrides", {}))
+    if ai_result.get("added_goals"):
+        overrides_with_goals["added_goals"] = ai_result["added_goals"]
+        
+    scenario_input = ScenarioInput(
+        scenario_type="ai_custom",
+        title=ai_result.get("scenario_title", "Real-Life AI Scenario"),
+        description=ai_result.get("ai_analysis", req.user_scenario_prompt),
+        overrides=overrides_with_goals
+    )
+    
+    comparison = ScenarioEngine.apply_scenario(req.baseline_input, scenario_input)
+    storage_service.save_scenario(comparison.model_dump())
+    
+    return AICustomScenarioResponse(
+        scenario_comparison=comparison,
+        ai_title=ai_result.get("scenario_title", "Real-Life AI Scenario"),
+        ai_analysis=ai_result.get("ai_analysis", ""),
+        actionable_recommendations=ai_result.get("actionable_recommendations", []),
+        detected_adjustments=ai_result.get("overrides", {}),
+        model_used=ai_result.get("model_used", "gemini-3.1-flash-lite")
+    )
 
 @api_router.get("/scenarios", response_model=List[Dict[str, Any]])
 def list_saved_scenarios():
