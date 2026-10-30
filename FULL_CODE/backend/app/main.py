@@ -1,3 +1,6 @@
+import threading
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -17,7 +20,23 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    """Warm the slow first-use work in the background, so the first customer or admin request is not the one that pays for it."""
+
+    def warm() -> None:
+        from app.admin.config_store import config_store
+        from app.ml.ranker import get_model
+
+        config_store.current()
+        get_model()
+
+    threading.Thread(target=warm, name="warm-up", daemon=True).start()
+    yield
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description="LifeSure AI - Deterministic Financial Planning, ML Recommendations & Digital Insurance Advisory API",

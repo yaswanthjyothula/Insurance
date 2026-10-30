@@ -1,4 +1,7 @@
+"use client";
+
 import type { HTMLInputTypeAttribute } from "react";
+import { useI18n } from "@/i18n/I18nProvider";
 
 interface TextFieldProps {
   id: string;
@@ -13,6 +16,7 @@ interface TextFieldProps {
 
 /** A labelled input that announces its own error to assistive technology. */
 export function TextField({ id, label, value, onChange, type = "text", autoComplete, placeholder, error }: TextFieldProps) {
+  const { tx } = useI18n();
   const errorId = `${id}-error`;
   return (
     <div>
@@ -34,7 +38,7 @@ export function TextField({ id, label, value, onChange, type = "text", autoCompl
       />
       {error && (
         <p id={errorId} role="alert" className="m-0 mt-1.5 text-xs font-semibold text-[#C23B3B]">
-          {error}
+          {tx(error)}
         </p>
       )}
     </div>

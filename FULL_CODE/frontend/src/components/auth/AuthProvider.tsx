@@ -19,9 +19,10 @@ interface AuthContextValue {
   loading: boolean;
   /** Set when a stored session could not be checked because the server was unreachable. */
   sessionError: string | null;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (details: RegisterDetails) => Promise<void>;
-  signInDemo: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<AuthUser>;
+  signUp: (details: RegisterDetails) => Promise<AuthUser>;
+  signInDemo: () => Promise<AuthUser>;
+  signInDemoAdvisor: (advisorId?: string) => Promise<AuthUser>;
   signOut: () => void;
 }
 
@@ -53,10 +54,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const startSession = useCallback((session: SessionOut) => {
+  const startSession = useCallback((session: SessionOut): AuthUser => {
+    const next = toAuthUser(session);
     setToken(session.token);
     setSessionError(null);
-    setUser(toAuthUser(session));
+    setUser(next);
+    return next;
   }, []);
 
   const signIn = useCallback(
@@ -68,6 +71,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [startSession],
   );
   const signInDemo = useCallback(async () => startSession(await postJSON<SessionOut>("/auth/demo", {})), [startSession]);
+  const signInDemoAdvisor = useCallback(
+    async (advisorId?: string) => startSession(await postJSON<SessionOut>("/auth/demo/advisor", { advisor_id: advisorId ?? null })),
+    [startSession],
+  );
   const signOut = useCallback(() => {
     setToken(null);
     setUser(null);
@@ -75,8 +82,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, sessionError, signIn, signUp, signInDemo, signOut }),
-    [user, loading, sessionError, signIn, signUp, signInDemo, signOut],
+    () => ({ user, loading, sessionError, signIn, signUp, signInDemo, signInDemoAdvisor, signOut }),
+    [user, loading, sessionError, signIn, signUp, signInDemo, signInDemoAdvisor, signOut],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

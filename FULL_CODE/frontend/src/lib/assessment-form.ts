@@ -1,3 +1,4 @@
+import type { MessageKey } from "@/i18n/en";
 import type { Applicant, Gender, Priority, RecommendRequest, Risk } from "@/types/api";
 import type { AssessmentInput, FutureGoal } from "@/types/assessment";
 import type { SampleCustomerDetail } from "@/types/sample-customer";
@@ -81,12 +82,12 @@ export const BLANK_FORM: FormState = {
 
 export const BLANK_GOAL: GoalForm = { type: "", name: "", cost: "", years: "" };
 
-export const GOAL_TYPES: { value: GoalCategory; label: string }[] = [
-  { value: "education", label: "Education" },
-  { value: "marriage", label: "Marriage" },
-  { value: "property", label: "Home / property" },
-  { value: "family_support", label: "Family support" },
-  { value: "other", label: "Other" },
+export const GOAL_TYPES: { value: GoalCategory; labelKey: MessageKey }[] = [
+  { value: "education", labelKey: "assessment.goalType.education" },
+  { value: "marriage", labelKey: "assessment.goalType.marriage" },
+  { value: "property", labelKey: "assessment.goalType.property" },
+  { value: "family_support", labelKey: "assessment.goalType.familySupport" },
+  { value: "other", labelKey: "assessment.goalType.other" },
 ];
 
 export const MAX_GOALS = 5;

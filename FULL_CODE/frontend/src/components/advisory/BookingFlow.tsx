@@ -5,7 +5,8 @@ import Link from "next/link";
 import { AlertCircle, ArrowLeft, Check, RefreshCw, Users } from "lucide-react";
 import { ApiError, postJSON } from "@/lib/api";
 import { errorMessage } from "@/lib/error-message";
-import { humaniseTag } from "@/lib/text";
+import { useI18n } from "@/i18n/I18nProvider";
+import { useTagLabels } from "@/components/advisory/useTagLabels";
 import type { SavedPlan } from "@/lib/my-plan";
 import type { AdvisorOut, Booking } from "@/types/api";
 import {
@@ -37,6 +38,8 @@ interface BookingFlowProps {
   assessmentId: string | undefined;
   plan: SavedPlan | null;
   onBooked: (booking: Booking) => void;
+  /** Saved in the customer's Settings and Profile: what a new booking starts with. */
+  defaults?: { phone: string; mode: ConsultationMode | ""; shareSummary: boolean; myAdvisorId?: string };
 }
 
 type FormErrors = Partial<Record<BookingField, string>>;
@@ -48,13 +51,20 @@ function scrollToFirstError(errors: FormErrors) {
   document.getElementById(SCROLL_TARGETS[first])?.scrollIntoView({ block: "center", behavior: "smooth" });
 }
 
-export function BookingFlow({ customerName, assessmentId, plan, onBooked }: BookingFlowProps) {
+export function BookingFlow({ customerName, assessmentId, plan, onBooked, defaults }: BookingFlowProps) {
+  const { t, tx } = useI18n();
+  const { tagLabel } = useTagLabels();
   const { advisors, calendarNote, loading, error: loadError, reload } = useAdvisorAvailability();
   const [filters, setFilters] = useState(NO_FILTERS);
   const [advisorId, setAdvisorId] = useState("");
   const [slotId, setSlotId] = useState("");
-  const [pickedMode, setPickedMode] = useState<ConsultationMode | "">("");
-  const [details, setDetails] = useState<DetailsValues>({ name: customerName, phone: "", notes: "", shareSummary: false });
+  const [pickedMode, setPickedMode] = useState<ConsultationMode | "">(defaults?.mode ?? "");
+  const [details, setDetails] = useState<DetailsValues>({
+    name: customerName,
+    phone: defaults?.phone ?? "",
+    notes: "",
+    shareSummary: defaults?.shareSummary ?? false,
+  });
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
@@ -123,39 +133,44 @@ export function BookingFlow({ customerName, assessmentId, plan, onBooked }: Book
     }
   };
 
-  const missingHint = !advisor ? "Choose an advisor" : !slot ? "Pick a time" : !detailsDone ? "Fill in your details to confirm" : "";
+  const notChosen = t("advisory.booking.notChosen");
+  const missingHint = !advisor
+    ? t("advisory.booking.hintAdvisor")
+    : !slot
+      ? t("advisory.booking.hintTime")
+      : !detailsDone
+        ? t("advisory.booking.hintDetails")
+        : "";
 
   return (
     <main className="flex-1 max-w-[1100px] w-full mx-auto px-5 sm:px-8 pt-10 pb-20 flex flex-col gap-7">
       <header className="flex flex-col gap-3">
         <div className="inline-flex items-center gap-2 self-start px-3 py-1.5 rounded-md bg-[#E9E4FF] text-[#7957FF] shadow-[0_3px_0_#D9D3E8] text-[12.5px] font-bold uppercase tracking-[0.14em]">
           <Users className="w-3.5 h-3.5" />
-          Stage 4 of 4 · Advisory session
+          {t("advisory.booking.stage")}
         </div>
         <h1 className="m-0 text-[clamp(30px,3.4vw,44px)] leading-[1.05] font-extrabold tracking-[-0.04em]" style={{ color: "#24212B" }}>
-          Book a session with an advisor
+          {t("advisory.booking.title")}
         </h1>
-        <p className="m-0 text-[17px] leading-[1.55] text-[#5A5566] max-w-[640px]">
-          Three quick steps. Your advisor can review your needs and chosen plan with you.
-        </p>
+        <p className="m-0 text-[17px] leading-[1.55] text-[#5A5566] max-w-[640px]">{t("advisory.booking.intro")}</p>
       </header>
 
       <SimulationNote />
       {calendarNote && (
         <p className="m-0 text-[14.5px] text-[#5A5566]" data-no-reveal>
-          {calendarNote}
+          {tx(calendarNote)}
         </p>
       )}
 
       <form onSubmit={submit} noValidate className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-8 items-start">
         <div className="flex flex-col gap-6">
           <div id="step-advisor">
-            <StepCard number={1} title="Choose an advisor" done={Boolean(advisor)}>
+            <StepCard number={1} title={t("advisory.booking.step1")} done={Boolean(advisor)}>
               <AdvisorFilters filters={filters} languages={languages} specialisations={specialisations} onChange={setFilters} />
               {loading ? (
                 <div className="py-6 text-center text-[#5A5566]" role="status">
                   <RefreshCw className="w-6 h-6 text-[#7957FF] animate-spin mx-auto mb-2" />
-                  Checking calendars…
+                  {t("advisory.booking.checkingCalendars")}
                 </div>
               ) : loadError ? (
                 <div
@@ -164,23 +179,32 @@ export function BookingFlow({ customerName, assessmentId, plan, onBooked }: Book
                 >
                   <span className="flex items-center gap-2">
                     <AlertCircle className="w-5 h-5 shrink-0" />
-                    {loadError}
+                    {tx(loadError)}
                   </span>
                   <button type="button" onClick={reload} className="underline">
-                    Try again
+                    {t("common.tryAgain")}
                   </button>
                 </div>
               ) : (
-                <AdvisorList advisors={visibleAdvisors} selectedId={advisor?.advisor_id ?? ""} onSelect={chooseAdvisor} />
+                <AdvisorList
+                  advisors={visibleAdvisors}
+                  selectedId={advisor?.advisor_id ?? ""}
+                  onSelect={chooseAdvisor}
+                  myAdvisorId={defaults?.myAdvisorId}
+                />
               )}
               <FieldError message={errors.advisorId} />
             </StepCard>
           </div>
 
           <div id="step-time">
-            <StepCard number={2} title="Pick a time and how to meet" done={Boolean(slot)}>
+            <StepCard number={2} title={t("advisory.booking.step2")} done={Boolean(slot)}>
               <div>
-                <span className={LABEL_CLASS}>Available times{advisor ? ` with ${advisor.advisor_name}` : ""}</span>
+                <span className={LABEL_CLASS}>
+                  {advisor
+                    ? t("advisory.booking.availableTimesWith", { name: advisor.advisor_name })
+                    : t("advisory.booking.availableTimes")}
+                </span>
                 <SlotPicker
                   advisor={advisor}
                   selectedSlotId={slot?.slot_id ?? ""}
@@ -192,13 +216,13 @@ export function BookingFlow({ customerName, assessmentId, plan, onBooked }: Book
                 <FieldError message={errors.slotId} />
               </div>
               <div>
-                <span className={LABEL_CLASS}>How would you like to meet?</span>
+                <span className={LABEL_CLASS}>{t("advisory.booking.howToMeet")}</span>
                 <ModePicker offered={advisor ? offeredModes(advisor) : []} selected={mode} onSelect={setPickedMode} />
               </div>
             </StepCard>
           </div>
 
-          <StepCard number={3} title="Your details" done={detailsDone}>
+          <StepCard number={3} title={t("advisory.booking.step3")} done={detailsDone}>
             <DetailsFields values={details} errors={errors} onChange={changeDetails} />
           </StepCard>
         </div>
@@ -207,13 +231,13 @@ export function BookingFlow({ customerName, assessmentId, plan, onBooked }: Book
           <div className={`${CARD_CLASS} p-6 flex flex-col gap-5`}>
             <PlanSummary plan={plan} />
             <div>
-              <h3 className={SUMMARY_HEADING_CLASS}>Your session</h3>
+              <h3 className={SUMMARY_HEADING_CLASS}>{t("advisory.booking.yourSession")}</h3>
               <SummaryRows
                 rows={[
-                  ["Advisor", advisor?.advisor_name ?? "Not chosen"],
-                  ["Time", slot?.label ?? "Not chosen"],
-                  ["How", mode ? modeDetails(mode).label : "Not chosen"],
-                  ["Focus", advisor ? advisor.specialisations.slice(0, 2).map(humaniseTag).join(", ") : "Not chosen"],
+                  [t("advisory.label.advisor"), advisor?.advisor_name ?? notChosen],
+                  [t("advisory.label.time"), slot?.label ?? notChosen],
+                  [t("advisory.label.how"), mode ? t(modeDetails(mode).labelKey) : notChosen],
+                  [t("advisory.label.focus"), advisor ? advisor.specialisations.slice(0, 2).map(tagLabel).join(", ") : notChosen],
                 ]}
               />
             </div>
@@ -223,7 +247,7 @@ export function BookingFlow({ customerName, assessmentId, plan, onBooked }: Book
                 className="flex items-start gap-2 p-3 rounded-xl border border-[#C23B3B] text-[#C23B3B] text-[14px] font-semibold"
               >
                 <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                {bookingError}
+                {tx(bookingError)}
               </div>
             )}
             <button
@@ -232,10 +256,10 @@ export function BookingFlow({ customerName, assessmentId, plan, onBooked }: Book
               className="h-14 rounded-lg bg-[#7957FF] text-white font-bold inline-flex items-center justify-center gap-2 disabled:opacity-60"
             >
               {submitting ? (
-                "Booking…"
+                t("advisory.booking.submitting")
               ) : (
                 <>
-                  Confirm booking
+                  {t("advisory.booking.confirm")}
                   <Check className="w-4 h-4" strokeWidth={3} />
                 </>
               )}
@@ -247,7 +271,7 @@ export function BookingFlow({ customerName, assessmentId, plan, onBooked }: Book
             className="inline-flex items-center gap-2 text-[14.5px] font-semibold text-[#5A5566] hover:text-[#7957FF] self-start"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to plans
+            {t("advisory.booking.backToPlans")}
           </Link>
         </aside>
       </form>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
+import { useT } from "@/i18n/I18nProvider";
 
 /** Accessible dialog frame: Escape closes it, focus moves in, and the page behind does not scroll. */
 export function Modal({
@@ -15,6 +16,7 @@ export function Modal({
   children: React.ReactNode;
   wide?: boolean;
 }) {
+  const t = useT();
   const panel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,7 +46,12 @@ export function Modal({
       >
         <div className="mb-5 flex items-start justify-between gap-4">
           <h2 className="m-0 text-2xl font-extrabold tracking-tight text-[#24212B]">{title}</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-2 text-[#6F6A7C] hover:bg-[#F1EEF8]">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t("common.close")}
+            className="rounded-lg p-2 text-[#6F6A7C] hover:bg-[#F1EEF8]"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>

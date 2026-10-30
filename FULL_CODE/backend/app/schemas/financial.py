@@ -67,6 +67,15 @@ class MethodologyExplanation(BaseModel):
     limitations: List[str]
 
 
+class IncomeMultipleCheck(BaseModel):
+    """A rule-of-thumb band from the admin configuration, shown next to the Net Needs result. It is not added to it."""
+
+    minimum_multiple: float
+    maximum_multiple: float
+    minimum_cover: int
+    maximum_cover: int
+
+
 class AssessmentResult(BaseModel):
     assessment_id: str
     inputs: AssessmentInput
@@ -74,6 +83,8 @@ class AssessmentResult(BaseModel):
     hlv: HLVBreakdown
     methodology: MethodologyExplanation
     recommendation_summary: str
+    income_multiple_check: Optional[IncomeMultipleCheck] = None
+    config_version: int = 0
 
 
 class EMICalculatorInput(BaseModel):

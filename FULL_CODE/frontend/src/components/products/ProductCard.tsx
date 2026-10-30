@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
 import { formatINR } from "@/lib/utils";
-import { paymentLabel } from "@/lib/plan-config";
+import { paymentLabelT } from "@/lib/plan-config";
 import type { ProductFit } from "@/types/api";
 import { FactorBars } from "./FactorBars";
 
@@ -25,6 +26,7 @@ interface Props {
 
 /** One product for this customer: the engine's suggested configuration, its price, and why it ranked here. */
 export function ProductCard({ fit, selected, compared, compareFull, onCustomise, onToggleCompare }: Props) {
+  const { t, tx } = useI18n();
   const [open, setOpen] = useState(false);
   const q = fit.quote;
   const single = q?.payment_option === "single";
@@ -37,14 +39,14 @@ export function ProductCard({ fit, selected, compared, compareFull, onCustomise,
           <span
             className={`inline-block rounded-md px-2 py-0.5 text-[12px] font-bold ${ROLE_STYLE[fit.role] ?? ROLE_STYLE["lifelong cover"]}`}
           >
-            {fit.product_type} · {fit.role}
+            {tx(fit.product_type)} · {tx(fit.role)}
           </span>
           <h3 className="m-0 mt-2 text-[18px] font-extrabold leading-snug tracking-tight text-[#24212B]">{fit.product_name}</h3>
         </div>
         {fit.eligible && (
-          <div className="shrink-0 text-right">
+          <div className="shrink-0 text-end">
             <div className="text-[26px] font-extrabold leading-none tabular-nums text-[#7957FF]">{fit.match_percent}%</div>
-            <div className="text-[11.5px] font-semibold text-[#6F6A7C]">match</div>
+            <div className="text-[11.5px] font-semibold text-[#6F6A7C]">{t("products.card.match")}</div>
           </div>
         )}
       </div>
@@ -53,32 +55,34 @@ export function ProductCard({ fit, selected, compared, compareFull, onCustomise,
       {fit.eligible && q ? (
         <dl className="m-0 mt-4 grid grid-cols-3 gap-2 rounded-xl border border-[#E9E4FF] bg-[#FAF9F6] p-3">
           <div>
-            <dt className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#6F6A7C]">Cover</dt>
+            <dt className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#6F6A7C]">{t("products.card.cover")}</dt>
             <dd className="m-0 text-[15px] font-extrabold tabular-nums">{formatINR(q.sum_assured, { compact: true })}</dd>
           </div>
           <div>
-            <dt className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#6F6A7C]">Term</dt>
-            <dd className="m-0 text-[15px] font-extrabold">{q.policy_term_years} yrs</dd>
+            <dt className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#6F6A7C]">{t("products.card.term")}</dt>
+            <dd className="m-0 text-[15px] font-extrabold">{t("products.card.termYears", { count: q.policy_term_years })}</dd>
           </div>
           <div>
-            <dt className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#6F6A7C]">{single ? "One-time" : "Per month"}</dt>
+            <dt className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#6F6A7C]">
+              {single ? t("products.card.oneTime") : t("products.card.perMonth")}
+            </dt>
             <dd className="m-0 text-[15px] font-extrabold tabular-nums">{formatINR(q.total_instalment)}</dd>
           </div>
         </dl>
       ) : (
-        <ul className="m-0 mt-4 list-disc rounded-xl bg-[#FAF9F6] py-3 pl-8 pr-3 text-[13.5px] text-[#4A4553]">
+        <ul className="m-0 mt-4 list-disc rounded-xl bg-[#FAF9F6] py-3 ps-8 pe-3 text-[13.5px] text-[#4A4553]">
           {fit.issues.map((i) => (
-            <li key={i}>{i}</li>
+            <li key={i}>{tx(i)}</li>
           ))}
         </ul>
       )}
-      {q && <p className="m-0 mt-2 text-[12.5px] text-[#6F6A7C]">{paymentLabel(q.payment_option)}</p>}
+      {q && <p className="m-0 mt-2 text-[12.5px] text-[#6F6A7C]">{paymentLabelT(t, q.payment_option)}</p>}
 
       {fit.eligible && (
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">
           <label
             className={`inline-flex items-center gap-1.5 whitespace-nowrap text-[13.5px] font-semibold ${compared || !compareFull ? "cursor-pointer text-[#24212B]" : "cursor-not-allowed text-[#8C879A]"}`}
-            title={!compared && compareFull ? "You can compare up to 3 plans" : undefined}
+            title={!compared && compareFull ? t("products.compareLimit") : undefined}
           >
             <input
               type="checkbox"
@@ -87,7 +91,7 @@ export function ProductCard({ fit, selected, compared, compareFull, onCustomise,
               onChange={onToggleCompare}
               className="h-4 w-4 accent-[#7957FF]"
             />
-            Compare
+            {t("products.compare")}
           </label>
           <button
             type="button"
@@ -95,7 +99,7 @@ export function ProductCard({ fit, selected, compared, compareFull, onCustomise,
             aria-expanded={open}
             className="inline-flex items-center gap-1 whitespace-nowrap text-[13.5px] font-semibold text-[#7957FF] hover:underline"
           >
-            Why this match
+            {t("products.card.why")}
             <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
           </button>
           <button
@@ -106,17 +110,17 @@ export function ProductCard({ fit, selected, compared, compareFull, onCustomise,
             {selected ? (
               <>
                 <Check className="h-4 w-4" strokeWidth={3} />
-                Selected · edit
+                {t("products.card.selectedEdit")}
               </>
             ) : (
-              "Customise"
+              t("products.customise")
             )}
           </button>
         </div>
       )}
       {open && (
         <div className="mt-4 grid gap-5 border-t border-[#D9D3E8] pt-4 lg:grid-cols-2">
-          <p className="m-0 text-[14px] leading-normal text-[#4A4553]">{fit.reason}</p>
+          <p className="m-0 text-[14px] leading-normal text-[#4A4553]">{tx(fit.reason)}</p>
           <FactorBars fit={fit} />
         </div>
       )}

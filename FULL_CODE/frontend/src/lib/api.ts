@@ -1,5 +1,5 @@
 /** The one place the app talks to the backend. Adds the session token, a timeout, and readable errors. */
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
 const TOKEN_KEY = "lifesure_session_token";
 const DEFAULT_TIMEOUT_MS = 45_000;
 

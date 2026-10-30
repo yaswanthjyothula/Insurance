@@ -1,16 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --font-sans:
-    var(--font-jakarta), "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-  --font-heading: var(--font-jakarta), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
   --bg-primary: #ffffff;
   --text-main: #24212b;
   --accent-purple: #7957ff;
 }
 
 @theme {
-  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
   --color-brand-purple: #7957ff;
   --color-brand-purple-light: #f4f0ff;
   --color-brand-purple-dark: #6240e6;
@@ -559,4 +558,27 @@ textarea:focus-visible {
 
 .ls-pop {
   animation: ls-pop 0.35s ease-out;
+}
+
+/* Local script fonts are preferred when available; otherwise the platform chooses an appropriate sans-serif fallback. */
+html[lang="hi"] {
+  --font-sans: "Noto Sans Devanagari", "Nirmala UI", sans-serif;
+  --font-heading: "Noto Sans Devanagari", "Nirmala UI", sans-serif;
+}
+html[lang="te"] {
+  --font-sans: "Noto Sans Telugu", "Nirmala UI", sans-serif;
+  --font-heading: "Noto Sans Telugu", "Nirmala UI", sans-serif;
+}
+
+/* Indian scripts need more line height than Latin text, and letter-spacing breaks their joined letters */
+html:not([lang="en"]) body {
+  letter-spacing: 0;
+  line-height: 1.65;
+}
+html:not([lang="en"]) h1,
+html:not([lang="en"]) h2,
+html:not([lang="en"]) h3,
+html:not([lang="en"]) h4 {
+  letter-spacing: 0;
+  line-height: 1.35;
 }

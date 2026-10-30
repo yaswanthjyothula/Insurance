@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { MIN_PASSWORD_LENGTH, validateRegistration, type FieldErrors, type RegistrationValues } from "@/components/auth/form-validation";
 import { errorMessage } from "@/lib/error-message";
+import { useT } from "@/i18n/I18nProvider";
 import { TextField } from "@/components/auth/TextField";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { FormAlert } from "@/components/auth/FormAlert";
@@ -12,6 +13,7 @@ const EMPTY_VALUES: RegistrationValues = { fullName: "", email: "", password: ""
 
 export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
   const { signUp } = useAuth();
+  const t = useT();
   const [values, setValues] = useState<RegistrationValues>(EMPTY_VALUES);
   const [errors, setErrors] = useState<FieldErrors<keyof RegistrationValues>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -34,7 +36,7 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
       await signUp({ full_name: values.fullName.trim(), email: values.email.trim(), password: values.password });
       onSuccess();
     } catch (error) {
-      setFormError(errorMessage(error, "We couldn't create your account. Please try again."));
+      setFormError(errorMessage(error, t("auth.register.failed")));
     } finally {
       setBusy(false);
     }
@@ -42,25 +44,31 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <form onSubmit={submit} noValidate className="space-y-4">
-      <TextField id="register-name" label="Full name" autoComplete="name" {...bind("fullName")} />
+      <TextField id="register-name" label={t("auth.register.fullName")} autoComplete="name" {...bind("fullName")} />
       <TextField
         id="register-email"
-        label="Email address"
+        label={t("auth.register.email")}
         type="email"
         autoComplete="email"
-        placeholder="name@example.com"
+        placeholder={t("auth.register.emailPlaceholder")}
         {...bind("email")}
       />
       <TextField
         id="register-password"
-        label={`Password (at least ${MIN_PASSWORD_LENGTH} characters)`}
+        label={t("auth.register.passwordLabel", { min: MIN_PASSWORD_LENGTH })}
         type="password"
         autoComplete="new-password"
         {...bind("password")}
       />
-      <TextField id="register-confirm" label="Confirm password" type="password" autoComplete="new-password" {...bind("confirmPassword")} />
+      <TextField
+        id="register-confirm"
+        label={t("auth.register.confirm")}
+        type="password"
+        autoComplete="new-password"
+        {...bind("confirmPassword")}
+      />
       <FormAlert message={formError} />
-      <SubmitButton busy={busy} idleLabel="Create account" busyLabel="Creating account…" />
+      <SubmitButton busy={busy} idleLabel={t("auth.panel.tabCreate")} busyLabel={t("auth.register.busy")} />
     </form>
   );
 }

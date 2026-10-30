@@ -15,6 +15,8 @@ def income_multiple(product: Product, age: int) -> Optional[int]:
 
 def applicant_issues(product: Product, app: Applicant) -> List[str]:
     issues: List[str] = []
+    if not product.active:
+        return ["This product is not currently offered."]
     if not product.min_entry_age <= app.age <= product.max_entry_age:
         issues.append(f"Entry age must be {product.min_entry_age} to {product.max_entry_age} (you are {app.age}).")
     if app.residency == "nri" and not product.nri_eligible:

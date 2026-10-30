@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useI18n, useT } from "@/i18n/I18nProvider";
 import { formatINR } from "@/lib/utils";
-import { MODE_LABELS, paymentLabel, requestFromFit, riderCoverLimit, toggleRider } from "@/lib/plan-config";
+import { modeLabelT, paymentLabelT, requestFromFit, riderCoverLimit, toggleRider } from "@/lib/plan-config";
 import { useDebouncedPost } from "@/hooks/useDebouncedRequest";
+import type { MessageKey } from "@/i18n/en";
 import type { Applicant, PackProduct, PackRider, PayMode, ProductFit, Quote, QuoteRequest, RiderChoice, SelectedPlan } from "@/types/api";
 import { Modal } from "./Modal";
 import { QuotePanel } from "./QuotePanel";
@@ -25,6 +27,7 @@ const nearest = (options: number[], wanted: number) =>
 
 /** Term, Whole Life and Endowment: sliders and choices that reprice live. */
 export function Customizer({ fit, product, riders, applicant, onSave, onClose }: Props) {
+  const { t } = useI18n();
   const start = fit.quote as Quote;
   const step = product.sum_assured_step_inr ?? 100_000;
   const lowest = product.min_sum_assured_inr ?? step;
@@ -61,14 +64,14 @@ export function Customizer({ fit, product, riders, applicant, onSave, onClose }:
   const save = () => quote?.valid && onSave({ request, quote, fit_summary: fit.reason });
 
   return (
-    <Modal title={`Customise ${product.product_name}`} onClose={onClose}>
+    <Modal title={t("products.customiseTitle", { name: product.product_name })} onClose={onClose}>
       <p className="m-0 mb-5 text-[15px] text-[#4A4553]">{product.plain_language_summary}</p>
       <div className="grid gap-6 md:grid-cols-[1.1fr_1fr]">
         <div className="flex flex-col gap-5">
           <div>
             <div className="flex justify-between">
               <label htmlFor="sa" className={label}>
-                Cover
+                {t("products.customizer.cover")}
               </label>
               <span className="font-extrabold text-[#7957FF]">{formatINR(sa, { compact: true })}</span>
             </div>
@@ -83,21 +86,20 @@ export function Customizer({ fit, product, riders, applicant, onSave, onClose }:
               className="mt-2 w-full accent-[#7957FF]"
             />
             <p className="m-0 text-[12.5px] text-[#6F6A7C]">
-              Between {formatINR(lowest, { compact: true })} and {formatINR(highest, { compact: true })}. The top is set by your income and
-              existing cover.
+              {t("products.customizer.between", { low: formatINR(lowest, { compact: true }), high: formatINR(highest, { compact: true }) })}
             </p>
           </div>
           <div>
             <label htmlFor="term" className={label}>
-              Policy term
+              {t("products.customizer.term")}
             </label>
             {toEnd ? (
-              <p className="m-0 mt-2 font-bold">Cover to age {applicant.age + start.policy_term_years}</p>
+              <p className="m-0 mt-2 font-bold">{t("products.customizer.toAge", { age: applicant.age + start.policy_term_years })}</p>
             ) : (
               <select id="term" className={field} value={term} onChange={(e) => setTerm(Number(e.target.value))}>
-                {(terms.length ? terms : [term]).map((t) => (
-                  <option key={t} value={t}>
-                    {t} years (to age {applicant.age + t})
+                {(terms.length ? terms : [term]).map((yrs) => (
+                  <option key={yrs} value={yrs}>
+                    {t("products.customizer.termOption", { years: yrs, age: applicant.age + yrs })}
                   </option>
                 ))}
               </select>
@@ -105,12 +107,12 @@ export function Customizer({ fit, product, riders, applicant, onSave, onClose }:
           </div>
           <div>
             <label htmlFor="option" className={label}>
-              How you pay
+              {t("products.customizer.howYouPay")}
             </label>
             <select id="option" className={field} value={option} onChange={(e) => setOption(e.target.value)}>
               {product.premium_payment_options.map((o) => (
                 <option key={o} value={o}>
-                  {paymentLabel(o)}
+                  {paymentLabelT(t, o)}
                 </option>
               ))}
             </select>
@@ -118,12 +120,12 @@ export function Customizer({ fit, product, riders, applicant, onSave, onClose }:
           {!single && (
             <div>
               <label htmlFor="mode" className={label}>
-                How often
+                {t("products.customizer.howOften")}
               </label>
               <select id="mode" className={field} value={mode} onChange={(e) => setMode(e.target.value as PayMode)}>
                 {product.premium_modes.map((m) => (
                   <option key={m} value={m}>
-                    {MODE_LABELS[m as PayMode]}
+                    {modeLabelT(t, m as PayMode)}
                   </option>
                 ))}
               </select>
@@ -131,8 +133,8 @@ export function Customizer({ fit, product, riders, applicant, onSave, onClose }:
           )}
           {riders.length > 0 && (
             <fieldset className="m-0 border-0 p-0">
-              <legend className={label}>Add-on riders</legend>
-              {single && <p className="m-0 mt-1 text-[13px] text-[#6F6A7C]">Riders cannot be added when you pay once.</p>}
+              <legend className={label}>{t("products.customizer.riders")}</legend>
+              {single && <p className="m-0 mt-1 text-[13px] text-[#6F6A7C]">{t("products.customizer.noRidersSingle")}</p>}
               <div className="mt-2 flex flex-col gap-2.5">
                 {riders.map((r) => {
                   const picked = riderPicks.some((p) => p.rider_id === r.rider_id);
@@ -156,14 +158,14 @@ export function Customizer({ fit, product, riders, applicant, onSave, onClose }:
                         </span>
                       </label>
                       {picked && perThousand && max >= min && (
-                        <div className="mt-2 pl-6">
+                        <div className="mt-2 ps-6">
                           <div className="flex justify-between text-[13px]">
-                            <span>Rider cover</span>
+                            <span>{t("products.customizer.riderCover")}</span>
                             <strong>{formatINR(value, { compact: true })}</strong>
                           </div>
                           <input
                             type="range"
-                            aria-label={`${r.rider_name} cover`}
+                            aria-label={t("products.customizer.riderCoverAria", { name: r.rider_name })}
                             min={min}
                             max={max}
                             step={100_000}
@@ -192,7 +194,7 @@ export function Customizer({ fit, product, riders, applicant, onSave, onClose }:
             disabled={!quote?.valid}
             className="h-12 rounded-lg bg-[#7957FF] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Add to my selection
+            {t("products.customizer.add")}
           </button>
         </div>
       </div>
@@ -202,23 +204,24 @@ export function Customizer({ fit, product, riders, applicant, onSave, onClose }:
 }
 
 export function PolicyFacts({ product }: { product: PackProduct }) {
-  const rows: [string, string][] = [
-    ["If you die", product.death_benefit],
-    ["If you survive", product.maturity_benefit],
-    ["Key features", product.key_features],
-    ["Not covered", product.key_exclusions],
-    ["Stopping early", product.surrender_and_lock_in],
-    ["Medical checks", product.medical_underwriting],
+  const t = useT();
+  const rows: [MessageKey, string][] = [
+    ["products.fact.ifYouDie", product.death_benefit],
+    ["products.fact.ifYouSurvive", product.maturity_benefit],
+    ["products.fact.keyFeatures", product.key_features],
+    ["products.fact.notCovered", product.key_exclusions],
+    ["products.fact.stoppingEarly", product.surrender_and_lock_in],
+    ["products.fact.medicalChecks", product.medical_underwriting],
   ];
   return (
     <details className="mt-6 rounded-2xl border border-[#D9D3E8] p-4">
-      <summary className="cursor-pointer font-bold text-[#7957FF]">What this policy pays and excludes</summary>
+      <summary className="cursor-pointer font-bold text-[#7957FF]">{t("products.fact.heading")}</summary>
       <dl className="m-0 mt-3 flex flex-col gap-3 text-[14px]">
         {rows
           .filter(([, v]) => v)
           .map(([k, v]) => (
             <div key={k}>
-              <dt className="text-[12px] font-bold uppercase tracking-[0.1em] text-[#6F6A7C]">{k}</dt>
+              <dt className="text-[12px] font-bold uppercase tracking-[0.1em] text-[#6F6A7C]">{t(k)}</dt>
               <dd className="m-0 mt-0.5 leading-snug">{v}</dd>
             </div>
           ))}

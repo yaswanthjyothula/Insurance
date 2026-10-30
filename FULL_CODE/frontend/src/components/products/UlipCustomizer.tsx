@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useI18n } from "@/i18n/I18nProvider";
 import { formatINR } from "@/lib/utils";
-import { MODE_LABELS, requestFromFit, ulipMultiples } from "@/lib/plan-config";
+import { modeLabelT, requestFromFit, ulipMultiples } from "@/lib/plan-config";
 import { useDebouncedPost } from "@/hooks/useDebouncedRequest";
 import type { Applicant, PackFund, PackProduct, PayMode, ProductFit, Quote, QuoteRequest, SelectedPlan, UlipProjection } from "@/types/api";
 import { Modal } from "./Modal";
@@ -24,6 +25,7 @@ interface Props {
 
 /** ULIP: the customer chooses the premium, a cover multiple, the fund and the term, and sees where the fund could end up. */
 export function UlipCustomizer({ fit, product, funds, applicant, onSave, onClose }: Props) {
+  const { t, tx } = useI18n();
   const start = fit.quote as Quote;
   const single = start.payment_option === "single";
   const multiples = ulipMultiples(product, applicant.age);
@@ -65,14 +67,14 @@ export function UlipCustomizer({ fit, product, funds, applicant, onSave, onClose
   const maxTerm = Math.min(product.max_policy_term_years ?? 30, product.max_maturity_age - applicant.age);
 
   return (
-    <Modal title={`Customise ${product.product_name}`} onClose={onClose}>
+    <Modal title={t("products.customiseTitle", { name: product.product_name })} onClose={onClose}>
       <p className="m-0 mb-5 text-[15px] text-[#4A4553]">{product.plain_language_summary}</p>
       <div className="grid gap-6 md:grid-cols-[1.1fr_1fr]">
         <div className="flex flex-col gap-5">
           <div>
             <div className="flex justify-between">
               <label htmlFor="premium" className={label}>
-                {single ? "One-time investment" : "Premium per year"}
+                {single ? t("products.ulip.oneTime") : t("products.ulip.premiumPerYear")}
               </label>
               <span className="font-extrabold text-[#7957FF]">{formatINR(premium)}</span>
             </div>
@@ -88,8 +90,8 @@ export function UlipCustomizer({ fit, product, funds, applicant, onSave, onClose
             />
           </div>
           <div>
-            <span className={label}>Cover as a multiple of the premium</span>
-            <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Cover multiple">
+            <span className={label}>{t("products.ulip.multiple")}</span>
+            <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={t("products.ulip.multipleAria")}>
               {multiples.map((m) => (
                 <button
                   key={m}
@@ -106,9 +108,9 @@ export function UlipCustomizer({ fit, product, funds, applicant, onSave, onClose
           <div>
             <div className="flex justify-between">
               <label htmlFor="uterm" className={label}>
-                Policy term
+                {t("products.ulip.term")}
               </label>
-              <span className="font-extrabold text-[#7957FF]">{term} years</span>
+              <span className="font-extrabold text-[#7957FF]">{t("products.years", { count: term })}</span>
             </div>
             <input
               id="uterm"
@@ -123,30 +125,30 @@ export function UlipCustomizer({ fit, product, funds, applicant, onSave, onClose
           </div>
           <div>
             <label htmlFor="fund" className={label}>
-              Fund
+              {t("products.ulip.fund")}
             </label>
             <select id="fund" className={field} value={fundId} onChange={(e) => setFundId(e.target.value)}>
               {funds.map((f) => (
                 <option key={f.fund_id} value={f.fund_id}>
-                  {f.fund_name} · {f.risk_level.replace(/_/g, " ")} risk
+                  {t("products.ulip.fundOption", { name: f.fund_name, risk: tx(f.risk_level.replace(/_/g, " ")) })}
                 </option>
               ))}
             </select>
             {fund && (
               <p className="m-0 mt-1 text-[12.5px] text-[#6F6A7C]">
-                {fund.objective} Fund charge {fund.fmc_pct_pa}% a year.
+                {fund.objective} {t("products.ulip.fundCharge", { pct: fund.fmc_pct_pa })}
               </p>
             )}
           </div>
           {!single && (
             <div>
               <label htmlFor="umode" className={label}>
-                How often
+                {t("products.ulip.howOften")}
               </label>
               <select id="umode" className={field} value={mode} onChange={(e) => setMode(e.target.value as PayMode)}>
                 {product.premium_modes.map((m) => (
                   <option key={m} value={m}>
-                    {MODE_LABELS[m as PayMode]}
+                    {modeLabelT(t, m as PayMode)}
                   </option>
                 ))}
               </select>
@@ -161,17 +163,21 @@ export function UlipCustomizer({ fit, product, funds, applicant, onSave, onClose
             onClick={() => quote?.valid && onSave({ request, quote, fit_summary: fit.reason })}
             className="h-12 rounded-lg bg-[#7957FF] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Add to my selection
+            {t("products.ulip.add")}
           </button>
         </div>
       </div>
       {projection && (
-        <section className="mt-6 rounded-2xl border border-[#D9D3E8] p-4" aria-label="Illustration">
-          <h3 className="m-0 text-[15px] font-extrabold">Where the fund could end up</h3>
+        <section className="mt-6 rounded-2xl border border-[#D9D3E8] p-4" aria-label={t("products.ulip.illustration")}>
+          <h3 className="m-0 text-[15px] font-extrabold">{t("products.ulip.projectionHeading")}</h3>
           <UlipChart scenarios={projection.scenarios} />
           <p className="m-0 mt-2 text-[12.5px] text-[#6F6A7C]">
-            {projection.note} Total charges over the term:{" "}
-            {projection.scenarios.map((s) => `${formatINR(s.total_charges, { compact: true })} at ${s.gross_return_pct}%`).join(", ")}.
+            {tx(projection.note)}{" "}
+            {t("products.ulip.totalCharges", {
+              list: projection.scenarios
+                .map((s) => t("products.ulip.chargeAt", { amount: formatINR(s.total_charges, { compact: true }), pct: s.gross_return_pct }))
+                .join(", "),
+            })}
           </p>
         </section>
       )}

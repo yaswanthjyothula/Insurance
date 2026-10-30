@@ -1,4 +1,7 @@
-import { humaniseTag } from "@/lib/text";
+"use client";
+
+import { useI18n } from "@/i18n/I18nProvider";
+import { useTagLabels } from "@/components/advisory/useTagLabels";
 import type { AdvisorFilters as Filters } from "@/components/advisory/advisory-helpers";
 import { isConsultationMode } from "@/components/advisory/advisory-helpers";
 import { CONSULTATION_MODES } from "@/components/advisory/consultation-modes";
@@ -37,40 +40,47 @@ function FilterSelect({
 }
 
 export function AdvisorFilters({ filters, languages, specialisations, onChange }: AdvisorFiltersProps) {
+  const { t } = useI18n();
+  const { tagLabel, languageLabel } = useTagLabels();
   const update = (patch: Partial<Filters>) => onChange({ ...filters, ...patch });
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
       <FilterSelect
         id="filter-mode"
-        label="How"
+        label={t("advisory.filters.how")}
         value={filters.mode}
         onChange={(value) => update({ mode: isConsultationMode(value) ? value : "" })}
       >
-        <option value="">Any way</option>
+        <option value="">{t("advisory.filters.anyWay")}</option>
         {CONSULTATION_MODES.map((mode) => (
           <option key={mode.id} value={mode.id}>
-            {mode.label}
+            {t(mode.labelKey)}
           </option>
         ))}
       </FilterSelect>
-      <FilterSelect id="filter-language" label="Language" value={filters.language} onChange={(language) => update({ language })}>
-        <option value="">Any language</option>
+      <FilterSelect
+        id="filter-language"
+        label={t("advisory.filters.language")}
+        value={filters.language}
+        onChange={(language) => update({ language })}
+      >
+        <option value="">{t("advisory.filters.anyLanguage")}</option>
         {languages.map((language) => (
           <option key={language} value={language}>
-            {language}
+            {languageLabel(language)}
           </option>
         ))}
       </FilterSelect>
       <FilterSelect
         id="filter-specialisation"
-        label="Specialisation"
+        label={t("advisory.filters.specialisation")}
         value={filters.specialisation}
         onChange={(specialisation) => update({ specialisation })}
       >
-        <option value="">Any specialisation</option>
+        <option value="">{t("advisory.filters.anySpecialisation")}</option>
         {specialisations.map((tag) => (
           <option key={tag} value={tag}>
-            {humaniseTag(tag)}
+            {tagLabel(tag)}
           </option>
         ))}
       </FilterSelect>

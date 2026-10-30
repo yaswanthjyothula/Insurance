@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertCircle } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
 import { JourneyProgress } from "@/components/layout/journey-progress";
 import { FormNotice } from "@/components/assessment/form-notice";
 import { SampleCustomerPicker } from "@/components/assessment/sample-customer-picker";
@@ -16,20 +17,25 @@ import { useAssessmentForm } from "@/components/assessment/use-assessment-form";
 import { useStepFlow } from "@/components/assessment/use-step-flow";
 import { useSubmitAssessment } from "@/components/assessment/use-submit-assessment";
 import { formFromSampleCustomer, validateAll, type FormState } from "@/lib/assessment-form";
+import { postJSON } from "@/lib/api";
 import { useAssessmentStore } from "@/store/assessment-store";
 import type { SampleCustomerDetail } from "@/types/sample-customer";
 
-const FIX_ANSWERS_MESSAGE = "Some answers need fixing before we can calculate.";
-
 export default function AssessmentPage() {
+  const { t, tx } = useI18n();
   const { resetAll } = useAssessmentStore();
+
+  // Lets the admin console count assessments that were started, not only the ones finished
+  useEffect(() => {
+    postJSON("/events", { kind: "assessment_started" }).catch(() => undefined);
+  }, []);
   const { form, origin, isBlank, update, loadSample, clear } = useAssessmentForm();
   const flow = useStepFlow(form);
   const { submit, isLoading, error: submitError, clearError } = useSubmitAssessment();
-  const [validationMessage, setValidationMessage] = useState<string | null>(null);
+  const [validationMessage, setValidationMessage] = useState(false);
 
   const dismissMessages = () => {
-    setValidationMessage(null);
+    setValidationMessage(false);
     clearError();
   };
 
@@ -55,7 +61,7 @@ export default function AssessmentPage() {
     const { firstInvalidStep } = validateAll(form);
     if (firstInvalidStep !== -1) {
       flow.showErrorsAt(firstInvalidStep);
-      setValidationMessage(FIX_ANSWERS_MESSAGE);
+      setValidationMessage(true);
       return;
     }
     void submit(form);
@@ -63,10 +69,12 @@ export default function AssessmentPage() {
 
   const stepProps = { form, errorFor: flow.errorFor, onChange: handleChange };
   const bannerMessage =
-    submitError ??
-    validationMessage ??
+    (submitError ? tx(submitError) : null) ??
+    (validationMessage ? t("assessment.page.fixAnswers") : null) ??
     (flow.visibleErrorCount > 0
-      ? `Please fix ${flow.visibleErrorCount} ${flow.visibleErrorCount === 1 ? "field" : "fields"} below to continue.`
+      ? t(flow.visibleErrorCount === 1 ? "assessment.page.fixFieldsOne" : "assessment.page.fixFieldsMany", {
+          count: flow.visibleErrorCount,
+        })
       : null);
 
   return (
@@ -84,11 +92,9 @@ export default function AssessmentPage() {
                 className="m-0 text-[clamp(26px,2.8vw,36px)] leading-[1.1] font-extrabold tracking-[-0.04em]"
                 style={{ color: "#24212B" }}
               >
-                Life Insurance Needs Finder
+                {t("assessment.page.title")}
               </h1>
-              <p className="text-[16px] leading-[1.5] text-[#5A5566] mt-2 mb-0">
-                Answer a few questions about your finances and family. It takes about three minutes.
-              </p>
+              <p className="text-[16px] leading-[1.5] text-[#5A5566] mt-2 mb-0">{t("assessment.page.subtitle")}</p>
             </div>
             <SampleCustomerPicker onSelect={handleSample} />
           </div>

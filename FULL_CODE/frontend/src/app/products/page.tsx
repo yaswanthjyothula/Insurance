@@ -4,10 +4,12 @@ import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
 import { JourneyProgress } from "@/components/layout/journey-progress";
 import { BasketSummary } from "@/components/products/BasketSummary";
 import { CompareBar } from "@/components/products/CompareBar";
 import { CompareModal } from "@/components/products/CompareModal";
+import { bold, mark } from "@/components/products/rich";
 import { Customizer } from "@/components/products/Customizer";
 import { ModelNote } from "@/components/products/ModelNote";
 import { PriorityPicker } from "@/components/products/PriorityPicker";
@@ -32,6 +34,7 @@ interface BasketCheck {
 
 export default function ProductsPage() {
   const router = useRouter();
+  const { t, tx } = useI18n();
   const { recommend, selection, setSelection, setStage, isHydrated } = useAssessmentStore();
   const { pack, error: packError } = usePack();
   const [priority, setPriority] = useState<Priority | null>(null);
@@ -99,12 +102,10 @@ export default function ProductsPage() {
     return (
       <Shell>
         <Centered>
-          <h2 className="m-0 text-xl font-bold">Start with your needs</h2>
-          <p className="m-0 mt-1 max-w-md text-center text-[#5A5566]">
-            Matched products depend on your answers. It takes about two minutes.
-          </p>
+          <h2 className="m-0 text-xl font-bold">{t("products.page.startTitle")}</h2>
+          <p className="m-0 mt-1 max-w-md text-center text-[#5A5566]">{t("products.page.startBody")}</p>
           <Link href="/assessment" className="mt-4 inline-flex h-12 items-center rounded-lg bg-[#7957FF] px-6 font-bold text-white">
-            Start the needs assessment
+            {t("products.page.startCta")}
           </Link>
         </Centered>
       </Shell>
@@ -116,17 +117,18 @@ export default function ProductsPage() {
       <header className="flex flex-col gap-4">
         <div>
           <h1 className="m-0 text-[clamp(26px,2.8vw,36px)] font-extrabold leading-[1.1] tracking-[-0.03em] text-[#24212B]">
-            Products matched to you
+            {t("products.page.title")}
           </h1>
           <p className="m-0 mt-2 max-w-[760px] text-[16px] leading-[1.5] text-[#5A5566]">
             {data ? (
               <>
-                Your cover need is about <strong className="text-[#24212B]">{formatINR(data.recommended_cover, { compact: true })}</strong>
-                .{" "}
+                {bold(
+                  t("products.coverNeed", { amount: mark(formatINR(data.recommended_cover, { compact: true })) }),
+                  "text-[#24212B]",
+                )}{" "}
               </>
             ) : null}
-            Saffron Life is a fictional insurer, so these products and prices are for the prototype only. Pick a policy to change its cover,
-            term and add-ons.
+            {t("products.page.intro")}
           </p>
         </div>
         <PriorityPicker value={activePriority} onChange={setPriority} />
@@ -139,11 +141,11 @@ export default function ProductsPage() {
         >
           <span className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5" />
-            {error ?? packError}
+            {tx((error ?? packError) as string)}
           </span>
           <button type="button" onClick={retry} className="inline-flex items-center gap-1.5 underline">
             <RefreshCw className="h-4 w-4" />
-            Try again
+            {t("common.tryAgain")}
           </button>
         </div>
       )}
@@ -151,7 +153,7 @@ export default function ProductsPage() {
       {!data && loading && (
         <Centered>
           <Loader2 className="h-7 w-7 animate-spin text-[#7957FF]" />
-          <p className="m-0 mt-2 font-semibold">Matching products…</p>
+          <p className="m-0 mt-2 font-semibold">{t("products.page.matching")}</p>
         </Centered>
       )}
 
@@ -167,7 +169,7 @@ export default function ProductsPage() {
             onToggleCompare={toggle}
             onCompareAll={compareNow}
           />
-          <section id="all-products" aria-label="All products" className="flex scroll-mt-24 flex-col gap-4">
+          <section id="all-products" aria-label={t("products.page.allProducts")} className="flex scroll-mt-24 flex-col gap-4">
             <TypeTabs value={filter} counts={data.type_counts} onChange={setFilter} />
             <CompareBar
               names={comparedFits.map((f) => ({ id: f.product_id, name: f.product_name }))}

@@ -1,4 +1,5 @@
 import { Info } from "lucide-react";
+import { T } from "@/i18n/I18nProvider";
 
 export function SimulationNote() {
   return (
@@ -8,8 +9,10 @@ export function SimulationNote() {
     >
       <Info className="w-4 h-4 mt-1 shrink-0 text-[#7957FF]" />
       <div>
-        <strong className="text-[#24212B]">This booking is a simulation.</strong> The advisors are sample profiles. No real advisor is
-        notified and nobody will contact you; the booking is only kept on this app&apos;s server.
+        <strong className="text-[#24212B]">
+          <T k="advisory.simulation.title" />
+        </strong>{" "}
+        <T k="advisory.simulation.body" />
       </div>
     </div>
   );

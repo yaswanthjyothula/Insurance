@@ -34,6 +34,7 @@ class AdvisorOut(BaseModel):
     review_count: int
     slots: List[SlotOut]
     has_availability: bool
+    bio: str = ""
 
 
 class AvailabilityOut(BaseModel):
@@ -52,3 +53,19 @@ class BookingOut(BaseModel):
     consultation_mode: str
     meeting_link: str
     created_at: str
+    cancelled_by: str = ""
+    outcome: str = ""  # completed or no_show once the advisor has recorded how the session went
+    slot_end: str = ""
+    phase: str = "upcoming"  # upcoming | past | cancelled, on the demo clock the slots use
+    starts_in_minutes: int = 0
+
+
+class MessageIn(BaseModel):
+    text: str = Field(..., min_length=1, max_length=1000)
+
+
+class MessageOut(BaseModel):
+    id: int
+    sender_role: Literal["customer", "advisor", "system"]
+    text: str
+    at: str

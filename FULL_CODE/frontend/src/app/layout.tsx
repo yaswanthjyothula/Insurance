@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollEffects } from "@/components/layout/ScrollEffects";
+import { SiteChrome } from "@/components/layout/SiteChrome";
 import { AuthProvider } from "@/components/auth/AuthProvider";
-
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-jakarta",
-  display: "swap",
-});
+import { I18nProvider } from "@/i18n/I18nProvider";
 
 export const metadata: Metadata = {
   title: "LifeSure AI | Plan Better. Choose Smarter. Protect What Matters.",
@@ -39,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`scroll-smooth ${jakarta.variable}`}>
+    <html lang="en" className="scroll-smooth">
       <head>
         <meta name="color-scheme" content="light only" />
       </head>
@@ -52,16 +46,22 @@ export default function RootLayout({
           Skip to main content
         </a>
 
-        <AuthProvider>
-          <ScrollEffects />
-          <Navbar />
+        <I18nProvider>
+          <AuthProvider>
+            <ScrollEffects />
+            <SiteChrome>
+              <Navbar />
+            </SiteChrome>
 
-          <main id="main-content" className="flex-grow">
-            {children}
-          </main>
+            <main id="main-content" className="flex-grow">
+              {children}
+            </main>
 
-          <Footer />
-        </AuthProvider>
+            <SiteChrome>
+              <Footer />
+            </SiteChrome>
+          </AuthProvider>
+        </I18nProvider>
       </body>
     </html>
   );

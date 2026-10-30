@@ -19,7 +19,7 @@ Users: a bank's retail customers. All insurer data is the problem pack's **ficti
 
 ## How to run
 
-Requirements: Python 3.9+, Node 20+.
+Requirements: Python 3.11+, Node 20+.
 
 **1. Put the problem pack's data in place.** Copy the pack's `data/` files (`products.json`, `riders.csv`, `premium_rates.csv`, `ulip_funds.csv`, `ulip_mortality_charges.csv`, `customer_profiles.json`, `advisors.csv`, `advisor_slots.csv`, `reference_assumptions.json`, and the rest) into **`FULL_CODE/data/`**. That folder is git-ignored, so the pack is never committed. The API refuses to start with a clear message if a file is missing.
 
@@ -28,7 +28,7 @@ Requirements: Python 3.9+, Node 20+.
 **3. Backend** (http://127.0.0.1:8000, API docs at `/docs`):
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
+python3.11 -m venv .venv && source .venv/bin/activate
 pip install -r FULL_CODE/backend/requirements.txt
 cd FULL_CODE/backend && uvicorn app.main:app --port 8000
 ```
@@ -95,11 +95,12 @@ Key rules the engine follows: premium = rate per ₹1,000 × cover ÷ 1,000 × p
 
 ## Limitations
 
+- The customer UI currently offers English, Hindi and Telugu. Hindi and Telugu are partial translations; any message without an approved translation falls back to English, including product-plan copy.
 - **Everything about Saffron Life is fictional.** Prices are not real quotes and nothing here is financial advice.
 - **The ranking model learned from a simulation**, not from real buyers, and only 14 products exist, so it has seen a narrow range of products. Its gain over a fixed rule is real but small (a few points), and zero for "balanced" and "lowest cost".
 - **Needs estimate is a simplification.** One support horizon from the longest-supported dependent (capped at 40 years); a working spouse's income is not counted; own retirement goals are left out; taxes are not modelled. Assumptions come from the pack's reference file and can be overridden.
 - **Booking is simulated.** Advisors are sample profiles from the pack, nobody is notified, and the chat/video panel is a demo. Slots are in the pack's two-week calendar; outside it the app replays the calendar from its first day.
 - **Prototype storage and auth.** Saved plans, bookings and local accounts are JSON files (not a database) and the session token is kept in the browser's session storage. The passwordless demo sign-in (`ENABLE_DEMO_LOGIN`) must be turned off for real use.
-- **Dependency advisories.** `pip-audit` reports advisories for Starlette, anyio and pytest at the pinned versions. The fixed releases need Python 3.10 or newer, and the development machine runs 3.9, so they are not applied. Run the backend on Python 3.11+ and upgrade `requirements.txt` before any real use. `npm audit` is clean.
+- **Runtime baseline.** The backend requires Python 3.11+ so it can use current, patched FastAPI, Starlette and AnyIO releases. Recreate the virtual environment after upgrading Python; Python 3.9 and 3.10 are unsupported.
 - Not built: real purchase or e-signature, insurer integrations, medical underwriting, claims, a health or motor product set.
 - The education pages under `/insurance` and `/resources` describe real Indian market facts (IRDAI rules, insurer claim ratios) for context. They are not used by the recommendations, and some figures are marked "Not confirmed".

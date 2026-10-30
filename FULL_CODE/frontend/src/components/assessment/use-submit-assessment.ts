@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useI18n } from "@/i18n/I18nProvider";
 import { useRouter } from "next/navigation";
 import { postJSON } from "@/lib/api";
 import { toAssessmentInput, toRecommendRequest, type FormState } from "@/lib/assessment-form";
@@ -9,6 +10,7 @@ import type { AssessmentResult } from "@/types/assessment";
 /** Runs the needs calculation and stores both what the engine returned and what Products will need later. */
 export function useSubmitAssessment() {
   const router = useRouter();
+  const { t } = useI18n();
   const { setInput, setResult, setRecommend } = useAssessmentStore();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export function useSubmitAssessment() {
       void saveMyPlan({ assessment: summariseAssessment(result) });
       router.push("/results");
     } catch (failure) {
-      setError(failure instanceof Error ? failure.message : "We couldn't calculate your cover. Please try again.");
+      setError(failure instanceof Error ? failure.message : t("assessment.errors.calculate"));
     } finally {
       setIsLoading(false);
     }

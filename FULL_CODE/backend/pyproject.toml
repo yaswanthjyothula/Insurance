@@ -2,7 +2,7 @@
 name = "lifesure-backend"
 version = "1.0.0"
 description = "Needs-assessment, plan recommendation and advisory API for the B2 life insurance problem"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
@@ -11,7 +11,7 @@ filterwarnings = ["ignore::DeprecationWarning"]
 
 [tool.ruff]
 line-length = 140
-target-version = "py39"
+target-version = "py311"
 extend-exclude = ["data_store", "model_artifacts"]
 
 [tool.ruff.lint]

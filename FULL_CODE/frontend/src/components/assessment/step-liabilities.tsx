@@ -1,67 +1,85 @@
 import { Landmark } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
+import type { MessageKey } from "@/i18n/en";
 import type { AmountKey } from "@/lib/assessment-form";
 import { amountHint, Field, FIELD_GRID, StepHeader, TextInput, type StepProps } from "./fields";
 
-const AMOUNT_FIELDS: { key: AmountKey; label: string; placeholder: string; hint: string }[] = [
-  { key: "homeLoan", label: "Outstanding home loan", placeholder: "e.g. 35,00,000", hint: "Principal balance on your mortgage" },
-  { key: "otherLoans", label: "Personal / vehicle / education loans", placeholder: "e.g. 5,00,000", hint: "Other outstanding debts" },
+const AMOUNT_FIELDS: { key: AmountKey; label: MessageKey; placeholder: MessageKey; hint: MessageKey }[] = [
+  {
+    key: "homeLoan",
+    label: "assessment.liabilities.homeLoanLabel",
+    placeholder: "assessment.liabilities.homeLoanPlaceholder",
+    hint: "assessment.liabilities.homeLoanHint",
+  },
+  {
+    key: "otherLoans",
+    label: "assessment.liabilities.otherLoansLabel",
+    placeholder: "assessment.liabilities.otherLoansPlaceholder",
+    hint: "assessment.liabilities.otherLoansHint",
+  },
   {
     key: "individualCover",
-    label: "Existing individual life cover",
-    placeholder: "e.g. 50,00,000",
-    hint: "Sum assured on policies you bought yourself",
+    label: "assessment.liabilities.individualCoverLabel",
+    placeholder: "assessment.liabilities.individualCoverPlaceholder",
+    hint: "assessment.liabilities.individualCoverHint",
   },
   {
     key: "groupCover",
-    label: "Employer group life cover",
-    placeholder: "e.g. 20,00,000",
-    hint: "Cover your employer provides; we count it too",
+    label: "assessment.liabilities.groupCoverLabel",
+    placeholder: "assessment.liabilities.groupCoverPlaceholder",
+    hint: "assessment.liabilities.groupCoverHint",
   },
-  { key: "liquidSavings", label: "Liquid savings", placeholder: "e.g. 7,00,000", hint: "Bank balances and fixed deposits" },
+  {
+    key: "liquidSavings",
+    label: "assessment.liabilities.savingsLabel",
+    placeholder: "assessment.liabilities.savingsPlaceholder",
+    hint: "assessment.liabilities.savingsHint",
+  },
   {
     key: "marketInvestments",
-    label: "Market investments",
-    placeholder: "e.g. 6,00,000",
-    hint: "Mutual funds and shares (exclude your home)",
+    label: "assessment.liabilities.investmentsLabel",
+    placeholder: "assessment.liabilities.investmentsPlaceholder",
+    hint: "assessment.liabilities.investmentsHint",
   },
 ];
 
 export function StepLiabilities({ form, errorFor, onChange }: StepProps) {
+  const { t } = useI18n();
   return (
     <>
       <StepHeader
         icon={Landmark}
         step={3}
-        title="Debts, cover & savings"
-        description="Loans must be cleared for your family, while existing cover and savings reduce the gap."
+        title={t("assessment.liabilities.title")}
+        description={t("assessment.liabilities.description")}
       />
       <div className={FIELD_GRID}>
         {AMOUNT_FIELDS.map(({ key, label, placeholder, hint }) => (
-          <Field key={key} id={key} label={label} optional error={errorFor(key)} hint={amountHint(form[key]) ?? hint}>
+          <Field key={key} id={key} label={t(label)} optional error={errorFor(key)} hint={amountHint(form[key]) ?? t(hint)}>
             <TextInput
               id={key}
               money
               prefix="₹"
               value={form[key]}
               onChange={(value) => onChange({ [key]: value })}
-              placeholder={placeholder}
+              placeholder={t(placeholder)}
               error={errorFor(key)}
             />
           </Field>
         ))}
         <Field
           id="bufferMonths"
-          label="Emergency cash buffer"
+          label={t("assessment.liabilities.bufferLabel")}
           optional
           error={errorFor("bufferMonths")}
-          hint="Months of expenses to keep ready; we assume a standard buffer if blank"
+          hint={t("assessment.liabilities.bufferHint")}
         >
           <TextInput
             id="bufferMonths"
             value={form.bufferMonths}
             onChange={(bufferMonths) => onChange({ bufferMonths })}
-            placeholder="e.g. 6"
-            suffix="months"
+            placeholder={t("assessment.liabilities.bufferPlaceholder")}
+            suffix={t("assessment.unit.months")}
             error={errorFor("bufferMonths")}
             maxDigits={2}
           />

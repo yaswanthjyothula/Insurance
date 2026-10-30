@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/I18nProvider";
 import { formatINR } from "@/lib/utils";
 import type { UlipScenario } from "@/types/api";
 
@@ -8,6 +9,7 @@ const COLORS = ["#C98A2B", "#7957FF"];
 
 /** Fund value over the years at each illustrated return, against the premiums paid. Pure SVG so it needs no chart library. */
 export function UlipChart({ scenarios }: { scenarios: UlipScenario[] }) {
+  const t = useT();
   const years = scenarios[0]?.years ?? [];
   if (!years.length) return null;
   const top = Math.max(...scenarios.flatMap((s) => s.years.map((y) => y.fund_value)), ...years.map((y) => y.premiums_paid), 1);
@@ -17,7 +19,7 @@ export function UlipChart({ scenarios }: { scenarios: UlipScenario[] }) {
   const ticks = [0, 0.5, 1].map((f) => top * f);
   return (
     <figure className="m-0">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Projected fund value by year at each return scenario" className="w-full">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t("products.ulip.chartAria")} className="w-full">
         {ticks.map((t) => (
           <g key={t}>
             <line x1={PAD.l} x2={W - PAD.r} y1={y(t)} y2={y(t)} stroke="#E9E4FF" />
@@ -37,22 +39,22 @@ export function UlipChart({ scenarios }: { scenarios: UlipScenario[] }) {
           />
         ))}
         <text x={PAD.l} y={H - 6} fontSize="11" fill="#6F6A7C">
-          Year 1
+          {t("products.ulip.year1")}
         </text>
         <text x={W - PAD.r} y={H - 6} textAnchor="end" fontSize="11" fill="#6F6A7C">
-          Year {years.length}
+          {t("products.ulip.yearN", { count: years.length })}
         </text>
       </svg>
       <figcaption className="mt-1 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-[#4A4553]">
         {scenarios.map((s, i) => (
           <span key={s.gross_return_pct} className="inline-flex items-center gap-1.5">
             <i className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-            {s.gross_return_pct}% a year before charges: {formatINR(s.maturity_value, { compact: true })}
+            {t("products.ulip.scenario", { pct: s.gross_return_pct, amount: formatINR(s.maturity_value, { compact: true }) })}
           </span>
         ))}
         <span className="inline-flex items-center gap-1.5">
           <i className="inline-block h-0.5 w-4 bg-[#6F6A7C]" />
-          Premiums paid
+          {t("products.ulip.premiumsPaid")}
         </span>
       </figcaption>
     </figure>

@@ -9,6 +9,7 @@ readable rule score and never overrides eligibility.
 import logging
 import math
 import random
+import threading
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
@@ -173,14 +174,19 @@ def _train() -> Dict[str, Any]:
     return {"model": model, "metrics": metrics}
 
 
+_train_lock = threading.Lock()
+
+
 def get_model() -> Optional[Any]:
     if "model" not in _state:
-        try:
-            _state.update(_train())
-            log.info("Trained ranker on %d rows", _state["metrics"]["training_rows"])
-        except Exception:  # scikit-learn missing or training failed: the API keeps working on rules alone
-            log.exception("Ranker unavailable, using rules only")
-            _state["model"], _state["metrics"] = None, {}
+        with _train_lock:  # the startup warm-up and a first request never train twice
+            if "model" not in _state:
+                try:
+                    _state.update(_train())
+                    log.info("Trained ranker on %d rows", _state["metrics"]["training_rows"])
+                except Exception:  # scikit-learn missing or training failed: the API keeps working on rules alone
+                    log.exception("Ranker unavailable, using rules only")
+                    _state["model"], _state["metrics"] = None, {}
     return _state["model"]
 
 

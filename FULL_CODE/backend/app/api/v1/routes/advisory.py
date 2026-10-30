@@ -1,10 +1,10 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.core.security import SessionUser, current_user
-from app.schemas.advisory import AdvisorBookingRequest, AvailabilityOut, BookingOut
-from app.services import advisory
+from app.core.security import SessionUser, current_user, rate_limit
+from app.schemas.advisory import AdvisorBookingRequest, AvailabilityOut, BookingOut, MessageIn, MessageOut
+from app.services import advisor_appointments, advisory
 
 router = APIRouter(prefix="/advisory", tags=["advisory"])
 
@@ -34,3 +34,22 @@ def cancel(booking_id: str, user: SessionUser = Depends(current_user)) -> Bookin
     if cancelled is None:
         raise HTTPException(status_code=404, detail="Booking not found")
     return cancelled
+
+
+@router.get("/bookings/{booking_id}/messages", response_model=List[MessageOut])
+def messages(booking_id: str, after: int = Query(0, ge=0), user: SessionUser = Depends(current_user)) -> List[MessageOut]:
+    found = advisor_appointments.customer_messages(booking_id, user.email, after)
+    if found is None:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    return found
+
+
+@router.post("/bookings/{booking_id}/messages", response_model=MessageOut, dependencies=[Depends(rate_limit("chat", limit=30))])
+def send_message(booking_id: str, req: MessageIn, user: SessionUser = Depends(current_user)) -> MessageOut:
+    try:
+        sent = advisor_appointments.customer_send(booking_id, user.email, req.text)
+    except advisor_appointments.AppointmentConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    if sent is None:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    return sent

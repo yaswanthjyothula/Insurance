@@ -348,7 +348,7 @@ def evaluate(product: Product, ctx: Context, budget_override: Optional[float] = 
 
 
 def evaluate_all(ctx: Context) -> List[ProductFit]:
-    return [evaluate(p, ctx) for p in get_pack().products.values()]
+    return [evaluate(p, ctx) for p in get_pack().products.values() if p.active]
 
 
 def monthly_cost(fit: ProductFit) -> float:

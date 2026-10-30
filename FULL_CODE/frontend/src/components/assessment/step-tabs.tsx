@@ -1,11 +1,12 @@
+import { useI18n } from "@/i18n/I18nProvider";
 import { AlertCircle, Check, FileCheck2, Landmark, Target, User, Users } from "lucide-react";
 
 export const STEPS = [
-  { label: "Profile", icon: User },
-  { label: "Family", icon: Users },
-  { label: "Liabilities", icon: Landmark },
-  { label: "Goals", icon: Target },
-  { label: "Review", icon: FileCheck2 },
+  { labelKey: "assessment.steps.profile", icon: User },
+  { labelKey: "assessment.steps.family", icon: Users },
+  { labelKey: "assessment.steps.liabilities", icon: Landmark },
+  { labelKey: "assessment.steps.goals", icon: Target },
+  { labelKey: "assessment.steps.review", icon: FileCheck2 },
 ] as const;
 
 interface StepTabsProps {
@@ -23,15 +24,16 @@ function tabClass(active: boolean, bad: boolean, done: boolean): string {
 }
 
 export function StepTabs({ step, hasErrors, isDone, onSelect }: StepTabsProps) {
+  const { t } = useI18n();
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3" role="tablist" aria-label="Assessment steps" data-no-reveal>
-      {STEPS.map(({ label, icon: Icon }, index) => {
+    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3" role="tablist" aria-label={t("assessment.tabs.label")} data-no-reveal>
+      {STEPS.map(({ labelKey, icon: Icon }, index) => {
         const active = step === index,
           bad = hasErrors(index),
           done = isDone(index);
         return (
           <button
-            key={label}
+            key={labelKey}
             role="tab"
             aria-selected={active}
             onClick={() => onSelect(index)}
@@ -45,7 +47,7 @@ export function StepTabs({ step, hasErrors, isDone, onSelect }: StepTabsProps) {
             ) : (
               <Icon className="w-4 h-4" />
             )}
-            <span className="truncate">{label}</span>
+            <span className="truncate">{t(labelKey)}</span>
           </button>
         );
       })}

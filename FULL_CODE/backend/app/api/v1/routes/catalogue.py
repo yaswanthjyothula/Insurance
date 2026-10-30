@@ -13,7 +13,7 @@ router = APIRouter(prefix="/pack", tags=["catalogue"])
 
 @router.get("/products", response_model=List[Product])
 def products(product_type: Optional[str] = None):
-    items = list(get_pack().products.values())
+    items = [p for p in get_pack().products.values() if p.active]
     return [p for p in items if p.product_type == product_type] if product_type else items
 
 

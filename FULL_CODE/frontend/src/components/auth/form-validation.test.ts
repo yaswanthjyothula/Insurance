@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidEmail, validateLogin, validateRegistration } from "@/components/auth/form-validation";
+import { isLoginId, isValidEmail, validateLogin, validateRegistration } from "@/components/auth/form-validation";
 
 const validRegistration = { fullName: "Asha Rao", email: "asha@example.com", password: "long-enough", confirmPassword: "long-enough" };
 
@@ -22,6 +22,20 @@ describe("validateLogin", () => {
 
   it("flags each empty or invalid field", () => {
     expect(Object.keys(validateLogin({ email: "nope", password: "" }))).toEqual(["email", "password"]);
+  });
+});
+
+describe("sign in with an ID", () => {
+  it("accepts customer and advisor IDs in any case", () => {
+    expect(isLoginId("CUS-06ISGGSQ")).toBe(true);
+    expect(isLoginId(" adv-4kkbrk ")).toBe(true);
+    expect(validateLogin({ email: "CUS-06ISGGSQ", password: "x" })).toEqual({});
+  });
+
+  it("rejects other shapes", () => {
+    expect(isLoginId("CUS-")).toBe(false);
+    expect(isLoginId("USR-123456")).toBe(false);
+    expect(isLoginId("CUS-06 ISGGSQ")).toBe(false);
   });
 });
 

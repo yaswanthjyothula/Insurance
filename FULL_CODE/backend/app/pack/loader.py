@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from app.core.config import settings
 from app.pack.models import (
@@ -60,6 +60,11 @@ class PackData:
     slots: List[Slot]
     assumptions: Assumptions
     terms_by_product: Dict[Tuple[str, str, int, str, str], List[int]] = field(default_factory=dict)
+    # Filled in by the admin config store when it builds the active snapshot (see app/admin/config_store.py)
+    rate_adjust: Dict[str, Any] = field(default_factory=dict)
+    underwriting: Any = None
+    needs: Any = None
+    config_version: int = 0
 
 
 def _split(value: str) -> List[str]:
@@ -211,6 +216,7 @@ def _load_advisors(root: Path) -> Dict[str, Advisor]:
             years_experience=int(a["years_experience"]),
             rating=float(a["rating"]),
             review_count=int(a["review_count"]),
+            email=(a.get("email") or "").strip().lower(),
         )
         for a in _read_csv(root / "advisors.csv")
     }
@@ -221,8 +227,8 @@ def _load_assumptions(root: Path) -> Assumptions:
     return Assumptions(**{k: v["value"] for k, v in raw.items() if k in Assumptions.model_fields})
 
 
-@lru_cache(maxsize=1)
-def get_pack() -> PackData:
+def load_pack_from_files() -> PackData:
+    """The pack exactly as the CSV/JSON files hold it. The seed script reads this to fill Supabase."""
     root = Path(settings.DATA_DIR)
     missing = [f for f in REQUIRED_FILES if not (root / f).exists()]
     if missing:
@@ -254,11 +260,67 @@ def get_pack() -> PackData:
         assumptions=_load_assumptions(root),
         terms_by_product=terms,
     )
+    return pack
+
+
+def _overlay_supabase(pack: PackData) -> PackData:
+    """Customers, advisors and the slot calendar come from Supabase when it holds them. Products, rates and funds stay catalogue files."""
+    from app.core import supabase
+
+    db = supabase.get_client()
+    try:
+        advisors, customers, slots = db.select_all("advisors"), db.select_all("customers"), db.select_all("advisor_slots")
+    except supabase.SupabaseError as exc:
+        log.warning("Could not read the pack from Supabase (%s). Using the pack files. Has supabase/schema.sql been run?", exc)
+        return pack
+    if not (advisors and customers and slots):
+        log.warning("Supabase has no advisors, customers or slots yet, so the pack files are used. Run: python -m app.seed_supabase")
+        return pack
+    pack.advisors = {
+        a["advisor_id"]: Advisor(
+            advisor_id=a["advisor_id"],
+            advisor_name=a["advisor_name"],
+            languages=a["languages"],
+            specialisations=a["specialisations"],
+            consultation_modes=a["consultation_modes"],
+            years_experience=a["years_experience"],
+            rating=float(a["rating"]),
+            review_count=a["review_count"],
+            email=a["email"],
+        )
+        for a in advisors
+    }
+    pack.profiles = {c["profile_id"]: Profile(**{**c["data"], "advisor_id": c["advisor_id"]}) for c in customers}
+    pack.slots = [
+        Slot(slot_id=s["slot_id"], advisor_id=s["advisor_id"], slot_start=s["slot_start"], slot_end=s["slot_end"], status=s["status"])
+        for s in slots
+    ]
+    return pack
+
+
+@lru_cache(maxsize=1)
+def get_base_pack() -> PackData:
+    """The catalogue as the files and Supabase hold it, before any admin changes."""
+    from app.core import supabase
+
+    pack = load_pack_from_files()
+    pack = _overlay_supabase(pack) if supabase.configured() else pack
     log.info(
         "Loaded pack: %d products, %d rates, %d profiles, %d slots",
         len(pack.products),
-        len(rates),
+        len(pack.rates),
         len(pack.profiles),
-        len(slots),
+        len(pack.slots),
     )
     return pack
+
+
+def get_pack() -> PackData:
+    """The active pack: the base catalogue with the admin console's current, validated configuration applied.
+
+    Engines call this on every use, so an admin change is picked up by the very next request. Inside `pinned()` it returns one
+    fixed snapshot, so a quote is never priced with half of an old configuration and half of a new one.
+    """
+    from app.admin.config_store import config_store
+
+    return config_store.current().pack

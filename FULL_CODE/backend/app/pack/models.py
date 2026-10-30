@@ -67,6 +67,8 @@ class Product(BaseModel):
     ulip_charges: Optional[Dict[str, Any]] = None
     extra_rules: Optional[Dict[str, Any]] = None
     pricing_source: str = ""
+    active: bool = True  # switched off in the admin console: never recommended or quoted
+    min_maturity_age: Optional[int] = None
 
     @property
     def is_ulip(self) -> bool:
@@ -114,6 +116,7 @@ class Advisor(BaseModel):
     years_experience: int
     rating: float
     review_count: int
+    email: str = Field("", exclude=True)  # sign-in identity only: never serialised into API responses
 
 
 class Slot(BaseModel):
@@ -177,6 +180,7 @@ class Profile(BaseModel):
     monthly_premium_budget_inr: int = 0
     preferred_policy_term_years: Optional[int] = None
     profile_date: str = ""
+    advisor_id: Optional[str] = None  # their advisor, when stored with the profile in Supabase
 
 
 class Assumptions(BaseModel):

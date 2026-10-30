@@ -47,6 +47,13 @@ class RiderLine(BaseModel):
     instalment: int
 
 
+class UnderwritingOut(BaseModel):
+    route: Literal["non_medical", "tele_medical", "physical_medical", "full_underwriting"]
+    label: str
+    stp_eligible: bool
+    reasons: List[str] = Field(default_factory=list)
+
+
 class Quote(BaseModel):
     product_id: str
     product_name: str
@@ -67,6 +74,8 @@ class Quote(BaseModel):
     total_instalment: int = 0
     allowed_terms: List[int] = Field(default_factory=list)
     max_sum_assured_for_applicant: Optional[int] = None
+    underwriting: Optional[UnderwritingOut] = None
+    config_version: int = 0  # the admin configuration this quote was priced with
 
 
 class BasketItem(BaseModel):

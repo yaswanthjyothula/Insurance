@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useT } from "@/i18n/I18nProvider";
+import type { MessageKey } from "@/i18n/en";
 import { Check, ShieldCheck, Calculator, Award, Users } from "lucide-react";
 
 interface JourneyProgressProps {
@@ -8,32 +10,33 @@ interface JourneyProgressProps {
 }
 
 export function JourneyProgress({ currentStage }: JourneyProgressProps) {
-  const stages = [
+  const t = useT();
+  const stages: { num: number; labelKey: MessageKey; descKey: MessageKey; href: string; icon: typeof Check }[] = [
     {
       num: 1,
-      label: "Assessment",
-      shortDesc: "Financial & Family Profile",
+      labelKey: "layout.journey.assessment",
+      descKey: "layout.journey.assessmentDesc",
       href: "/assessment",
       icon: Calculator,
     },
     {
       num: 2,
-      label: "Coverage Results",
-      shortDesc: "Gap & Net Needs Breakdown",
+      labelKey: "layout.journey.results",
+      descKey: "layout.journey.resultsDesc",
       href: "/results",
       icon: ShieldCheck,
     },
     {
       num: 3,
-      label: "Product Selection",
-      shortDesc: "Plan Matching & Customisation",
+      labelKey: "layout.journey.products",
+      descKey: "layout.journey.productsDesc",
       href: "/products",
       icon: Award,
     },
     {
       num: 4,
-      label: "Digital Advisory",
-      shortDesc: "Fiduciary Consultation",
+      labelKey: "layout.journey.advisory",
+      descKey: "layout.journey.advisoryDesc",
       href: "/advisory",
       icon: Users,
     },
@@ -59,9 +62,11 @@ export function JourneyProgress({ currentStage }: JourneyProgressProps) {
                 {isCompleted ? <Check className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3]" /> : stage.num}
               </span>
               <span className="flex flex-col gap-0.5 min-w-0">
-                <span className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#7957FF]">Stage {stage.num}</span>
-                <span className="text-[15px] sm:text-[16px] font-bold tracking-[-0.01em] text-[#24212B] truncate">{stage.label}</span>
-                <span className="text-[12px] text-[#5A5566] hidden md:block truncate">{stage.shortDesc}</span>
+                <span className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#7957FF]">
+                  {t("layout.journey.stage", { n: stage.num })}
+                </span>
+                <span className="text-[15px] sm:text-[16px] font-bold tracking-[-0.01em] text-[#24212B] truncate">{t(stage.labelKey)}</span>
+                <span className="text-[12px] text-[#5A5566] hidden md:block truncate">{t(stage.descKey)}</span>
               </span>
             </Link>
           );

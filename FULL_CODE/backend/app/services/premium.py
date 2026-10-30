@@ -7,10 +7,11 @@ and round it down.
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Dict, List, Optional, Tuple
 
+from app.admin.config_store import config_store
 from app.pack.loader import get_pack
 from app.pack.models import Product, Rider
 from app.schemas.quote import Applicant, Quote, QuoteRequest, RiderChoice, RiderLine
-from app.services import eligibility
+from app.services import eligibility, underwriting_engine
 
 ONE = Decimal(1)
 MODAL_FIELDS = {
@@ -48,13 +49,48 @@ def band_factor(product: Product, sum_assured: int) -> Optional[Decimal]:
     return None
 
 
+def term_within_rules(product: Product, age: int, term: int) -> bool:
+    """The term and maturity limits from the active configuration. Products running to a fixed age have no term to check."""
+    if product.allowed_policy_terms.startswith("to_age_"):
+        return age + term <= product.max_maturity_age
+    return (product.min_policy_term_years or 1) <= term <= (product.max_policy_term_years or 99) and (
+        product.min_maturity_age or 0
+    ) <= age + term <= product.max_maturity_age
+
+
 def find_rate(product_id: str, option: str, age: int, term: int, gender: str, smoker: bool) -> Optional[Decimal]:
-    """The pack lists only allowed combinations, so a missing row means the combination is not allowed."""
-    return get_pack().rates.get((product_id, option, age, term, gender, "smoker" if smoker else "non_smoker"))
+    """The rate per Rs 1,000 for one combination, after the active configuration's adjustments.
+
+    The pack lists only allowed combinations, so a missing row means the combination is not allowed. Products made in the admin
+    console have no table: their base rate is loaded for age and the same smoker and gender adjustments apply.
+    """
+    pack = get_pack()
+    adjust = pack.rate_adjust.get(product_id)
+    if adjust is not None and adjust.custom_base is not None:
+        product = pack.products[product_id]
+        if option != "regular" or not term_within_rules(product, age, term):
+            return None
+        rate = adjust.custom_base * (1 + adjust.age_loading * max(0, age - 30))
+    else:
+        rate = pack.rates.get((product_id, option, age, term, gender, "smoker" if smoker else "non_smoker"))
+        if rate is None:
+            return None
+        if adjust is not None:
+            rate = rate * adjust.multiplier
+    if adjust is not None:
+        rate = rate * (adjust.smoker_loading if smoker else 1) * (adjust.female if gender == "female" else adjust.male)
+    return rate
 
 
 def allowed_terms(product_id: str, option: str, age: int, gender: str, smoker: bool) -> List[int]:
-    return get_pack().terms_by_product.get((product_id, option, age, gender, "smoker" if smoker else "non_smoker"), [])
+    pack = get_pack()
+    product = pack.products.get(product_id)
+    adjust = pack.rate_adjust.get(product_id)
+    if product is not None and adjust is not None and adjust.custom_base is not None:
+        terms = list(range(product.min_policy_term_years or 1, (product.max_policy_term_years or 1) + 1)) if option == "regular" else []
+    else:
+        terms = pack.terms_by_product.get((product_id, option, age, gender, "smoker" if smoker else "non_smoker"), [])
+    return [t for t in terms if product is None or term_within_rules(product, age, t)]
 
 
 def _modal(product: Product, mode: str) -> Optional[Decimal]:
@@ -179,6 +215,12 @@ def quote_nonlinked(product: Product, req: QuoteRequest) -> Quote:
     sa = req.sum_assured or 0
     q.sum_assured = sa
     issues += eligibility.sum_assured_issues(product, sa)
+    if term and not term_within_rules(product, app.age, term):
+        issues.append(
+            f"A {term}-year term is outside this product's tenure ({product.min_policy_term_years}-{product.max_policy_term_years} years) "
+            "or maturity-age limits, so this combination is not offered."
+        )
+        return _finish(q, issues)
     rate = find_rate(product.product_id, req.payment_option, app.age, term, app.gender, app.smoker)
     if rate is None:
         issues.append("This combination of age, term and payment option is not offered.")
@@ -250,6 +292,7 @@ def quote_ulip(product: Product, req: QuoteRequest) -> Quote:
         issues.append("That fund is not available on this product.")
     sa = int(Decimal(premium) * Decimal(str(multiple)))
     q.sum_assured = sa
+    issues += eligibility.sum_assured_issues(product, sa)
     q.base_annual_premium = float(premium)
     modal = ONE if req.payment_option == "single" else ULIP_MODAL[req.mode]
     q.base_instalment = round_rupee(Decimal(premium) * modal)
@@ -263,12 +306,16 @@ def quote_ulip(product: Product, req: QuoteRequest) -> Quote:
 
 
 def quote(req: QuoteRequest) -> Quote:
-    product = get_pack().products.get(req.product_id)
-    if product is None:
-        raise KeyError(req.product_id)
-    result = quote_ulip(product, req) if product.is_ulip else quote_nonlinked(product, req)
-    result.max_sum_assured_for_applicant = eligibility.max_cover_allowed(product, req.applicant)
-    return result
+    with config_store.pinned() as active:  # one configuration version for the whole calculation
+        product = active.pack.products.get(req.product_id)
+        if product is None:
+            raise KeyError(req.product_id)
+        result = quote_ulip(product, req) if product.is_ulip else quote_nonlinked(product, req)
+        result.max_sum_assured_for_applicant = eligibility.max_cover_allowed(product, req.applicant)
+        result.config_version = active.config.version
+        if result.valid and result.sum_assured > 0:
+            result.underwriting = underwriting_engine.assess(req.applicant.age, result.sum_assured, req.applicant.smoker)
+        return result
 
 
 def indicative_term_premium(sum_assured: int, age: int, gender: str, smoker: bool, term: int = 30) -> Optional[float]:

@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
 import { AlertCircle } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
+import { format } from "@/i18n/translate";
 import { formatINR } from "@/lib/utils";
 import { digitsOnly, groupIN, type FormState } from "@/lib/assessment-form";
+import { useErrorText } from "./error-text";
 
 /** What every step component receives: the answers, the visible errors, and a way to change answers. */
 export interface StepProps {
@@ -33,10 +36,12 @@ interface FieldProps {
 }
 
 export function Field({ id, label, optional, hint, error, group, children }: FieldProps) {
+  const { t } = useI18n();
+  const errorText = useErrorText();
   const labelContent = (
     <>
       {label}
-      {optional && <span className="ml-2 normal-case tracking-normal font-medium text-[#6F6A7C]">optional</span>}
+      {optional && <span className="ms-2 normal-case tracking-normal font-medium text-[#6F6A7C]">{t("assessment.field.optional")}</span>}
     </>
   );
   return (
@@ -54,7 +59,7 @@ export function Field({ id, label, optional, hint, error, group, children }: Fie
       {error ? (
         <span id={`${id}-err`} role="alert" className={errorClass}>
           <AlertCircle className="w-4 h-4 shrink-0" />
-          {error}
+          {errorText(error)}
         </span>
       ) : hint ? (
         <span id={`${id}-hint`} className={hintClass}>
@@ -82,7 +87,7 @@ export function TextInput({ id, value, onChange, placeholder, error, prefix, suf
   return (
     <div className="relative">
       {prefix && (
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg text-[#7957FF] font-bold pointer-events-none">{prefix}</span>
+        <span className="absolute start-4 top-1/2 -translate-y-1/2 text-lg text-[#7957FF] font-bold pointer-events-none">{prefix}</span>
       )}
       <input
         id={id}
@@ -94,12 +99,10 @@ export function TextInput({ id, value, onChange, placeholder, error, prefix, suf
         onChange={(event) => onChange(digitsOnly(event.target.value, money ? 12 : maxDigits))}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${id}-err` : `${id}-hint`}
-        className={`${inputClass} ${prefix ? "pl-9" : "pl-4"} ${suffix ? "pr-20" : "pr-4"} ${borderFor(error)}`}
+        className={`${inputClass} ${prefix ? "ps-9" : "ps-4"} ${suffix ? "pe-20" : "pe-4"} ${borderFor(error)}`}
       />
       {suffix && (
-        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[15px] text-[#6F6A7C] font-medium pointer-events-none">
-          {suffix}
-        </span>
+        <span className="absolute end-4 top-1/2 -translate-y-1/2 text-[15px] text-[#6F6A7C] font-medium pointer-events-none">{suffix}</span>
       )}
     </div>
   );
@@ -183,6 +186,7 @@ interface StepHeaderProps {
 }
 
 export function StepHeader({ icon: Icon, step, title, description }: StepHeaderProps) {
+  const { t } = useI18n();
   return (
     <div className="flex gap-4 items-start pb-5 border-b border-[#D9D3E8]">
       <span className="flex-none w-12 h-12 rounded-2xl grid place-items-center text-white bg-gradient-to-br from-[#9A80FF] to-[#7957FF] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_4px_0_#5B3BE6,0_14px_22px_-8px_rgba(121,87,255,0.7)]">
@@ -190,7 +194,7 @@ export function StepHeader({ icon: Icon, step, title, description }: StepHeaderP
       </span>
       <div className="flex flex-col gap-1.5">
         <h2 className="m-0 text-[clamp(22px,2.4vw,30px)] font-extrabold tracking-[-0.03em] text-[#24212B]">
-          Step {step}: {title}
+          {t("assessment.step.heading", { step, title })}
         </h2>
         <p className="m-0 text-base leading-normal text-[#5A5566]">{description}</p>
       </div>
@@ -200,7 +204,7 @@ export function StepHeader({ icon: Icon, step, title, description }: StepHeaderP
 
 export const FIELD_GRID = "grid grid-cols-1 sm:grid-cols-2 gap-x-9 gap-y-7";
 
-/** "₹18 L per year" style hint for a typed amount, or undefined while the field is empty. */
-export function amountHint(text: string, suffix = ""): string | undefined {
-  return text ? `${formatINR(Number(text), { compact: true })}${suffix}` : undefined;
+/** "₹18 L per year" style hint for a typed amount, or undefined while the field is empty. The template holds {amount}. */
+export function amountHint(text: string, template = "{amount}"): string | undefined {
+  return text ? format(template, { amount: formatINR(Number(text), { compact: true }) }) : undefined;
 }

@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { AlertCircle, RefreshCw, Search, UserRound, X } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
 import type { SampleCustomer } from "@/types/api";
 import type { SampleCustomerDetail } from "@/types/sample-customer";
 import { SampleCustomerList } from "./sample-customer-list";
@@ -14,6 +15,7 @@ const buttonClass =
 
 /** Lets a visitor fill the form from one of the pack's synthetic customers, then edit it. */
 export function SampleCustomerPicker({ onSelect }: SampleCustomerPickerProps) {
+  const { t, tx } = useI18n();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const { customers, status, error, loadList, loadDetail } = useSampleCustomers();
   const [query, setQuery] = useState("");
@@ -43,7 +45,7 @@ export function SampleCustomerPicker({ onSelect }: SampleCustomerPickerProps) {
     <>
       <button type="button" onClick={open} className={buttonClass}>
         <UserRound className="w-4 h-4" />
-        Try a sample customer
+        {t("assessment.sample.open")}
       </button>
       <dialog
         ref={dialogRef}
@@ -54,17 +56,14 @@ export function SampleCustomerPicker({ onSelect }: SampleCustomerPickerProps) {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 id="sample-title" className="m-0 text-[22px] font-extrabold tracking-[-0.02em]">
-                Try a sample customer
+                {t("assessment.sample.title")}
               </h2>
-              <p className="m-0 mt-1.5 text-[14.5px] text-[#5A5566]">
-                These are synthetic customers from our sample data, not real people. Pick one to fill the form, then change anything you
-                like.
-              </p>
+              <p className="m-0 mt-1.5 text-[14.5px] text-[#5A5566]">{t("assessment.sample.intro")}</p>
             </div>
             <button
               type="button"
               onClick={() => dialogRef.current?.close()}
-              aria-label="Close"
+              aria-label={t("common.close")}
               className="p-1.5 rounded-lg hover:bg-[#F1EEF8]"
             >
               <X className="w-5 h-5" />
@@ -72,17 +71,17 @@ export function SampleCustomerPicker({ onSelect }: SampleCustomerPickerProps) {
           </div>
 
           <label htmlFor="sample-search" className="sr-only">
-            Search sample customers by name, city or occupation
+            {t("assessment.sample.searchLabel")}
           </label>
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6F6A7C]" />
+            <Search className="absolute start-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6F6A7C]" />
             <input
               id="sample-search"
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search by name, city or occupation"
-              className="w-full h-12 rounded-[10px] border border-[#D9D3E8] pl-11 pr-4 text-[16px] font-medium placeholder:text-[#A59FB5] focus:outline-none focus:border-[#7957FF]"
+              placeholder={t("assessment.sample.searchPlaceholder")}
+              className="w-full h-12 rounded-[10px] border border-[#D9D3E8] ps-11 pe-4 text-[16px] font-medium placeholder:text-[#A59FB5] focus:outline-none focus:border-[#7957FF]"
             />
           </div>
 
@@ -93,11 +92,11 @@ export function SampleCustomerPicker({ onSelect }: SampleCustomerPickerProps) {
             >
               <span className="flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
-                {shownError}
+                {tx(shownError)}
               </span>
               {status === "error" && (
                 <button type="button" onClick={() => void loadList()} className="underline shrink-0">
-                  Try again
+                  {t("common.tryAgain")}
                 </button>
               )}
             </div>
@@ -105,7 +104,7 @@ export function SampleCustomerPicker({ onSelect }: SampleCustomerPickerProps) {
           {status === "loading" && (
             <p role="status" className="m-0 flex items-center gap-2 text-[15px] text-[#5A5566]">
               <RefreshCw className="w-4 h-4 animate-spin text-[#7957FF]" />
-              Loading sample customers…
+              {t("assessment.sample.loading")}
             </p>
           )}
           {status === "ready" && <SampleCustomerList customers={filterCustomers(customers, query)} pickingId={pickingId} onPick={pick} />}

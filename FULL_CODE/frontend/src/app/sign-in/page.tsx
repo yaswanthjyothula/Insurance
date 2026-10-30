@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AuthPanel } from "@/components/auth/AuthPanel";
 import { safeNextPath } from "@/components/auth/session-helpers";
+import { T } from "@/i18n/I18nProvider";
 
 function SignInContent() {
   const params = useSearchParams();
@@ -13,7 +14,13 @@ function SignInContent() {
 
 export default function SignInPage() {
   return (
-    <Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center text-sm text-[#6F6A7C]">Loading…</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-[70vh] flex items-center justify-center text-sm text-[#6F6A7C]">
+          <T k="common.loading" />
+        </div>
+      }
+    >
       <SignInContent />
     </Suspense>
   );

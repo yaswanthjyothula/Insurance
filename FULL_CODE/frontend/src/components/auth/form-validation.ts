@@ -19,9 +19,16 @@ export function isValidEmail(email: string): boolean {
   return EMAIL_PATTERN.test(email.trim());
 }
 
+const LOGIN_ID_PATTERN = /^(cus|adv|adm)-[a-z0-9]{3,20}$/i;
+
+/** A customer or advisor ID such as CUS-06ISGGSQ, which signs in in place of an email address. */
+export function isLoginId(value: string): boolean {
+  return LOGIN_ID_PATTERN.test(value.trim());
+}
+
 export function validateLogin(values: CredentialValues): FieldErrors<"email" | "password"> {
   const errors: FieldErrors<"email" | "password"> = {};
-  if (!isValidEmail(values.email)) errors.email = "Enter a valid email address.";
+  if (!isValidEmail(values.email) && !isLoginId(values.email)) errors.email = "Enter your ID or a valid email address.";
   if (!values.password) errors.password = "Enter your password.";
   return errors;
 }

@@ -1,5 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from typing import Optional
 
+from fastapi import APIRouter, Depends, HTTPException
+
+from app.admin import analytics
+from app.core.security import SessionUser, optional_user
 from app.ml.ranker import model_info
 from app.pack.loader import get_pack
 from app.schemas.quote import BasketCheck, BasketCheckRequest, Quote, QuoteRequest
@@ -12,8 +16,10 @@ router = APIRouter(tags=["recommendations"])
 
 
 @router.post("/recommendations", response_model=RecommendResponse)
-def recommendations(req: RecommendRequest) -> RecommendResponse:
-    return recommend(req)
+def recommendations(req: RecommendRequest, user: Optional[SessionUser] = Depends(optional_user)) -> RecommendResponse:
+    response = recommend(req)
+    analytics.track("recommendations_viewed", user.email if user else None, basket=[i.product_id for i in response.basket.items])
+    return response
 
 
 @router.get("/recommendations/model-info")

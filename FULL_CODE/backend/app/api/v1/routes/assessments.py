@@ -1,7 +1,8 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.core.security import SessionUser, optional_user
 from app.schemas.financial import AssessmentInput, AssessmentResult
 from app.services.financial_engine import FinancialEngine
 from app.services.storage import storage_service
@@ -10,9 +11,13 @@ router = APIRouter(tags=["assessments"])
 
 
 @router.post("/assessments", response_model=AssessmentResult)
-def create_assessment(inp: AssessmentInput) -> AssessmentResult:
+def create_assessment(inp: AssessmentInput, user: Optional[SessionUser] = Depends(optional_user)) -> AssessmentResult:
     result = FinancialEngine.assess(inp)
-    storage_service.save_assessment(result.model_dump())
+    # A signed-in customer's assessment is kept with who it belongs to, which is what makes it a lead the admin can follow up
+    record = result.model_dump()
+    if user is not None:
+        record.update(user_email=user.email, user_name=user.name)
+    storage_service.save_assessment(record)
     return result
 
 

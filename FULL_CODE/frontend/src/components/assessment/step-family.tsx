@@ -1,43 +1,43 @@
 import { Users } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
 import { MAX_CHILDREN, MAX_PARENTS, resizeAgeList } from "@/lib/assessment-form";
 import { AgeList } from "./age-list";
 import { amountHint, ChoiceGroup, Field, FIELD_GRID, StepHeader, TextInput, type StepProps } from "./fields";
 
-const YES_NO = [
-  { value: "yes", label: "Yes" },
-  { value: "no", label: "No" },
-] as const;
-
 function SpouseFields({ form, errorFor, onChange }: StepProps) {
+  const { t } = useI18n();
   const spouseWorks = form.spouseWorks === "yes";
   return (
     <>
-      <Field id="spouseAge" label="Spouse age" error={errorFor("spouseAge")}>
+      <Field id="spouseAge" label={t("assessment.family.spouseAgeLabel")} error={errorFor("spouseAge")}>
         <TextInput
           id="spouseAge"
           value={form.spouseAge}
           onChange={(spouseAge) => onChange({ spouseAge })}
-          placeholder="e.g. 30"
-          suffix="years"
+          placeholder={t("assessment.family.spouseAgePlaceholder")}
+          suffix={t("assessment.unit.years")}
           error={errorFor("spouseAge")}
           maxDigits={3}
         />
       </Field>
-      <Field id="spouseWorks" label="Does your spouse earn?" group error={errorFor("spouseWorks")}>
+      <Field id="spouseWorks" label={t("assessment.family.spouseWorksLabel")} group error={errorFor("spouseWorks")}>
         <ChoiceGroup
           id="spouseWorks"
           value={form.spouseWorks}
           onChange={(value) => onChange({ spouseWorks: value, spouseIncome: value === "no" ? "" : form.spouseIncome })}
           error={errorFor("spouseWorks")}
-          options={[...YES_NO]}
+          options={[
+            { value: "yes", label: t("common.yes") },
+            { value: "no", label: t("common.no") },
+          ]}
         />
       </Field>
       {spouseWorks && (
         <Field
           id="spouseIncome"
-          label="Spouse annual income"
+          label={t("assessment.family.spouseIncomeLabel")}
           error={errorFor("spouseIncome")}
-          hint={amountHint(form.spouseIncome, " per year")}
+          hint={amountHint(form.spouseIncome, t("assessment.amount.perYear"))}
         >
           <TextInput
             id="spouseIncome"
@@ -45,7 +45,7 @@ function SpouseFields({ form, errorFor, onChange }: StepProps) {
             prefix="₹"
             value={form.spouseIncome}
             onChange={(spouseIncome) => onChange({ spouseIncome })}
-            placeholder="e.g. 6,00,000"
+            placeholder={t("assessment.family.spouseIncomePlaceholder")}
             error={errorFor("spouseIncome")}
           />
         </Field>
@@ -56,16 +56,12 @@ function SpouseFields({ form, errorFor, onChange }: StepProps) {
 
 export function StepFamily(props: StepProps) {
   const { form, errorFor, onChange } = props;
+  const { t } = useI18n();
   return (
     <>
-      <StepHeader
-        icon={Users}
-        step={2}
-        title="Family & dependents"
-        description="Each dependent's age decides how long they would need support, so we ask about them one by one."
-      />
+      <StepHeader icon={Users} step={2} title={t("assessment.family.title")} description={t("assessment.family.description")} />
       <div className={FIELD_GRID}>
-        <Field id="hasSpouse" label="Spouse" group error={errorFor("hasSpouse")}>
+        <Field id="hasSpouse" label={t("assessment.family.spouseLabel")} group error={errorFor("hasSpouse")}>
           <ChoiceGroup
             id="hasSpouse"
             value={form.hasSpouse}
@@ -74,8 +70,8 @@ export function StepFamily(props: StepProps) {
             }
             error={errorFor("hasSpouse")}
             options={[
-              { value: "yes", label: "I have a spouse" },
-              { value: "no", label: "No spouse" },
+              { value: "yes", label: t("assessment.family.hasSpouse") },
+              { value: "no", label: t("assessment.family.noSpouse") },
             ]}
           />
         </Field>
@@ -84,30 +80,30 @@ export function StepFamily(props: StepProps) {
       <div className={FIELD_GRID}>
         <Field
           id="childrenCount"
-          label="Number of children"
+          label={t("assessment.family.childrenLabel")}
           error={errorFor("childrenCount")}
-          hint={`Enter 0 if none (up to ${MAX_CHILDREN})`}
+          hint={t("assessment.family.childrenHint", { max: MAX_CHILDREN })}
         >
           <TextInput
             id="childrenCount"
             value={form.childrenCount}
             onChange={(childrenCount) => onChange({ childrenCount, childAges: resizeAgeList(form.childAges, childrenCount, MAX_CHILDREN) })}
-            placeholder="e.g. 2"
+            placeholder={t("assessment.family.childrenPlaceholder")}
             error={errorFor("childrenCount")}
             maxDigits={1}
           />
         </Field>
         <Field
           id="parentsCount"
-          label="Dependent parents"
+          label={t("assessment.family.parentsLabel")}
           error={errorFor("parentsCount")}
-          hint={`Parents who rely on your income. Enter 0 if none (up to ${MAX_PARENTS})`}
+          hint={t("assessment.family.parentsHint", { max: MAX_PARENTS })}
         >
           <TextInput
             id="parentsCount"
             value={form.parentsCount}
             onChange={(parentsCount) => onChange({ parentsCount, parentAges: resizeAgeList(form.parentAges, parentsCount, MAX_PARENTS) })}
-            placeholder="e.g. 1"
+            placeholder={t("assessment.family.parentsPlaceholder")}
             error={errorFor("parentsCount")}
             maxDigits={1}
           />
@@ -115,14 +111,14 @@ export function StepFamily(props: StepProps) {
         <AgeList
           name="childAges"
           ages={form.childAges}
-          noun="Child"
+          noun="child"
           onChange={(childAges) => onChange({ childAges })}
           errorFor={errorFor}
         />
         <AgeList
           name="parentAges"
           ages={form.parentAges}
-          noun="Parent"
+          noun="parent"
           onChange={(parentAges) => onChange({ parentAges })}
           errorFor={errorFor}
         />

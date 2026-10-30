@@ -2,14 +2,17 @@
 
 import { useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import type { AuthUser } from "@/components/auth/session-helpers";
 import { validateLogin, type FieldErrors } from "@/components/auth/form-validation";
 import { errorMessage } from "@/lib/error-message";
+import { useT } from "@/i18n/I18nProvider";
 import { TextField } from "@/components/auth/TextField";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { FormAlert } from "@/components/auth/FormAlert";
 
-export function SignInForm({ onSuccess }: { onSuccess: () => void }) {
+export function SignInForm({ onSuccess }: { onSuccess: (user: AuthUser) => void }) {
   const { signIn } = useAuth();
+  const t = useT();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<FieldErrors<"email" | "password">>({});
@@ -24,10 +27,9 @@ export function SignInForm({ onSuccess }: { onSuccess: () => void }) {
     if (Object.keys(found).length) return;
     setBusy(true);
     try {
-      await signIn(email.trim(), password);
-      onSuccess();
+      onSuccess(await signIn(email.trim(), password));
     } catch (error) {
-      setFormError(errorMessage(error, "We couldn't sign you in. Please try again."));
+      setFormError(errorMessage(error, t("auth.signIn.failed")));
     } finally {
       setBusy(false);
     }
@@ -37,17 +39,17 @@ export function SignInForm({ onSuccess }: { onSuccess: () => void }) {
     <form onSubmit={submit} noValidate className="space-y-4">
       <TextField
         id="login-email"
-        label="Email address"
-        type="email"
-        autoComplete="email"
-        placeholder="name@example.com"
+        label={t("auth.signIn.idLabel")}
+        type="text"
+        autoComplete="username"
+        placeholder={t("auth.signIn.idPlaceholder")}
         value={email}
         onChange={setEmail}
         error={errors.email}
       />
       <TextField
         id="login-password"
-        label="Password"
+        label={t("auth.signIn.password")}
         type="password"
         autoComplete="current-password"
         value={password}
@@ -55,7 +57,7 @@ export function SignInForm({ onSuccess }: { onSuccess: () => void }) {
         error={errors.password}
       />
       <FormAlert message={formError} />
-      <SubmitButton busy={busy} idleLabel="Sign in" busyLabel="Signing in…" />
+      <SubmitButton busy={busy} idleLabel={t("common.signIn")} busyLabel={t("auth.signIn.busy")} />
     </form>
   );
 }

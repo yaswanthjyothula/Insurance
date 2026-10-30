@@ -77,3 +77,4 @@ class RecommendResponse(BaseModel):
     ranking_method: str
     methodology_note: str
     type_counts: Dict[str, int] = Field(default_factory=dict)
+    config_version: int = 0

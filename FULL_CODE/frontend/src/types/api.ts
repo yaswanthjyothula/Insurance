@@ -223,6 +223,7 @@ export interface Slot {
 }
 
 export interface AdvisorOut {
+  bio?: string;
   advisor_id: string;
   advisor_name: string;
   languages: string[];
@@ -251,6 +252,13 @@ export interface Booking {
   consultation_mode: "video" | "phone" | "chat";
   meeting_link: string;
   created_at: string;
+  /** "customer" or "advisor" once cancelled. */
+  cancelled_by?: string;
+  slot_end?: string;
+  /** Judged on the demo clock the sample calendar uses. */
+  phase?: "upcoming" | "past" | "completed" | "no_show" | "cancelled";
+  outcome?: string;
+  starts_in_minutes?: number;
 }
 
 export interface SessionOut {
@@ -258,6 +266,8 @@ export interface SessionOut {
   email: string;
   name: string;
   demo: boolean;
+  role: "customer" | "advisor" | "admin";
+  advisor_id: string | null;
 }
 
 /** One plan the customer has configured and put in their selection. Everything needed to re-price it is kept. */

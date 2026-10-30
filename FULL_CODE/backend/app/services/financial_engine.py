@@ -2,6 +2,7 @@ import math
 import uuid
 from typing import Any, Dict, List, Optional
 
+from app.admin.config_store import config_store
 from app.pack.loader import get_pack
 from app.schemas.financial import (
     AssessmentInput,
@@ -10,6 +11,7 @@ from app.schemas.financial import (
     EMICalculatorResult,
     FutureCostsInput,
     HLVBreakdown,
+    IncomeMultipleCheck,
     MethodologyExplanation,
     NeedsBreakdown,
     ProtectionGapRadarResult,
@@ -121,6 +123,20 @@ class FinancialEngine:
 
     @classmethod
     def assess(cls, raw: AssessmentInput, assessment_id: Optional[str] = None) -> AssessmentResult:
+        with config_store.pinned() as active:  # inflation, discount rate and the rest all come from one configuration version
+            result = cls._assess(raw, assessment_id)
+            result.config_version = active.config.version
+            n = active.pack.needs
+            result.income_multiple_check = IncomeMultipleCheck(
+                minimum_multiple=n.income_replacement_multiple_min,
+                maximum_multiple=n.income_replacement_multiple_max,
+                minimum_cover=int(raw.annual_income * n.income_replacement_multiple_min),
+                maximum_cover=int(raw.annual_income * n.income_replacement_multiple_max),
+            )
+            return result
+
+    @classmethod
+    def _assess(cls, raw: AssessmentInput, assessment_id: Optional[str] = None) -> AssessmentResult:
         inp = cls.resolve(raw)
         needs, hlv = cls.calculate_needs(inp), cls.calculate_hlv(inp)
         a = get_pack().assumptions

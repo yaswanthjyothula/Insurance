@@ -1,3 +1,4 @@
+import type { MessageKey } from "@/i18n/en";
 import type { Applicant, PackProduct, PayMode, ProductFit, QuoteRequest, RiderChoice, SelectedPlan } from "@/types/api";
 
 export const PAYMENT_LABELS: Record<string, string> = {
@@ -17,6 +18,21 @@ export function paymentLabel(option: string): string {
   if (PAYMENT_LABELS[option]) return PAYMENT_LABELS[option];
   const years = option.startsWith("limited_") ? option.split("_")[1] : null;
   return years ? `Pay for ${years} years only` : option;
+}
+
+type Translate = (key: MessageKey, params?: Record<string, string | number>) => string;
+
+/** `paymentLabel` in the customer's language. */
+export function paymentLabelT(t: Translate, option: string): string {
+  if (option === "regular") return t("products.payment.regular");
+  if (option === "single") return t("products.payment.single");
+  const years = option.startsWith("limited_") ? option.split("_")[1] : null;
+  return years ? t("products.payment.limited", { years }) : option;
+}
+
+/** `MODE_LABELS` in the customer's language. */
+export function modeLabelT(t: Translate, mode: PayMode): string {
+  return t(`products.mode.${mode}` as MessageKey);
 }
 
 /** The request that reproduces the configuration the engine suggested, so the customer starts from a sensible point. */

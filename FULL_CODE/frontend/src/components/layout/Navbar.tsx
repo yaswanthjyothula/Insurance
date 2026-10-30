@@ -3,15 +3,34 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Menu, X, Search, FileText, Calendar, LogOut, LogIn } from "lucide-react";
+import {
+  ChevronDown,
+  Menu,
+  X,
+  Search,
+  FileText,
+  Calendar,
+  LogOut,
+  LogIn,
+  UserRound,
+  Settings as SettingsIcon,
+  Briefcase,
+} from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { displayLogin } from "@/components/auth/session-helpers";
 import { useAssessmentStore } from "@/store/assessment-store";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { useI18n } from "@/i18n/I18nProvider";
+import type { MessageKey } from "@/i18n/en";
+
+type NavItem = { nameKey: MessageKey; href: string; descKey?: MessageKey };
 
 export function Navbar() {
   const pathname = usePathname();
+  const { t } = useI18n();
   const { user, signOut } = useAuth();
-  const displayName = user?.user_metadata.full_name ?? "Guest";
+  const displayName = user?.user_metadata.full_name ?? t("layout.nav.guest");
   const avatarInitial = displayName.charAt(0).toUpperCase();
   const { input } = useAssessmentStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -44,43 +63,43 @@ export function Navbar() {
     setProfileOpen(false);
   }, [pathname]);
 
-  const insuranceCategories = [
-    { name: "Term Insurance", href: "/insurance/term", desc: "Pure cover for your family if you die" },
-    { name: "Life Insurance (traditional)", href: "/insurance/life", desc: "Guaranteed savings with life cover" },
-    { name: "Health Insurance", href: "/insurance/health", desc: "Hospital bills and critical illness" },
-    { name: "General (home, motor, travel)", href: "/insurance/general", desc: "Home, motor and travel cover" },
-    { name: "Investment-Linked (ULIP)", href: "/insurance/investment-linked", desc: "Cover plus market-linked investing" },
-    { name: "Business Insurance", href: "/insurance/business", desc: "Keyman, group term and director cover" },
-    { name: "Cyber & Accident", href: "/insurance/other", desc: "Online fraud and accident cover" },
+  const insuranceCategories: NavItem[] = [
+    { nameKey: "layout.nav.insurance.term", href: "/insurance/term", descKey: "layout.nav.insurance.termDesc" },
+    { nameKey: "layout.nav.insurance.life", href: "/insurance/life", descKey: "layout.nav.insurance.lifeDesc" },
+    { nameKey: "layout.nav.insurance.health", href: "/insurance/health", descKey: "layout.nav.insurance.healthDesc" },
+    { nameKey: "layout.nav.insurance.general", href: "/insurance/general", descKey: "layout.nav.insurance.generalDesc" },
+    { nameKey: "layout.nav.insurance.ulip", href: "/insurance/investment-linked", descKey: "layout.nav.insurance.ulipDesc" },
+    { nameKey: "layout.nav.insurance.business", href: "/insurance/business", descKey: "layout.nav.insurance.businessDesc" },
+    { nameKey: "layout.nav.insurance.other", href: "/insurance/other", descKey: "layout.nav.insurance.otherDesc" },
   ];
 
-  const journeyStages = [
-    { name: "Needs Assessment", href: "/assessment", desc: "Calculate coverage gap & liabilities" },
-    { name: "Coverage Results", href: "/results", desc: "Dual-engine actuarial gap breakdown" },
-    { name: "Product Recommendations", href: "/products", desc: "Compare verified IRDAI term plans" },
-    { name: "Digital Advisory", href: "/advisory", desc: "Fiduciary CFP® consultation room" },
+  const journeyStages: NavItem[] = [
+    { nameKey: "layout.nav.journey.assessment", href: "/assessment", descKey: "layout.nav.journey.assessmentDesc" },
+    { nameKey: "layout.nav.journey.results", href: "/results", descKey: "layout.nav.journey.resultsDesc" },
+    { nameKey: "layout.nav.journey.products", href: "/products", descKey: "layout.nav.journey.productsDesc" },
+    { nameKey: "layout.nav.journey.advisory", href: "/advisory", descKey: "layout.nav.journey.advisoryDesc" },
   ];
 
-  const smartTools = [
-    { name: "Life Cover Calculator", href: "/tools/life-cover-calculator", desc: "Capital Needs & HLV analysis" },
-    { name: "Scenario Studio", href: "/tools/scenario-studio", desc: "What-if life transition modeling" },
-    { name: "Family Survival Simulator", href: "/tools/family-survival-simulator", desc: "Time-based cashflow runway" },
-    { name: "Protection Gap Radar", href: "/tools/protection-gap", desc: "4-pillar resilience assessment" },
-    { name: "Policy X-Ray", href: "/tools/policy-xray", desc: "Document schedule & exclusions audit" },
-    { name: "Premium Affordability", href: "/tools/affordability-calculator", desc: "Income vs premium budget buffer" },
-    { name: "EMI & Debt Shield", href: "/tools/emi-calculator", desc: "Mortgage & loan immunization" },
-    { name: "Policy Replacement Check", href: "/tools/policy-replacement", desc: "Objective switch from endowment" },
-    { name: "Premium Shock Simulator", href: "/tools/premium-shock", desc: "Healthcare inflation stress testing" },
-    { name: "Future Costs Reality Check", href: "/tools/future-costs", desc: "10-25 yr education inflation" },
-    { name: "Insurance Scam Shield", href: "/tools/scam-shield", desc: "Detect bogus IRDAI callers & fraud" },
-    { name: "Application Readiness", href: "/tools/application-readiness", desc: "Documents and answers to have ready" },
+  const smartTools: NavItem[] = [
+    { nameKey: "layout.nav.tool.lifeCover", href: "/tools/life-cover-calculator", descKey: "layout.nav.tool.lifeCoverDesc" },
+    { nameKey: "layout.nav.tool.scenario", href: "/tools/scenario-studio", descKey: "layout.nav.tool.scenarioDesc" },
+    { nameKey: "layout.nav.tool.survival", href: "/tools/family-survival-simulator", descKey: "layout.nav.tool.survivalDesc" },
+    { nameKey: "layout.nav.tool.gap", href: "/tools/protection-gap", descKey: "layout.nav.tool.gapDesc" },
+    { nameKey: "layout.nav.tool.xray", href: "/tools/policy-xray", descKey: "layout.nav.tool.xrayDesc" },
+    { nameKey: "layout.nav.tool.affordability", href: "/tools/affordability-calculator", descKey: "layout.nav.tool.affordabilityDesc" },
+    { nameKey: "layout.nav.tool.emi", href: "/tools/emi-calculator", descKey: "layout.nav.tool.emiDesc" },
+    { nameKey: "layout.nav.tool.replacement", href: "/tools/policy-replacement", descKey: "layout.nav.tool.replacementDesc" },
+    { nameKey: "layout.nav.tool.shock", href: "/tools/premium-shock", descKey: "layout.nav.tool.shockDesc" },
+    { nameKey: "layout.nav.tool.futureCosts", href: "/tools/future-costs", descKey: "layout.nav.tool.futureCostsDesc" },
+    { nameKey: "layout.nav.tool.scam", href: "/tools/scam-shield", descKey: "layout.nav.tool.scamDesc" },
+    { nameKey: "layout.nav.tool.readiness", href: "/tools/application-readiness", descKey: "layout.nav.tool.readinessDesc" },
   ];
 
-  const resources = [
-    { name: "Insurance Learning Centre", href: "/resources/learning-centre" },
-    { name: "Insurance Glossary", href: "/resources/glossary" },
-    { name: "Insurer Directory (IRDAI)", href: "/resources/insurance-companies" },
-    { name: "Claim Companion Guide", href: "/resources/claims" },
+  const resources: NavItem[] = [
+    { nameKey: "layout.nav.resource.learning", href: "/resources/learning-centre" },
+    { nameKey: "layout.nav.resource.glossary", href: "/resources/glossary" },
+    { nameKey: "layout.nav.resource.insurers", href: "/resources/insurance-companies" },
+    { nameKey: "layout.nav.resource.claims", href: "/resources/claims" },
   ];
 
   return (
@@ -101,14 +120,14 @@ export function Navbar() {
                 className="flex items-center gap-1.5 px-3.5 py-2 text-[15px] font-medium whitespace-nowrap text-[#24212B] hover:text-[#7957FF] rounded-md transition-colors"
                 aria-expanded={activeDropdown === "journey"}
               >
-                <span>Needs Finder</span>
+                <span>{t("layout.nav.needsFinder")}</span>
                 <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === "journey" ? "rotate-180" : ""}`} />
               </button>
 
               {activeDropdown === "journey" && (
-                <div className="absolute left-0 mt-2 w-80 bg-[#FFFFFF] border border-[#D9D3E8] rounded-2xl shadow-[0_25px_60px_rgba(121,87,255,0.14)] p-2 z-50">
+                <div className="absolute start-0 mt-2 w-80 bg-[#FFFFFF] border border-[#D9D3E8] rounded-2xl shadow-[0_25px_60px_rgba(121,87,255,0.14)] p-2 z-50">
                   <div className="px-3 py-1.5 mb-1 border-b border-[#D9D3E8]">
-                    <span className="text-[11px] font-bold tracking-wider text-[#7957FF] uppercase">Your 4-Stage Journey</span>
+                    <span className="text-[11px] font-bold tracking-wider text-[#7957FF] uppercase">{t("layout.nav.journeyHeading")}</span>
                   </div>
                   {journeyStages.map((stage) => (
                     <Link
@@ -118,9 +137,9 @@ export function Navbar() {
                       onClick={() => setActiveDropdown(null)}
                     >
                       <div className="text-sm font-bold text-[#24212B] group-hover:text-[#7957FF] transition-colors leading-snug">
-                        {stage.name}
+                        {t(stage.nameKey)}
                       </div>
-                      <div className="text-xs text-[#6F6A7C] leading-tight mt-0.5">{stage.desc}</div>
+                      <div className="text-xs text-[#6F6A7C] leading-tight mt-0.5">{stage.descKey && t(stage.descKey)}</div>
                     </Link>
                   ))}
                 </div>
@@ -134,16 +153,18 @@ export function Navbar() {
                 className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-[#4A4553] hover:text-[#24212B] hover:bg-[rgba(36,33,43,0.06)] rounded-full transition-all"
                 aria-expanded={activeDropdown === "insurance"}
               >
-                <span>Insurance</span>
+                <span>{t("layout.nav.insurance")}</span>
                 <ChevronDown
                   className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === "insurance" ? "rotate-180" : ""}`}
                 />
               </button>
 
               {activeDropdown === "insurance" && (
-                <div className="absolute left-0 mt-2 w-80 bg-[#FFFFFF] border border-[#D9D3E8] rounded-2xl shadow-[0_30px_60px_rgba(121,87,255,0.13)] py-2 px-1 z-50">
+                <div className="absolute start-0 mt-2 w-80 bg-[#FFFFFF] border border-[#D9D3E8] rounded-2xl shadow-[0_30px_60px_rgba(121,87,255,0.13)] py-2 px-1 z-50">
                   <div className="px-3 py-1 mb-1 border-b border-[#D9D3E8]">
-                    <span className="text-[11px] font-bold tracking-wider text-[#7957FF] uppercase">7 Insurance Categories</span>
+                    <span className="text-[11px] font-bold tracking-wider text-[#7957FF] uppercase">
+                      {t("layout.nav.insuranceHeading")}
+                    </span>
                   </div>
                   {insuranceCategories.map((item) => (
                     <Link
@@ -152,8 +173,8 @@ export function Navbar() {
                       className="block px-3 py-2 rounded hover:bg-[#E9E4FF] transition-colors"
                       onClick={() => setActiveDropdown(null)}
                     >
-                      <div className="text-sm font-bold text-[#24212B]">{item.name}</div>
-                      <div className="text-xs text-[#4A4553]">{item.desc}</div>
+                      <div className="text-sm font-bold text-[#24212B]">{t(item.nameKey)}</div>
+                      <div className="text-xs text-[#4A4553]">{item.descKey && t(item.descKey)}</div>
                     </Link>
                   ))}
                   <div className="pt-2 mt-1 border-t border-[#D9D3E8] px-2">
@@ -162,7 +183,7 @@ export function Navbar() {
                       className="block text-center py-1.5 text-xs font-bold text-[#7957FF] hover:underline"
                       onClick={() => setActiveDropdown(null)}
                     >
-                      Browse Complete Insurance Directory →
+                      {t("layout.nav.browseDirectory")}
                     </Link>
                   </div>
                 </div>
@@ -176,14 +197,14 @@ export function Navbar() {
                 className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-[#4A4553] hover:text-[#24212B] hover:bg-[rgba(36,33,43,0.06)] rounded-full transition-all"
                 aria-expanded={activeDropdown === "tools"}
               >
-                <span>Smart Tools</span>
+                <span>{t("layout.nav.smartTools")}</span>
                 <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === "tools" ? "rotate-180" : ""}`} />
               </button>
 
               {activeDropdown === "tools" && (
-                <div className="absolute left-0 mt-2 w-80 max-h-[70vh] overflow-y-auto bg-[#FFFFFF] border border-[#D9D3E8] rounded-2xl shadow-[0_30px_60px_rgba(121,87,255,0.13)] py-2 px-1 z-50">
+                <div className="absolute start-0 mt-2 w-80 max-h-[70vh] overflow-y-auto bg-[#FFFFFF] border border-[#D9D3E8] rounded-2xl shadow-[0_30px_60px_rgba(121,87,255,0.13)] py-2 px-1 z-50">
                   <div className="px-3 py-1 mb-1 border-b border-[#D9D3E8]">
-                    <span className="text-[11px] font-bold tracking-wider text-[#7957FF] uppercase">12 Smart Tools</span>
+                    <span className="text-[11px] font-bold tracking-wider text-[#7957FF] uppercase">{t("layout.nav.toolsHeading")}</span>
                   </div>
                   {smartTools.map((tool) => (
                     <Link
@@ -192,8 +213,8 @@ export function Navbar() {
                       className="block px-3 py-2 rounded-xl hover:bg-[#E9E4FF] transition-colors group"
                       onClick={() => setActiveDropdown(null)}
                     >
-                      <div className="text-sm font-bold text-[#24212B] group-hover:text-[#7957FF] transition-colors">{tool.name}</div>
-                      <div className="text-xs text-[#6F6A7C]">{tool.desc}</div>
+                      <div className="text-sm font-bold text-[#24212B] group-hover:text-[#7957FF] transition-colors">{t(tool.nameKey)}</div>
+                      <div className="text-xs text-[#6F6A7C]">{tool.descKey && t(tool.descKey)}</div>
                     </Link>
                   ))}
                   <div className="pt-2 mt-1 border-t border-[#D9D3E8] px-2">
@@ -202,7 +223,7 @@ export function Navbar() {
                       className="block text-center py-1.5 text-xs font-bold text-[#7957FF] hover:underline"
                       onClick={() => setActiveDropdown(null)}
                     >
-                      Explore All 12 Smart Tools →
+                      {t("layout.nav.exploreTools")}
                     </Link>
                   </div>
                 </div>
@@ -216,16 +237,18 @@ export function Navbar() {
                 className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-[#4A4553] hover:text-[#24212B] hover:bg-[rgba(36,33,43,0.06)] rounded-full transition-all"
                 aria-expanded={activeDropdown === "resources"}
               >
-                <span>Resources</span>
+                <span>{t("layout.nav.resources")}</span>
                 <ChevronDown
                   className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === "resources" ? "rotate-180" : ""}`}
                 />
               </button>
 
               {activeDropdown === "resources" && (
-                <div className="absolute left-0 mt-2 w-72 bg-[#FFFFFF] border border-[#D9D3E8] rounded-2xl shadow-[0_30px_60px_rgba(121,87,255,0.13)] py-2 px-1 z-50">
+                <div className="absolute start-0 mt-2 w-72 bg-[#FFFFFF] border border-[#D9D3E8] rounded-2xl shadow-[0_30px_60px_rgba(121,87,255,0.13)] py-2 px-1 z-50">
                   <div className="px-3 py-1 mb-1 border-b border-[#D9D3E8]">
-                    <span className="text-[11px] font-bold tracking-wider text-[#7957FF] uppercase">Knowledge Base</span>
+                    <span className="text-[11px] font-bold tracking-wider text-[#7957FF] uppercase">
+                      {t("layout.nav.resourcesHeading")}
+                    </span>
                   </div>
                   {resources.map((res) => (
                     <Link
@@ -234,7 +257,7 @@ export function Navbar() {
                       className="block px-3.5 py-2 text-sm font-semibold whitespace-nowrap text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
                       onClick={() => setActiveDropdown(null)}
                     >
-                      {res.name}
+                      {t(res.nameKey)}
                     </Link>
                   ))}
                 </div>
@@ -244,11 +267,12 @@ export function Navbar() {
 
           {/* Action CTAs & Controls */}
           <div className="hidden lg:flex items-center space-x-3">
+            <LanguageSwitcher />
             {/* Quick Search Trigger */}
             <button
               onClick={() => setSearchOpen(true)}
               className="p-2 text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
-              aria-label="Search tools and insurance terms"
+              aria-label={t("layout.nav.searchAria")}
             >
               <Search className="w-4 h-4" />
             </button>
@@ -260,19 +284,21 @@ export function Navbar() {
                   setProfileOpen(!profileOpen);
                   setActiveDropdown(null);
                 }}
-                className="flex items-center gap-2.5 p-1.5 pl-2.5 pr-3 rounded-full border border-[#D9D3E8] bg-white hover:border-[#7957FF] hover:shadow-md transition-all group"
-                aria-label="User Profile"
+                className="flex items-center gap-2.5 p-1.5 ps-2.5 pe-3 rounded-full border border-[#D9D3E8] bg-white hover:border-[#7957FF] hover:shadow-md transition-all group"
+                aria-label={t("layout.nav.profileAria")}
                 aria-expanded={profileOpen}
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#7957FF] to-[#9A80FF] text-white flex items-center justify-center font-bold text-xs shadow-sm relative">
                   {avatarInitial}
-                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#0E9F7E] border-2 border-white rounded-full"></span>
+                  <span className="absolute bottom-0 end-0 w-2.5 h-2.5 bg-[#0E9F7E] border-2 border-white rounded-full"></span>
                 </div>
-                <div className="text-left hidden xl:block">
+                <div className="text-start hidden xl:block">
                   <div className="text-xs font-bold text-[#24212B] leading-none group-hover:text-[#7957FF] transition-colors">
                     {displayName}
                   </div>
-                  <div className="text-[10px] text-[#6F6A7C] leading-tight font-medium mt-0.5">{user ? "My account" : "Sign in"}</div>
+                  <div className="text-[10px] text-[#6F6A7C] leading-tight font-medium mt-0.5">
+                    {user ? t("layout.nav.myAccount") : t("common.signIn")}
+                  </div>
                 </div>
                 <ChevronDown
                   className={`w-3.5 h-3.5 text-[#6F6A7C] transition-transform duration-200 ${profileOpen ? "rotate-180" : ""}`}
@@ -281,7 +307,7 @@ export function Navbar() {
 
               {/* Profile Flyout Popover */}
               {profileOpen && (
-                <div className="absolute right-0 mt-2.5 w-80 bg-white border border-[#D9D3E8] rounded-3xl shadow-[0_25px_60px_rgba(121,87,255,0.18)] p-4 z-50 animate-in fade-in zoom-in-95 duration-150 text-[#24212B]">
+                <div className="absolute end-0 mt-2.5 w-80 bg-white border border-[#D9D3E8] rounded-3xl shadow-[0_25px_60px_rgba(121,87,255,0.18)] p-4 z-50 animate-in fade-in zoom-in-95 duration-150 text-[#24212B]">
                   {/* Identity */}
                   <div className="flex items-center gap-3 pb-3 border-b border-[#D9D3E8]">
                     <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#7957FF] to-[#9A80FF] text-white flex items-center justify-center font-extrabold text-base shrink-0">
@@ -289,7 +315,9 @@ export function Navbar() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <span className="text-sm font-extrabold text-[#24212B] truncate block">{displayName}</span>
-                      <span className="text-[12px] text-[#6F6A7C] truncate block">{user ? user.email : "Sign in to save your plan"}</span>
+                      <span className="text-[12px] text-[#6F6A7C] truncate block">
+                        {user ? displayLogin(user.email) : t("layout.nav.signInToSave")}
+                      </span>
                     </div>
                   </div>
 
@@ -301,7 +329,37 @@ export function Navbar() {
                         className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
                       >
                         <FileText className="w-4 h-4 text-[#7957FF]" />
-                        <span>My plan and appointments</span>
+                        <span>{t("layout.nav.myPlan")}</span>
+                      </Link>
+                    )}
+                    {user && (
+                      <>
+                        <Link
+                          href="/dashboard/profile"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
+                        >
+                          <UserRound className="w-4 h-4 text-[#7957FF]" />
+                          <span>{t("layout.nav.profile")}</span>
+                        </Link>
+                        <Link
+                          href="/dashboard/settings"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
+                        >
+                          <SettingsIcon className="w-4 h-4 text-[#7957FF]" />
+                          <span>{t("layout.nav.settings")}</span>
+                        </Link>
+                      </>
+                    )}
+                    {user?.role === "advisor" && (
+                      <Link
+                        href="/advisor"
+                        onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
+                      >
+                        <Briefcase className="w-4 h-4 text-[#7957FF]" />
+                        <span>{t("layout.nav.advisorWorkspace")}</span>
                       </Link>
                     )}
                     <Link
@@ -310,7 +368,7 @@ export function Navbar() {
                       className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-bold text-[#24212B] hover:bg-[#E9E4FF] rounded-xl transition-colors"
                     >
                       <Calendar className="w-4 h-4 text-[#7957FF]" />
-                      <span>{input.annual_income > 0 ? "Update my answers" : "Start the needs assessment"}</span>
+                      <span>{input.annual_income > 0 ? t("layout.nav.updateAnswers") : t("layout.nav.startAssessment")}</span>
                     </Link>
                   </div>
 
@@ -325,7 +383,7 @@ export function Navbar() {
                         className="w-full flex items-center justify-center gap-2 py-2 text-xs font-bold text-[#D32F2F] hover:bg-[#FFEBEE] rounded-xl transition-colors"
                       >
                         <LogOut className="w-3.5 h-3.5" />
-                        <span>Sign Out</span>
+                        <span>{t("layout.nav.signOut")}</span>
                       </button>
                     ) : (
                       <Link
@@ -334,7 +392,7 @@ export function Navbar() {
                         className="w-full flex items-center justify-center gap-2 py-2 text-xs font-bold text-white bg-[#7957FF] hover:bg-[#6444E6] rounded-xl transition-colors shadow-sm"
                       >
                         <LogIn className="w-3.5 h-3.5" />
-                        <span>Sign In / Register</span>
+                        <span>{t("layout.nav.signInRegister")}</span>
                       </Link>
                     )}
                   </div>
@@ -345,13 +403,17 @@ export function Navbar() {
 
           {/* Mobile Menu Button */}
           <div className="flex items-center space-x-2 lg:hidden">
-            <button onClick={() => setSearchOpen(true)} className="p-2 text-[#24212B] hover:bg-[#E9E4FF] rounded" aria-label="Search">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="p-2 text-[#24212B] hover:bg-[#E9E4FF] rounded"
+              aria-label={t("layout.nav.searchShort")}
+            >
               <Search className="w-5 h-5" />
             </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-[#24212B] hover:bg-[#E9E4FF] rounded"
-              aria-label="Toggle navigation menu"
+              aria-label={t("layout.nav.toggleMenu")}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -363,19 +425,20 @@ export function Navbar() {
       {mobileMenuOpen && (
         <div className="lg:hidden border-b border-[#D9D3E8] bg-[#FFFFFF] px-4 pt-3 pb-6 space-y-3">
           <Link href="/assessment" className="block px-3 py-2 rounded text-base font-bold text-[#24212B] hover:bg-[#E9E4FF]">
-            4-Stage Needs Assessment
+            {t("layout.nav.mobile.assessment")}
           </Link>
           <Link href="/insurance" className="block px-3 py-2 rounded text-base font-bold text-[#24212B] hover:bg-[#E9E4FF]">
-            All Insurance Categories
+            {t("layout.nav.mobile.insurance")}
           </Link>
           <Link href="/tools" className="block px-3 py-2 rounded text-base font-bold text-[#24212B] hover:bg-[#E9E4FF]">
-            Smart Financial Tools
+            {t("layout.nav.mobile.tools")}
           </Link>
           <Link href="/resources" className="block px-3 py-2 rounded text-base font-bold text-[#24212B] hover:bg-[#E9E4FF]">
-            Resources & Claims Guide
+            {t("layout.nav.mobile.resources")}
           </Link>
 
           <div className="pt-4 border-t border-[#D9D3E8] space-y-3">
+            <LanguageSwitcher />
             {/* User Profile Card in Mobile */}
             <div className="p-3 rounded-2xl bg-[#FAF9F6] border border-[#D9D3E8] space-y-2.5">
               <div className="flex items-center gap-2.5">
@@ -384,7 +447,7 @@ export function Navbar() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-bold text-[#24212B] truncate">{displayName}</div>
-                  <div className="text-[10px] text-[#6F6A7C] truncate">{user ? user.email : "Not signed in"}</div>
+                  <div className="text-[10px] text-[#6F6A7C] truncate">{user ? user.email : t("layout.nav.mobile.notSignedIn")}</div>
                 </div>
               </div>
 
@@ -394,7 +457,7 @@ export function Navbar() {
                   className="p-2 rounded-xl bg-white border border-[#D9D3E8] font-bold text-[#24212B] flex items-center gap-1.5 text-[12px]"
                 >
                   <FileText className="w-3.5 h-3.5 text-[#7957FF]" />
-                  <span>My plan and appointments</span>
+                  <span>{t("layout.nav.myPlan")}</span>
                 </Link>
               )}
             </div>
@@ -404,14 +467,14 @@ export function Navbar() {
                 onClick={signOut}
                 className="block w-full text-center py-2 text-xs font-bold text-[#D32F2F] border border-[#D9D3E8] rounded-xl hover:bg-[#FFEBEE]"
               >
-                Sign Out ({user.email})
+                {t("layout.nav.mobile.signOutEmail", { email: user.email })}
               </button>
             ) : (
               <Link
                 href="/sign-in"
                 className="block w-full text-center py-2.5 text-xs font-bold text-white bg-[#7957FF] rounded-xl hover:bg-[#6444E6]"
               >
-                Sign In / Register
+                {t("layout.nav.signInRegister")}
               </Link>
             )}
           </div>
@@ -426,7 +489,7 @@ export function Navbar() {
               <Search className="w-5 h-5 text-[#24212B]" />
               <input
                 type="text"
-                placeholder="Search tools, terms (e.g. HLV, Claim Settlement, Term...)"
+                placeholder={t("layout.nav.search.placeholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus
@@ -436,34 +499,36 @@ export function Navbar() {
                 onClick={() => setSearchOpen(false)}
                 className="text-xs px-2.5 py-1 bg-[#FFFFFF] text-[#24212B] font-bold rounded border border-[#D9D3E8]"
               >
-                ESC
+                {t("layout.nav.search.esc")}
               </button>
             </div>
             <div className="p-3 max-h-80 overflow-y-auto space-y-1">
-              <div className="text-[11px] font-bold text-[#7957FF] uppercase px-3 py-1">Quick Links</div>
+              <div className="text-[11px] font-bold text-[#7957FF] uppercase px-3 py-1">{t("layout.nav.search.quickLinks")}</div>
               <Link
                 href="/assessment"
                 onClick={() => setSearchOpen(false)}
                 className="flex items-center justify-between px-3 py-2 rounded hover:bg-[#E9E4FF]"
               >
-                <span className="text-sm font-bold text-[#24212B]">Stage 1: Needs Assessment</span>
-                <span className="text-xs font-bold text-[#FFFFFF] bg-[#7957FF] px-2 py-0.5 rounded">Core Journey</span>
+                <span className="text-sm font-bold text-[#24212B]">{t("layout.nav.search.stage1")}</span>
+                <span className="text-xs font-bold text-[#FFFFFF] bg-[#7957FF] px-2 py-0.5 rounded">
+                  {t("layout.nav.search.coreJourney")}
+                </span>
               </Link>
               <Link
                 href="/dashboard"
                 onClick={() => setSearchOpen(false)}
                 className="flex items-center justify-between px-3 py-2 rounded hover:bg-[#E9E4FF]"
               >
-                <span className="text-sm font-bold text-[#24212B]">My plan and appointments</span>
-                <span className="text-xs font-bold text-[#FFFFFF] bg-[#7957FF] px-2 py-0.5 rounded">Account</span>
+                <span className="text-sm font-bold text-[#24212B]">{t("layout.nav.myPlan")}</span>
+                <span className="text-xs font-bold text-[#FFFFFF] bg-[#7957FF] px-2 py-0.5 rounded">{t("layout.nav.search.account")}</span>
               </Link>
               <Link
                 href="/tools/scenario-studio"
                 onClick={() => setSearchOpen(false)}
                 className="flex items-center justify-between px-3 py-2 rounded hover:bg-[#E9E4FF]"
               >
-                <span className="text-sm font-bold text-[#24212B]">Scenario Studio (What-If Analysis)</span>
-                <span className="text-xs font-bold text-[#FFFFFF] bg-[#6444E6] px-2 py-0.5 rounded">Tool</span>
+                <span className="text-sm font-bold text-[#24212B]">{t("layout.nav.search.scenario")}</span>
+                <span className="text-xs font-bold text-[#FFFFFF] bg-[#6444E6] px-2 py-0.5 rounded">{t("layout.nav.search.tool")}</span>
               </Link>
             </div>
           </div>

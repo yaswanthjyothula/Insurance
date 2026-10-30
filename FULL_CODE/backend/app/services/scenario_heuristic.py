@@ -39,12 +39,15 @@ def _amount(text: str) -> float:
 
 def read_scenario(text: str, base: AssessmentInput) -> Dict[str, Any]:
     t = text.lower()
-    
+
     # 1. Strict domain relevance check: reject out-of-context prompts
     if not is_relevant_scenario(t):
         return {
             "scenario_title": "Out of Scope Request",
-            "ai_analysis": "LifeSure Scenario Studio only models life events that affect your insurance coverage and family protection needs. Please describe a life change such as welcoming a child, taking a home loan, changing careers, or early retirement.",
+            "ai_analysis": (
+                "LifeSure Scenario Studio only models life events that affect your insurance coverage and family protection needs. "
+                "Please describe a life change such as welcoming a child, taking a home loan, changing careers, or early retirement."
+            ),
             "overrides": {},
             "added_goals": [],
             "actionable_recommendations": [
@@ -57,7 +60,7 @@ def read_scenario(text: str, base: AssessmentInput) -> Dict[str, Any]:
     overrides: Dict[str, float] = {}
     goals: List[Dict[str, Any]] = []
     notes: List[str] = []
-    
+
     # Dependents & Child events
     if "twin" in t:
         overrides.update(dependents_count=base.dependents_count + 2, annual_expenses=round(base.annual_expenses * 1.3, 2))
@@ -67,7 +70,7 @@ def read_scenario(text: str, base: AssessmentInput) -> Dict[str, Any]:
         overrides.update(dependents_count=base.dependents_count + 1, annual_expenses=round(base.annual_expenses * 1.15, 2))
         goals.append({"name": "Child's higher education", "cost_today": 2_500_000, "years_away": 18, "category": "education"})
         notes.append("Welcoming a child adds 1 dependent, ₹25 Lakh education goal, and raises household living expenses by 15%.")
-    
+
     # Loans & Liabilities
     if any(w in t for w in ("loan", "mortgage", "flat", "house", "borrow", "debt", "emi")):
         if "clear" in t or "paid off" in t or "zero" in t:
@@ -77,7 +80,7 @@ def read_scenario(text: str, base: AssessmentInput) -> Dict[str, Any]:
             added = _amount(t) or 5_000_000.0
             overrides["outstanding_liabilities"] = base.outstanding_liabilities + added
             notes.append(f"Adding ₹{added:,.0f} in liabilities requires additional cover to ensure family debt immunization.")
-            
+
     # Career & Income Changes
     if any(w in t for w in ("startup", "business", "quit", "sabbatical", "career break", "part-time", "part time", "pay cut")):
         overrides["annual_income"] = round(base.annual_income * 0.5, 2)

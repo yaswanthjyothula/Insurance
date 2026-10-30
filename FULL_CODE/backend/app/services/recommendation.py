@@ -2,6 +2,7 @@
 
 from typing import List, Optional
 
+from app.admin.config_store import config_store
 from app.ml import ranker
 from app.pack.loader import get_pack
 from app.schemas.recommendation import Basket, ProductFit, RecommendRequest, RecommendResponse
@@ -21,7 +22,7 @@ def _blend(fits: List[ProductFit], ctx: planning.Context) -> str:
     if not probs:
         return "rules"
     top = max(probs) or 1.0
-    for fit, pr in zip(eligible, probs):
+    for fit, pr in zip(eligible, probs, strict=True):
         fit.model_percent = int(round(pr / top * 100))
         fit.match_percent = int(round(ranker.BLEND * fit.model_percent + (1 - ranker.BLEND) * fit.rule_percent))
     return "rules+trained-model"
@@ -130,6 +131,13 @@ def _build_basket(fits: List[ProductFit], ctx: planning.Context) -> Basket:
 
 
 def recommend(req: RecommendRequest) -> RecommendResponse:
+    with config_store.pinned() as active:
+        response = _recommend(req)
+        response.config_version = active.config.version
+        return response
+
+
+def _recommend(req: RecommendRequest) -> RecommendResponse:
     ctx = planning.build_context(req)
     fits = planning.evaluate_all(ctx)
     method = _blend(fits, ctx)

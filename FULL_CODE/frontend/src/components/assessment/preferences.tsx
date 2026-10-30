@@ -1,41 +1,63 @@
+import { useI18n } from "@/i18n/I18nProvider";
+import type { MessageKey } from "@/i18n/en";
 import type { Priority, Risk } from "@/types/api";
 import { amountHint, ChoiceGroup, Field, FIELD_GRID, TextInput, type StepProps } from "./fields";
 
-const RISK_OPTIONS: { value: Risk; label: string }[] = [
-  { value: "low", label: "Low" },
-  { value: "medium", label: "Medium" },
-  { value: "high", label: "High" },
+const RISK_OPTIONS: { value: Risk; labelKey: MessageKey }[] = [
+  { value: "low", labelKey: "assessment.preferences.riskLow" },
+  { value: "medium", labelKey: "assessment.preferences.riskMedium" },
+  { value: "high", labelKey: "assessment.preferences.riskHigh" },
 ];
 
-const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
-  { value: "balanced", label: "Balanced" },
-  { value: "lowest_cost", label: "Lowest cost" },
-  { value: "goal_savings", label: "Savings for goals" },
-  { value: "growth", label: "Long-term growth" },
+export const PRIORITY_OPTIONS: { value: Priority; labelKey: MessageKey }[] = [
+  { value: "balanced", labelKey: "assessment.preferences.priorityBalanced" },
+  { value: "lowest_cost", labelKey: "assessment.preferences.priorityLowestCost" },
+  { value: "goal_savings", labelKey: "assessment.preferences.priorityGoalSavings" },
+  { value: "growth", labelKey: "assessment.preferences.priorityGrowth" },
 ];
 
 /** What the customer wants from a plan; these steer product ranking, not the cover amount. */
 export function PreferenceFields({ form, errorFor, onChange }: StepProps) {
+  const { t } = useI18n();
   return (
     <div className={FIELD_GRID}>
-      <Field id="risk" label="Risk appetite" group error={errorFor("risk")} hint="How comfortable you are with market-linked returns">
-        <ChoiceGroup id="risk" value={form.risk} onChange={(risk) => onChange({ risk })} error={errorFor("risk")} options={RISK_OPTIONS} />
+      <Field
+        id="risk"
+        label={t("assessment.preferences.riskLabel")}
+        group
+        error={errorFor("risk")}
+        hint={t("assessment.preferences.riskHint")}
+      >
+        <ChoiceGroup
+          id="risk"
+          value={form.risk}
+          onChange={(risk) => onChange({ risk })}
+          error={errorFor("risk")}
+          options={RISK_OPTIONS.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
+        />
       </Field>
-      <Field id="priority" label="What matters most" group optional error={errorFor("priority")} hint="Leave unselected for a balanced mix">
+      <Field
+        id="priority"
+        label={t("assessment.preferences.priorityLabel")}
+        group
+        optional
+        error={errorFor("priority")}
+        hint={t("assessment.preferences.priorityHint")}
+      >
         <ChoiceGroup
           id="priority"
           value={form.priority}
           onChange={(priority) => onChange({ priority })}
-          options={PRIORITY_OPTIONS}
+          options={PRIORITY_OPTIONS.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
           columns={2}
         />
       </Field>
       <Field
         id="monthlyBudget"
-        label="Monthly premium budget"
+        label={t("assessment.preferences.budgetLabel")}
         optional
         error={errorFor("monthlyBudget")}
-        hint={amountHint(form.monthlyBudget, " per month") ?? "Leave blank for no limit"}
+        hint={amountHint(form.monthlyBudget, t("assessment.amount.perMonth")) ?? t("assessment.preferences.budgetHint")}
       >
         <TextInput
           id="monthlyBudget"
@@ -43,23 +65,23 @@ export function PreferenceFields({ form, errorFor, onChange }: StepProps) {
           prefix="₹"
           value={form.monthlyBudget}
           onChange={(monthlyBudget) => onChange({ monthlyBudget })}
-          placeholder="e.g. 2,500"
+          placeholder={t("assessment.preferences.budgetPlaceholder")}
           error={errorFor("monthlyBudget")}
         />
       </Field>
       <Field
         id="preferredTerm"
-        label="Preferred policy term"
+        label={t("assessment.preferences.termLabel")}
         optional
         error={errorFor("preferredTerm")}
-        hint="5 to 60 years; blank lets us suggest one"
+        hint={t("assessment.preferences.termHint")}
       >
         <TextInput
           id="preferredTerm"
           value={form.preferredTerm}
           onChange={(preferredTerm) => onChange({ preferredTerm })}
-          placeholder="e.g. 25"
-          suffix="years"
+          placeholder={t("assessment.preferences.termPlaceholder")}
+          suffix={t("assessment.unit.years")}
           error={errorFor("preferredTerm")}
           maxDigits={2}
         />
