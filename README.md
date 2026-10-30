@@ -21,10 +21,12 @@ Also included: **Admin console** (`/admin`) for product rules, rates, needs assu
 
 | Scenario | In the app | Through the API (`http://127.0.0.1:8000/api/v1`) |
 |---|---|---|
-| **1. Age, income, dependents, loans → sum assured + monthly premium** | `/sign-in` → **Continue as demo customer** → `/assessment` → **Calculate coverage**. `/results` shows the sum assured; `/products` shows each plan's monthly premium. | `POST /assessments` returns `net_needs.recommended_cover` (the sum assured). `POST /recommendations` returns every product with `quote.sum_assured` and `quote.total_instalment` (monthly premium). |
-| **2. Admin changes a product → engine quotes with the new rules, no restart** | `/admin-sign-in` → **Continue as demo admin (synthetic)** → **Products & rates** → edit → save. The next quote uses the new rules. | `POST /auth/demo/admin` gives a token. `PUT /admin/products/{product_id}` with e.g. `{"base_rate_per_1000": 3.0}` applies the change at once. `POST /quotes` or `POST /recommendations` then prices with it. |
+| **1. Age, income, dependents, loans → sum assured + monthly premium** | `/sign-in` → **Continue as demo customer** → `/assessment` → **Calculate coverage**. `/results` shows the sum assured; `/products` shows each plan's monthly premium. | **`POST /quick-quote`** with `{"age": 32, "annual_income": 1800000, "dependents": 2, "outstanding_liabilities": 2500000}` returns `sum_assured` and `monthly_premium` (plus the product and every eligible plan). `income`, `dependents_count` and `loans` are accepted as field names too. For the full journey: `POST /assessments`, then `POST /recommendations`. |
+| **2. Admin changes a product → engine quotes with the new rules, no restart** | `/admin-sign-in` → **Continue as demo admin (synthetic)** → **Products & rates** → edit → save. The next quote uses the new rules. | `POST /auth/demo/admin` gives a token. `PUT /admin/products/{product_id}` with e.g. `{"base_rate_per_1000": 3.0}` applies the change at once. The next `POST /quick-quote` (or `/quotes`, `/recommendations`) prices with it and reports the new `config_version`. |
 
-Checked on a clean copy (Python 3.12, pinned requirements). Example input: age 32, male, ₹18,00,000 income, ₹7,20,000 expenses, 2 dependents, ₹25,00,000 loans. Result: sum assured ₹1,55,00,000 and top product `PRD-VDIJSF` at ₹3,144 a month. Raising that product's base rate by 50% in admin took about 4 ms to apply. The next quote was ₹4,716 a month, with no restart. Each request takes well under 100 ms; the limit is 5 s.
+Quick quote assumes household expenses of 40% of income unless `annual_expenses` is sent; the in-app form asks for expenses directly. The same engine powers the admin console's **Test calculator** (Underwriting & test tab).
+
+Checked on a clean copy (Python 3.12, pinned requirements). Example input: age 32, male, ₹18,00,000 income, ₹7,20,000 expenses, 2 dependents, ₹25,00,000 loans. Result: sum assured ₹1,55,00,000 and top product `PRD-VDIJSF` at ₹3,144 a month. Raising that product's base rate by 50% in admin took about 4 ms to apply. The next quote was ₹4,716 a month, with no restart. Requests take about 10 ms; the limit is 5 s. The very first request in the seconds after startup can take up to about 2 s while the ranking model finishes training in memory.
 
 How Scenario 2 works: every admin change is validated, saved, versioned and then swapped in atomically as the live configuration (`backend/app/admin/config_store.py`). The engines read that live snapshot on every request, so nothing is cached past a change and nothing needs redeploying.
 
@@ -69,7 +71,7 @@ From the repository root:
 python -m pytest
 ```
 
-That runs 451 backend tests: premium maths, needs, eligibility, recommendations, admin live configuration, API, auth and the LLM layer (mocked).
+That runs 456 backend tests: premium maths, needs, eligibility, recommendations, quick quote, admin live configuration, API, auth and the LLM layer (mocked).
 
 ```bash
 cd FULL_CODE/frontend && npm test
@@ -96,6 +98,7 @@ FULL_CODE/
 │       │     eligibility        product rules and the pack's cover caps
 │       │     planning           picks a policy configuration per product and scores it
 │       │     recommendation     blends the ranking model, builds the budget-aware basket
+│       │     quick_quote        Stage 2 shortcut: age, income, dependents, loans → sum assured + monthly premium
 │       │     underwriting_engine, ulip, advisory, scenario_llm, storage, ...
 │       ├── admin/           admin console API and the live, versioned configuration (config_store)
 │       ├── pack/            loads the problem pack's CSV/JSON once, indexed

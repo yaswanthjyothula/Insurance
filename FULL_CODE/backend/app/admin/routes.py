@@ -9,6 +9,7 @@ from app.admin.config_store import ConfigConflictError, ConfigInvalidError, Conf
 from app.admin.schemas import ChangeResult, ConfigPatch, ConfigView, HistoryEntry, ProductConfig, ProductPatch, RollbackRequest
 from app.core.security import AdminUser, current_admin, rate_limit
 from app.services import audit
+from app.services.quick_quote import QuickQuoteIn, quick_quote
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 _writes = Depends(rate_limit("admin-write", limit=60))
@@ -78,8 +79,8 @@ def rollback(req: RollbackRequest, admin: AdminUser = Depends(current_admin)) ->
 
 
 @router.post("/test-calculator")
-def test_calculator(req: service.TestCalcIn, admin: AdminUser = Depends(current_admin)) -> Dict[str, Any]:
-    return service.test_calculator(req)
+def test_calculator(req: QuickQuoteIn, admin: AdminUser = Depends(current_admin)) -> Dict[str, Any]:
+    return quick_quote(req)
 
 
 @router.get("/analytics")

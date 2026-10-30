@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -10,6 +10,7 @@ from app.schemas.quote import BasketCheck, BasketCheckRequest, Quote, QuoteReque
 from app.schemas.recommendation import RecommendRequest, RecommendResponse
 from app.schemas.ulip import UlipProjection, UlipProjectionRequest
 from app.services import eligibility, premium, ulip
+from app.services.quick_quote import QuickQuoteIn, quick_quote
 from app.services.recommendation import recommend
 
 router = APIRouter(tags=["recommendations"])
@@ -26,6 +27,12 @@ def recommendations(req: RecommendRequest, user: Optional[SessionUser] = Depends
 def recommendation_model_info():
     """The trained ranker: how it was trained, how well it does, and its limits."""
     return model_info()
+
+
+@router.post("/quick-quote")
+def quick_quote_route(req: QuickQuoteIn) -> Dict[str, Any]:
+    """Age, income, dependents and loans in; sum assured and monthly premium out, priced with the live admin configuration."""
+    return quick_quote(req)
 
 
 @router.post("/quotes", response_model=Quote)
