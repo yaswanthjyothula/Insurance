@@ -17,11 +17,14 @@ const ROLE_STYLE: Record<string, string> = {
 interface Props {
   fit: ProductFit;
   selected: boolean;
+  compared: boolean;
+  compareFull: boolean;
   onCustomise: () => void;
+  onToggleCompare: () => void;
 }
 
 /** One product for this customer: the engine's suggested configuration, its price, and why it ranked here. */
-export function ProductCard({ fit, selected, onCustomise }: Props) {
+export function ProductCard({ fit, selected, compared, compareFull, onCustomise, onToggleCompare }: Props) {
   const [open, setOpen] = useState(false);
   const q = fit.quote;
   const single = q?.payment_option === "single";
@@ -73,6 +76,19 @@ export function ProductCard({ fit, selected, onCustomise }: Props) {
 
       {fit.eligible && (
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+          <label
+            className={`inline-flex items-center gap-1.5 text-[13.5px] font-semibold ${compared || !compareFull ? "cursor-pointer text-[#24212B]" : "cursor-not-allowed text-[#8C879A]"}`}
+            title={!compared && compareFull ? "You can compare up to 3 plans" : undefined}
+          >
+            <input
+              type="checkbox"
+              checked={compared}
+              disabled={!compared && compareFull}
+              onChange={onToggleCompare}
+              className="h-4 w-4 accent-[#7957FF]"
+            />
+            Compare
+          </label>
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}

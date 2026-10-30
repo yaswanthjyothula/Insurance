@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
 import { JourneyProgress } from "@/components/layout/journey-progress";
 import { BasketSummary } from "@/components/products/BasketSummary";
+import { CompareBar } from "@/components/products/CompareBar";
+import { CompareModal } from "@/components/products/CompareModal";
 import { Customizer } from "@/components/products/Customizer";
 import { ModelNote } from "@/components/products/ModelNote";
 import { PriorityPicker } from "@/components/products/PriorityPicker";
@@ -16,6 +18,7 @@ import { UlipCustomizer } from "@/components/products/UlipCustomizer";
 import { useDebouncedPost } from "@/hooks/useDebouncedRequest";
 import { usePack } from "@/hooks/usePack";
 import { useRecommendations } from "@/hooks/useRecommendations";
+import { MAX_COMPARE, toggleCompare } from "@/lib/compare";
 import { requestFromFit, upsertPlan } from "@/lib/plan-config";
 import { saveMyPlan, summariseSelection } from "@/lib/my-plan";
 import { formatINR } from "@/lib/utils";
@@ -34,6 +37,8 @@ export default function ProductsPage() {
   const [priority, setPriority] = useState<Priority | null>(null);
   const [filter, setFilter] = useState<TypeFilter>("all");
   const [editing, setEditing] = useState<ProductFit | null>(null);
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [comparing, setComparing] = useState(false);
 
   const activePriority = priority ?? recommend?.priority ?? "balanced";
   const { data, loading, error, retry } = useRecommendations(recommend, activePriority);
@@ -61,6 +66,8 @@ export default function ProductsPage() {
   const basketActive =
     !!data && data.basket.items.length > 0 && data.basket.items.every((i) => selection.some((s) => s.request.product_id === i.product_id));
   const editingProduct = editing && pack ? pack.products[editing.product_id] : null;
+
+  const comparedFits = (data?.products ?? []).filter((p) => compareIds.includes(p.product_id));
 
   const proceed = () => {
     setStage(4);
@@ -141,13 +148,22 @@ export default function ProductsPage() {
           <BasketSummary basket={data.basket} recommendedCover={data.recommended_cover} onUse={useBasket} active={basketActive} />
           <section aria-label="All products" className="flex flex-col gap-4">
             <TypeTabs value={filter} counts={data.type_counts} onChange={setFilter} />
+            <CompareBar
+              names={comparedFits.map((f) => ({ id: f.product_id, name: f.product_name }))}
+              onOpen={() => setComparing(true)}
+              onRemove={(id) => setCompareIds((ids) => ids.filter((x) => x !== id))}
+              onClear={() => setCompareIds([])}
+            />
             <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {visible.map((fit) => (
                 <ProductCard
                   key={fit.product_id}
                   fit={fit}
                   selected={selection.some((s) => s.request.product_id === fit.product_id)}
+                  compared={compareIds.includes(fit.product_id)}
+                  compareFull={compareIds.length >= MAX_COMPARE}
                   onCustomise={() => setEditing(fit)}
+                  onToggleCompare={() => setCompareIds((ids) => toggleCompare(ids, fit.product_id))}
                 />
               ))}
             </div>
@@ -162,6 +178,22 @@ export default function ProductsPage() {
         onRemove={(id) => setSelection(selection.filter((p) => p.request.product_id !== id))}
         onContinue={proceed}
       />
+
+      {comparing && pack && comparedFits.length >= 2 && (
+        <CompareModal
+          fits={comparedFits}
+          products={pack.products}
+          onClose={() => setComparing(false)}
+          onRemove={(id) => {
+            setCompareIds((ids) => ids.filter((x) => x !== id));
+            if (compareIds.length <= 2) setComparing(false);
+          }}
+          onCustomise={(fit) => {
+            setComparing(false);
+            setEditing(fit);
+          }}
+        />
+      )}
 
       {editing &&
         editingProduct &&

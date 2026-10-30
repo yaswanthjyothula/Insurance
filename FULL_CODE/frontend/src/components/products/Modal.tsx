@@ -4,7 +4,17 @@ import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 
 /** Accessible dialog frame: Escape closes it, focus moves in, and the page behind does not scroll. */
-export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+export function Modal({
+  title,
+  onClose,
+  children,
+  wide = false,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+  wide?: boolean;
+}) {
   const panel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,7 +40,7 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="my-4 w-full max-w-3xl rounded-3xl border border-[#D9D3E8] bg-white p-6 shadow-2xl outline-none sm:p-8"
+        className={`my-4 w-full ${wide ? "max-w-6xl" : "max-w-3xl"} rounded-3xl border border-[#D9D3E8] bg-white p-6 shadow-2xl outline-none sm:p-8`}
       >
         <div className="mb-5 flex items-start justify-between gap-4">
           <h2 className="m-0 text-2xl font-extrabold tracking-tight text-[#24212B]">{title}</h2>
