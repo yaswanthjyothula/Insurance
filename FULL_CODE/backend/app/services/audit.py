@@ -4,9 +4,10 @@ Entries say who did what to which record. They never hold names, contact details
 """
 
 import logging
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Optional
 
+from app.core.compat import UTC
 from app.services.storage import storage_service
 
 log = logging.getLogger("lifesure.audit")

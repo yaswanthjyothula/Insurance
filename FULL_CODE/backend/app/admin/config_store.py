@@ -10,7 +10,7 @@ import time
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, replace
-from datetime import UTC, datetime
+from datetime import datetime
 from decimal import Decimal
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
@@ -22,6 +22,7 @@ from app.admin.schemas import (
     ProductConfig,
     UnderwritingConfig,
 )
+from app.core.compat import UTC
 from app.pack.loader import PackData, get_base_pack
 from app.pack.models import IncomeMultipleLimit, Product, SaBand
 

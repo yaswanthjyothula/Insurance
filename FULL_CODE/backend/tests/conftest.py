@@ -1,7 +1,13 @@
 """Test setup: runtime data goes to a throw-away folder so tests never touch real saved data."""
 
+import sys
 import tempfile
 from pathlib import Path
+
+# Ensure the backend directory is in sys.path regardless of where pytest is invoked
+_BACKEND_DIR = Path(__file__).resolve().parent.parent
+if str(_BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(_BACKEND_DIR))
 
 import pytest
 

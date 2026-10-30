@@ -22,7 +22,7 @@ def _blend(fits: List[ProductFit], ctx: planning.Context) -> str:
     if not probs:
         return "rules"
     top = max(probs) or 1.0
-    for fit, pr in zip(eligible, probs, strict=True):
+    for fit, pr in zip(eligible, probs):  # noqa: B905 - supports Python 3.9 where strict= is unsupported
         fit.model_percent = int(round(pr / top * 100))
         fit.match_percent = int(round(ranker.BLEND * fit.model_percent + (1 - ranker.BLEND) * fit.rule_percent))
     return "rules+trained-model"

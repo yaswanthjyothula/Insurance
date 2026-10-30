@@ -9,7 +9,7 @@ import threading
 import time
 import uuid
 from collections import Counter
-from datetime import UTC, date, datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from app.admin import analytics
@@ -24,6 +24,7 @@ from app.admin.crm_schemas import (
     Pipeline,
     StageColumn,
 )
+from app.core.compat import UTC
 from app.core.security import AdminUser
 from app.pack.loader import get_pack
 from app.services import audit, customer_account
