@@ -232,7 +232,7 @@ def load_pack_from_files() -> PackData:
     root = Path(settings.DATA_DIR)
     missing = [f for f in REQUIRED_FILES if not (root / f).exists()]
     if missing:
-        raise PackNotFoundError(f"Problem pack files not found in {root}: {', '.join(missing)}. See README, 'Where to put the data'.")
+        raise PackNotFoundError(f"Problem pack files not found in {root}: {', '.join(missing)}. See README, 'How to run', step 1.")
     rates, terms = _load_rates(root)
     mortality = {
         (int(m["attained_age"]), m["gender"], m["smoker_status"]): Decimal(m["annual_rate_per_1000_sum_at_risk_inr"])

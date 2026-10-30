@@ -1,4 +1,3 @@
-import threading
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -22,16 +21,12 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    """Warm the slow first-use work in the background, so the first customer or admin request is not the one that pays for it."""
+    """Load the pack and train the ranker before serving: no request pays for it, and a missing pack file stops startup clearly."""
+    from app.admin.config_store import config_store
+    from app.ml.ranker import get_model
 
-    def warm() -> None:
-        from app.admin.config_store import config_store
-        from app.ml.ranker import get_model
-
-        config_store.current()
-        get_model()
-
-    threading.Thread(target=warm, name="warm-up", daemon=True).start()
+    config_store.current()
+    get_model()
     yield
 
 

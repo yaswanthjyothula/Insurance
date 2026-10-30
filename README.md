@@ -26,7 +26,7 @@ Also included: **Admin console** (`/admin`) for product rules, rates, needs assu
 
 Quick quote assumes household expenses of 40% of income unless `annual_expenses` is sent; the in-app form asks for expenses directly. The same engine powers the admin console's **Test calculator** (Underwriting & test tab).
 
-Checked on a clean copy (Python 3.12, pinned requirements). Example input: age 32, male, ₹18,00,000 income, ₹7,20,000 expenses, 2 dependents, ₹25,00,000 loans. Result: sum assured ₹1,55,00,000 and top product `PRD-VDIJSF` at ₹3,144 a month. Raising that product's base rate by 50% in admin took about 4 ms to apply. The next quote was ₹4,716 a month, with no restart. Requests take about 10 ms; the limit is 5 s. The very first request in the seconds after startup can take up to about 2 s while the ranking model finishes training in memory.
+Checked on a clean copy (Python 3.12, pinned requirements). Example input: age 32, male, ₹18,00,000 income, ₹7,20,000 expenses, 2 dependents, ₹25,00,000 loans. Result: sum assured ₹1,55,00,000 and top product `PRD-VDIJSF` at ₹3,144 a month. Raising that product's base rate by 50% in admin took about 4 ms to apply. The next quote was ₹4,716 a month, with no restart. Requests take about 10–35 ms, including the very first one after startup, against a 5 s limit. The server loads the pack and trains the ranking model (about 2 s) before it accepts requests.
 
 How Scenario 2 works: every admin change is validated, saved, versioned and then swapped in atomically as the live configuration (`backend/app/admin/config_store.py`). The engines read that live snapshot on every request, so nothing is cached past a change and nothing needs redeploying.
 
