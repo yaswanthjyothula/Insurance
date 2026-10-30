@@ -23,7 +23,7 @@ const POINTS = [
 export function AdminSignIn() {
   const router = useRouter();
   const next = safeNextPath(useSearchParams().get("next"), HOME);
-  const { user, loading, signIn, signOut } = useAuth();
+  const { user, loading, signIn, signInDemoAdmin, signOut } = useAuth();
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ id?: string; password?: string }>({});
@@ -54,6 +54,20 @@ export function AdminSignIn() {
       router.replace(destination);
     } catch (error) {
       setFormError(errorMessage(error, "We couldn't sign you in. Please try again."));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Lets a reviewer open the console without Supabase credentials; the server refuses it when ENABLE_DEMO_LOGIN is off
+  const openDemo = async () => {
+    setBusy(true);
+    setFormError(null);
+    try {
+      await signInDemoAdmin();
+      router.replace(destination);
+    } catch (error) {
+      setFormError(errorMessage(error, "Demo sign-in is not available on this server."));
     } finally {
       setBusy(false);
     }
@@ -128,6 +142,14 @@ export function AdminSignIn() {
               />
               <FormAlert message={formError} />
               <SubmitButton busy={busy} idleLabel="Sign in to the admin console" busyLabel="Signing in…" />
+              <button
+                type="button"
+                onClick={openDemo}
+                disabled={busy}
+                className="w-full rounded-2xl border border-[#D9D3E8] bg-white py-2.5 text-sm font-bold text-[#0E1330] hover:bg-[#F6F4FB] disabled:opacity-60"
+              >
+                Continue as demo admin (synthetic)
+              </button>
             </form>
           )}
           <p className="m-0 text-center text-xs text-[#6F6A7C]">

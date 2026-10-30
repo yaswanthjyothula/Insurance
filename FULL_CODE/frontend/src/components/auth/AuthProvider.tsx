@@ -23,6 +23,7 @@ interface AuthContextValue {
   signUp: (details: RegisterDetails) => Promise<AuthUser>;
   signInDemo: () => Promise<AuthUser>;
   signInDemoAdvisor: (advisorId?: string) => Promise<AuthUser>;
+  signInDemoAdmin: () => Promise<AuthUser>;
   signOut: () => void;
 }
 
@@ -75,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (advisorId?: string) => startSession(await postJSON<SessionOut>("/auth/demo/advisor", { advisor_id: advisorId ?? null })),
     [startSession],
   );
+  const signInDemoAdmin = useCallback(async () => startSession(await postJSON<SessionOut>("/auth/demo/admin", {})), [startSession]);
   const signOut = useCallback(() => {
     setToken(null);
     setUser(null);
@@ -82,8 +84,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, sessionError, signIn, signUp, signInDemo, signInDemoAdvisor, signOut }),
-    [user, loading, sessionError, signIn, signUp, signInDemo, signInDemoAdvisor, signOut],
+    () => ({ user, loading, sessionError, signIn, signUp, signInDemo, signInDemoAdvisor, signInDemoAdmin, signOut }),
+    [user, loading, sessionError, signIn, signUp, signInDemo, signInDemoAdvisor, signInDemoAdmin, signOut],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

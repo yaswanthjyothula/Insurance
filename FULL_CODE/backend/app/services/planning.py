@@ -351,13 +351,6 @@ def evaluate_all(ctx: Context) -> List[ProductFit]:
     return [evaluate(p, ctx) for p in get_pack().products.values() if p.active]
 
 
-def monthly_cost(fit: ProductFit) -> float:
-    q = fit.quote
-    if q is None:
-        return 0.0
-    return q.total_instalment if q.payment_option != "single" else 0.0
-
-
 def type_counts(fits: List[ProductFit]) -> Dict[str, int]:
     out: Dict[str, int] = {}
     for f in fits:

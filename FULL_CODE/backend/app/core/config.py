@@ -21,6 +21,8 @@ class Settings(BaseModel):
     PROJECT_NAME: str = "LifeSure AI API"
     VERSION: str = "2.0.0"
     API_V1_STR: str = "/api/v1"
+    API_HOST: str = os.getenv("API_HOST", "127.0.0.1")
+    API_PORT: int = int(os.getenv("API_PORT", "8000"))
 
     # Where the problem pack's CSV/JSON files live (not committed) and where runtime data is written (not committed)
     DATA_DIR: Path = Path(os.getenv("LIFESURE_DATA_DIR", str(_FULL_CODE_DIR / "data")))

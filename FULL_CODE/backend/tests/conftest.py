@@ -4,14 +4,14 @@ import sys
 import tempfile
 from pathlib import Path
 
-# Ensure the backend directory is in sys.path regardless of where pytest is invoked
+import pytest
+
+# pyproject.toml only applies when pytest runs from backend/; this makes `pytest` from the repository root find `app` too
 _BACKEND_DIR = Path(__file__).resolve().parent.parent
 if str(_BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(_BACKEND_DIR))
 
-import pytest
-
-import app.core.config as config
+import app.core.config as config  # noqa: E402
 
 _TMP = Path(tempfile.mkdtemp(prefix="lifesure-test-"))
 config.settings.STORE_DIR = _TMP

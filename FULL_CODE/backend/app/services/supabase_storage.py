@@ -23,14 +23,14 @@ def _key(email: str) -> str:
 def _or_when_table_missing(call, fallback):
     """A table added after the first setup may not exist yet.
 
-    Reads then behave as empty, with a warning, until supabase/schema.sql is run.
+    Reads then behave as empty, with a warning, until db/schema.sql is run.
     """
     try:
         return call()
     except SupabaseError as exc:
         if not exc.missing_table:
             raise
-        log.warning("A Supabase table is missing, so it reads as empty. Run supabase/schema.sql again. (%s)", exc)
+        log.warning("A Supabase table is missing, so it reads as empty. Run db/schema.sql again. (%s)", exc)
         return fallback
 
 
@@ -174,7 +174,7 @@ class SupabaseStorage:
         self.db.upsert("my_plans", {"user_key": _key(email), "data": current}, "user_key")
         return True
 
-    # CRM leads. Until the table exists (supabase/schema.sql) they are kept in a local file, so the CRM works either way.
+    # CRM leads. Until the table exists (db/schema.sql) they are kept in a local file, so the CRM works either way.
     _crm_missing_until = 0.0
 
     def _crm(self, remote, local):
@@ -184,7 +184,7 @@ class SupabaseStorage:
             except SupabaseError as exc:
                 if not exc.missing_table:
                     raise
-                log.warning("The crm_leads table is missing, so leads are kept in a local file. Run supabase/schema.sql.")
+                log.warning("The crm_leads table is missing, so leads are kept in a local file. Run db/schema.sql.")
                 self._crm_missing_until = time.monotonic() + 60
         return local()
 
@@ -216,7 +216,7 @@ class SupabaseStorage:
 
         return self._crm(remote, lambda: self._local().save_crm_lead(record))
 
-    # Admin configuration and tracked events. Until the tables exist (supabase/schema.sql) they fall back to local files, so the admin
+    # Admin configuration and tracked events. Until the tables exist (db/schema.sql) they fall back to local files, so the admin
     # console keeps working; once they exist, Supabase is the store.
     def _local(self):
         from app.core.config import settings
@@ -242,7 +242,7 @@ class SupabaseStorage:
             except SupabaseError as exc:
                 if not exc.missing_table:
                     raise
-                log.warning("The admin_config table is missing, so the configuration is saved to a local file. Run supabase/schema.sql.")
+                log.warning("The admin_config table is missing, so the configuration is saved to a local file. Run db/schema.sql.")
                 self._admin_table_missing_until = time.monotonic() + 60  # do not retry a failing call on every save
         self._local().save_admin_config(doc)
 

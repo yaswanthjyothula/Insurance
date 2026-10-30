@@ -6,7 +6,7 @@ Creates a login for every customer and advisor, and stores their profiles, advis
     python -m app.seed_supabase                    create or update everything (safe to run again; existing passwords are kept)
     python -m app.seed_supabase --migrate-store    also copy bookings, chat, plans, assessments and scenarios from the local JSON store
 
-Run supabase/schema.sql in the Supabase SQL editor first. People sign in with their customer or advisor ID. The password is the lowercase
+Run db/schema.sql in the Supabase SQL editor first. People sign in with their customer or advisor ID. The password is the lowercase
 first name plus "@123". That rule is for a development project with synthetic data only: change it before real people use the system.
 Accounts that already exist in the project and are not in the pack are never touched.
 """
@@ -210,7 +210,7 @@ def main(argv: List[str]) -> int:
     try:
         db.select("advisors", {"limit": "1"})
     except supabase.SupabaseError:
-        print("The tables do not exist yet. Run supabase/schema.sql in the Supabase SQL editor first.")  # noqa: T201
+        print("The tables do not exist yet. Run db/schema.sql in the Supabase SQL editor first.")  # noqa: T201
         return 1
     user_ids = seed_accounts(db, accounts)
     print(f"Logins ready: {len(user_ids)}")  # noqa: T201

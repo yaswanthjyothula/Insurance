@@ -9,6 +9,12 @@
 /FULL_CODE/models/
 /FULL_CODE/backend/data_store/
 
+# Database files and dumps
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+
 # Python
 .venv/
 venv/
@@ -25,6 +31,7 @@ build/
 dist/
 *.tsbuildinfo
 next-env.d.ts
+coverage/
 
 # Editors, OS, zips, logs
 .DS_Store

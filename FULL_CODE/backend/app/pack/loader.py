@@ -271,7 +271,7 @@ def _overlay_supabase(pack: PackData) -> PackData:
     try:
         advisors, customers, slots = db.select_all("advisors"), db.select_all("customers"), db.select_all("advisor_slots")
     except supabase.SupabaseError as exc:
-        log.warning("Could not read the pack from Supabase (%s). Using the pack files. Has supabase/schema.sql been run?", exc)
+        log.warning("Could not read the pack from Supabase (%s). Using the pack files. Has db/schema.sql been run?", exc)
         return pack
     if not (advisors and customers and slots):
         log.warning("Supabase has no advisors, customers or slots yet, so the pack files are used. Run: python -m app.seed_supabase")

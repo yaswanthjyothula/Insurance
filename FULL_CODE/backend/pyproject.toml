@@ -12,7 +12,7 @@ filterwarnings = ["ignore::DeprecationWarning"]
 [tool.ruff]
 line-length = 140
 target-version = "py311"
-extend-exclude = ["data_store", "model_artifacts"]
+extend-exclude = ["data_store"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "S", "T20"]
