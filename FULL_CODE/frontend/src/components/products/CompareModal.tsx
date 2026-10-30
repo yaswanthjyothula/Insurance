@@ -6,6 +6,7 @@ import { Modal } from "./Modal";
 
 interface Props {
   fits: ProductFit[];
+  selectedIds: string[];
   products: Record<string, PackProduct>;
   onCustomise: (fit: ProductFit) => void;
   onRemove: (id: string) => void;
@@ -16,7 +17,7 @@ const cell = "border-t border-[#E9E4FF] px-4 py-3 align-top text-[14.5px] leadin
 const head = "border-t border-[#E9E4FF] px-4 py-3 text-left align-top text-[12px] font-bold uppercase tracking-[0.1em] text-[#6F6A7C]";
 
 /** Side-by-side comparison of up to three products, with the best value in each numeric row marked in words. */
-export function CompareModal({ fits, products, onCustomise, onRemove, onClose }: Props) {
+export function CompareModal({ fits, selectedIds, products, onCustomise, onRemove, onClose }: Props) {
   const cheapest = bestIds(fits, monthlyOf, false);
   const mostCover = bestIds(fits, coverOf, true);
   const bestMatch = bestIds(fits, matchOf, true);
@@ -87,6 +88,11 @@ export function CompareModal({ fits, products, onCustomise, onRemove, onClose }:
               {fits.map((f) => (
                 <th key={f.product_id} className="px-4 py-3 text-left align-top">
                   <div className="text-[17px] font-extrabold leading-snug text-[#24212B]">{f.product_name}</div>
+                  {selectedIds.includes(f.product_id) && (
+                    <span className="mt-1 inline-block rounded-md bg-[#E9E4FF] px-1.5 py-0.5 text-[11.5px] font-bold text-[#5B3BE6]">
+                      Your selection
+                    </span>
+                  )}
                   <div className="mt-2 flex gap-3 text-[13px] font-semibold">
                     {f.eligible && (
                       <button type="button" onClick={() => onCustomise(f)} className="text-[#7957FF] underline">
@@ -118,7 +124,8 @@ export function CompareModal({ fits, products, onCustomise, onRemove, onClose }:
         </table>
       </div>
       <p className="m-0 mt-4 text-[13px] text-[#6F6A7C]">
-        Prices are for the configuration shown on each card. Saffron Life is fictional, so these are not real quotes.
+        Plans you selected show your chosen cover, term and payment; others show the suggested set-up. Saffron Life is fictional, so these
+        are not real quotes.
       </p>
     </Modal>
   );

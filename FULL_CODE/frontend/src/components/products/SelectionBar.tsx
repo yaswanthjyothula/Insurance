@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, Scale, X } from "lucide-react";
 import { formatINR } from "@/lib/utils";
 import { monthlyTotal } from "@/lib/plan-config";
 import type { SelectedPlan } from "@/types/api";
@@ -9,10 +9,11 @@ interface Props {
   issues: string[];
   onRemove: (productId: string) => void;
   onContinue: () => void;
+  onCompare: () => void;
 }
 
 /** Sticky summary of what the customer has chosen, with the combined-cover check from the server. */
-export function SelectionBar({ selection, issues, onRemove, onContinue }: Props) {
+export function SelectionBar({ selection, issues, onRemove, onContinue, onCompare }: Props) {
   if (selection.length === 0) return null;
   return (
     <div className="sticky bottom-4 z-30 mt-6" data-no-reveal>
@@ -45,6 +46,15 @@ export function SelectionBar({ selection, issues, onRemove, onContinue }: Props)
               )}{" "}
               cover
             </div>
+            <button
+              type="button"
+              onClick={onCompare}
+              title={selection.length > 1 ? "Compare your selected plans" : "Compare this plan with another"}
+              className="inline-flex h-12 items-center gap-2 rounded-lg border border-[#D9D3E8] bg-white px-4 font-bold text-[#24212B] hover:border-[#7957FF]"
+            >
+              <Scale className="h-4 w-4 text-[#7957FF]" />
+              Compare
+            </button>
             <button
               type="button"
               onClick={onContinue}

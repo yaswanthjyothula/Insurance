@@ -92,6 +92,12 @@ async def _ask_models(prompt: str) -> Dict[str, Any]:
 
 
 async def interpret(text: str, base: AssessmentInput) -> Dict[str, Any]:
+    # 1. Pre-validation: check prompt relevance before calling LLM
+    cleaned = mask_personal_data(text).strip()
+    if not scenario_heuristic.is_relevant_scenario(cleaned):
+        return scenario_heuristic.read_scenario(cleaned, base)
+
+    # 2. Call constrained Gemini model
     if settings.GEMINI_API_KEY:
         result = await _ask_models(_build_prompt(text, base))
         if result:

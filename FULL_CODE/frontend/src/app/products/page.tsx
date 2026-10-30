@@ -18,7 +18,7 @@ import { UlipCustomizer } from "@/components/products/UlipCustomizer";
 import { useDebouncedPost } from "@/hooks/useDebouncedRequest";
 import { usePack } from "@/hooks/usePack";
 import { useRecommendations } from "@/hooks/useRecommendations";
-import { MAX_COMPARE, toggleCompare } from "@/lib/compare";
+import { compareGroup, MAX_COMPARE, toggleCompare, withSelectedQuotes } from "@/lib/compare";
 import { requestFromFit, upsertPlan } from "@/lib/plan-config";
 import { saveMyPlan, summariseSelection } from "@/lib/my-plan";
 import { formatINR } from "@/lib/utils";
@@ -67,7 +67,19 @@ export default function ProductsPage() {
     !!data && data.basket.items.length > 0 && data.basket.items.every((i) => selection.some((s) => s.request.product_id === i.product_id));
   const editingProduct = editing && pack ? pack.products[editing.product_id] : null;
 
-  const comparedFits = (data?.products ?? []).filter((p) => compareIds.includes(p.product_id));
+  const comparedFits = withSelectedQuotes(
+    (data?.products ?? []).filter((p) => compareIds.includes(p.product_id)),
+    selection,
+  );
+  const compareFull = compareIds.length >= MAX_COMPARE;
+  const toggle = (id: string) => setCompareIds((ids) => toggleCompare(ids, id));
+  // Two or more plans open side by side at once; a single plan joins the comparison and the customer picks another below
+  const compareNow = (ids: string[]) => {
+    const next = compareGroup([...ids, ...compareIds]);
+    setCompareIds(next);
+    if (next.length >= 2) setComparing(true);
+    else document.getElementById("all-products")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const proceed = () => {
     setStage(4);
@@ -145,8 +157,17 @@ export default function ProductsPage() {
 
       {data && (
         <div className={`flex flex-col gap-6 transition-opacity ${loading ? "opacity-60" : ""}`}>
-          <BasketSummary basket={data.basket} recommendedCover={data.recommended_cover} onUse={useBasket} active={basketActive} />
-          <section aria-label="All products" className="flex flex-col gap-4">
+          <BasketSummary
+            basket={data.basket}
+            recommendedCover={data.recommended_cover}
+            onUse={useBasket}
+            active={basketActive}
+            comparedIds={compareIds}
+            compareFull={compareFull}
+            onToggleCompare={toggle}
+            onCompareAll={compareNow}
+          />
+          <section id="all-products" aria-label="All products" className="flex scroll-mt-24 flex-col gap-4">
             <TypeTabs value={filter} counts={data.type_counts} onChange={setFilter} />
             <CompareBar
               names={comparedFits.map((f) => ({ id: f.product_id, name: f.product_name }))}
@@ -161,9 +182,9 @@ export default function ProductsPage() {
                   fit={fit}
                   selected={selection.some((s) => s.request.product_id === fit.product_id)}
                   compared={compareIds.includes(fit.product_id)}
-                  compareFull={compareIds.length >= MAX_COMPARE}
+                  compareFull={compareFull}
                   onCustomise={() => setEditing(fit)}
-                  onToggleCompare={() => setCompareIds((ids) => toggleCompare(ids, fit.product_id))}
+                  onToggleCompare={() => toggle(fit.product_id)}
                 />
               ))}
             </div>
@@ -177,11 +198,13 @@ export default function ProductsPage() {
         issues={basketIssues}
         onRemove={(id) => setSelection(selection.filter((p) => p.request.product_id !== id))}
         onContinue={proceed}
+        onCompare={() => compareNow(selection.map((p) => p.request.product_id))}
       />
 
       {comparing && pack && comparedFits.length >= 2 && (
         <CompareModal
           fits={comparedFits}
+          selectedIds={selection.map((p) => p.request.product_id)}
           products={pack.products}
           onClose={() => setComparing(false)}
           onRemove={(id) => {

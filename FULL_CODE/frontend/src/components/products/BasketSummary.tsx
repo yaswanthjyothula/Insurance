@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Scale } from "lucide-react";
 import { formatINR } from "@/lib/utils";
 import type { Basket, ProductFit } from "@/types/api";
 
@@ -7,10 +7,14 @@ interface Props {
   recommendedCover: number;
   onUse: (items: ProductFit[]) => void;
   active: boolean;
+  comparedIds: string[];
+  compareFull: boolean;
+  onToggleCompare: (id: string) => void;
+  onCompareAll: (ids: string[]) => void;
 }
 
 /** The engine's suggested combination: protection first, then goal or growth add-ons that fit the budget. */
-export function BasketSummary({ basket, recommendedCover, onUse, active }: Props) {
+export function BasketSummary({ basket, recommendedCover, onUse, active, comparedIds, compareFull, onToggleCompare, onCompareAll }: Props) {
   return (
     <section
       aria-label="Recommended basket"
@@ -47,6 +51,11 @@ export function BasketSummary({ basket, recommendedCover, onUse, active }: Props
               {formatINR(it.quote?.sum_assured ?? 0, { compact: true })} cover · {formatINR(it.quote?.total_instalment ?? 0)}
               {it.quote?.payment_option === "single" ? " once" : " a month"}
             </div>
+            <CompareTick
+              checked={comparedIds.includes(it.product_id)}
+              disabled={!comparedIds.includes(it.product_id) && compareFull}
+              onChange={() => onToggleCompare(it.product_id)}
+            />
           </li>
         ))}
       </ul>
@@ -64,6 +73,16 @@ export function BasketSummary({ basket, recommendedCover, onUse, active }: Props
         <button type="button" onClick={() => onUse(basket.items)} className="h-12 rounded-lg bg-[#7957FF] px-6 font-bold text-white">
           {active ? "Basket in my selection" : "Use this basket"}
         </button>
+        {basket.items.length > 0 && (
+          <button
+            type="button"
+            onClick={() => onCompareAll(basket.items.map((i) => i.product_id))}
+            className="inline-flex h-12 items-center gap-2 rounded-lg border border-[#D9D3E8] bg-white px-5 font-bold text-[#24212B] hover:border-[#7957FF]"
+          >
+            <Scale className="h-4 w-4 text-[#7957FF]" />
+            {basket.items.length > 1 ? "Compare these plans" : "Compare with other plans"}
+          </button>
+        )}
         {active && (
           <span className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-[#0B5E49]">
             <CheckCircle2 className="h-4 w-4" />
@@ -72,5 +91,17 @@ export function BasketSummary({ basket, recommendedCover, onUse, active }: Props
         )}
       </div>
     </section>
+  );
+}
+
+function CompareTick({ checked, disabled, onChange }: { checked: boolean; disabled: boolean; onChange: () => void }) {
+  return (
+    <label
+      className={`mt-3 inline-flex items-center gap-1.5 whitespace-nowrap text-[13.5px] font-semibold ${disabled ? "cursor-not-allowed text-[#8C879A]" : "cursor-pointer text-[#24212B]"}`}
+      title={disabled ? "You can compare up to 3 plans" : undefined}
+    >
+      <input type="checkbox" checked={checked} disabled={disabled} onChange={onChange} className="h-4 w-4 accent-[#7957FF]" />
+      Compare
+    </label>
   );
 }

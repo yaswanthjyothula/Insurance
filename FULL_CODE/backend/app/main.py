@@ -55,6 +55,18 @@ async def global_exception_handler(request: Request, exc: Exception):
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
+@app.get("/")
+def root():
+    return {
+        "service": settings.PROJECT_NAME,
+        "version": settings.VERSION,
+        "status": "online",
+        "docs_url": "/docs",
+        "api_v1_prefix": settings.API_V1_STR,
+        "frontend_url": "http://localhost:3000",
+    }
+
+
 @app.get("/health")
 def health_check():
     return {

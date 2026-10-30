@@ -1,4 +1,4 @@
-import type { ProductFit } from "@/types/api";
+import type { ProductFit, SelectedPlan } from "@/types/api";
 
 export const MAX_COMPARE = 3;
 
@@ -6,6 +6,19 @@ export const MAX_COMPARE = 3;
 export function toggleCompare(ids: string[], id: string): string[] {
   if (ids.includes(id)) return ids.filter((x) => x !== id);
   return ids.length >= MAX_COMPARE ? ids : [...ids, id];
+}
+
+/** Starts a comparison from a group of plans (the recommended basket or the selection), keeping the first three. */
+export function compareGroup(ids: string[]): string[] {
+  return [...new Set(ids)].slice(0, MAX_COMPARE);
+}
+
+/** A selected plan is compared as the customer configured it, not as the engine first suggested it. */
+export function withSelectedQuotes(fits: ProductFit[], selection: SelectedPlan[]): ProductFit[] {
+  return fits.map((f) => {
+    const chosen = selection.find((s) => s.request.product_id === f.product_id);
+    return chosen ? { ...f, quote: chosen.quote } : f;
+  });
 }
 
 type Pick = (fit: ProductFit) => number | null;
