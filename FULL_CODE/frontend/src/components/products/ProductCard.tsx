@@ -77,7 +77,7 @@ export function ProductCard({ fit, selected, compared, compareFull, onCustomise,
       {fit.eligible && (
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">
           <label
-            className={`inline-flex items-center gap-1.5 text-[13.5px] font-semibold ${compared || !compareFull ? "cursor-pointer text-[#24212B]" : "cursor-not-allowed text-[#8C879A]"}`}
+            className={`inline-flex items-center gap-1.5 whitespace-nowrap text-[13.5px] font-semibold ${compared || !compareFull ? "cursor-pointer text-[#24212B]" : "cursor-not-allowed text-[#8C879A]"}`}
             title={!compared && compareFull ? "You can compare up to 3 plans" : undefined}
           >
             <input
@@ -93,7 +93,7 @@ export function ProductCard({ fit, selected, compared, compareFull, onCustomise,
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
-            className="inline-flex items-center gap-1 text-[13.5px] font-semibold text-[#7957FF] hover:underline"
+            className="inline-flex items-center gap-1 whitespace-nowrap text-[13.5px] font-semibold text-[#7957FF] hover:underline"
           >
             Why this match
             <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
