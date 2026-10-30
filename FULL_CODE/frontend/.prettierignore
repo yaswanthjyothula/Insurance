@@ -1,0 +1,4 @@
+.next
+node_modules
+src/app/globals.css
+src/data/term_catalogue.json

@@ -1,0 +1,22 @@
+[project]
+name = "lifesure-backend"
+version = "1.0.0"
+description = "Needs-assessment, plan recommendation and advisory API for the B2 life insurance problem"
+requires-python = ">=3.9"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py39"
+extend-exclude = ["data_store", "model_artifacts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "T20"]
+ignore = ["S101", "UP006", "UP007", "UP035", "UP045", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "E501"]

@@ -1,24 +1,34 @@
+# Secrets
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# The problem pack's data, models and runtime data are never committed
+/FULL_CODE/data/
+/FULL_CODE/models/
+/FULL_CODE/backend/data_store/
+
 # Python
 .venv/
+venv/
 __pycache__/
 *.pyc
 .pytest_cache/
+.ruff_cache/
 
-# Node
+# Node and build output
 node_modules/
 .next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
 
-# OS & Zips
+# Editors, OS, zips, logs
 .DS_Store
+.idea/
+.vscode/
 *.zip
-
-# Local runtime data created while using or testing the app (the backend recreates these)
-backend/data_store/*.json
-
-# Environment files and secrets
-.env
-.env.*
-!**/.env.example
-
-# Trained model is rebuilt on first run (python -m app.ml.train); metrics.json is kept
-backend/model_artifacts/*.joblib
+*.log

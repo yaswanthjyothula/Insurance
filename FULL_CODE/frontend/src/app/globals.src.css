@@ -1,0 +1,562 @@
+@import "tailwindcss";
+
+:root {
+  --font-sans:
+    var(--font-jakarta), "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  --font-heading: var(--font-jakarta), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  --bg-primary: #ffffff;
+  --text-main: #24212b;
+  --accent-purple: #7957ff;
+}
+
+@theme {
+  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  --color-brand-purple: #7957ff;
+  --color-brand-purple-light: #f4f0ff;
+  --color-brand-purple-dark: #6240e6;
+  --color-brand-text: #24212b;
+  --color-brand-text-muted: #5a5566;
+  --color-brand-bg-gray: #f8f7fc;
+  --color-brand-border: #e8e5f0;
+}
+
+/* Light-only site: stop dark-mode browsers and extensions from darkening the page, form fields or scrollbars */
+html {
+  color-scheme: light only;
+  background-color: #ffffff;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.025em;
+}
+
+/* Custom UI Utilities */
+.shadow-soft {
+  box-shadow:
+    0 4px 20px -2px rgba(121, 87, 255, 0.08),
+    0 2px 6px -1px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-card-hover {
+  box-shadow:
+    0 12px 32px -4px rgba(121, 87, 255, 0.14),
+    0 4px 12px -2px rgba(0, 0, 0, 0.05);
+}
+
+.badge-purple {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: #f4f0ff;
+  color: #7957ff;
+  border: 1px solid rgba(121, 87, 255, 0.2);
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(232, 229, 240, 0.8);
+}
+
+/* Modern Card Lift Animation */
+.card-hover-lift {
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 25px -3px rgba(121, 87, 255, 0.12),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Subtle Animated Mesh / Glow */
+.purple-radial-glow {
+  background: radial-gradient(circle at 50% 0%, rgba(121, 87, 255, 0.12) 0%, rgba(255, 255, 255, 0) 70%);
+}
+
+.purple-radial-glow-hero {
+  background: radial-gradient(
+    1000px circle at 50% 10%,
+    rgba(121, 87, 255, 0.08) 0%,
+    rgba(244, 240, 255, 0.3) 40%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+/* Clean Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8f7fc;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d8d2e8;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7957ff;
+}
+
+/* Interactive Slider Custom Track and Thumb */
+input[type="range"] {
+  accent-color: #7957ff;
+}
+
+/* Accessible focus ring style */
+:focus-visible {
+  outline: 2px solid #7957ff;
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Motion System: micro-interactions, scroll reveals, card hover tilts
+   ========================================================================== */
+
+/* Shimmer on secondary / premium action buttons */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.32) 50%, transparent 100%);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+
+.btn-shimmer:hover::after {
+  animation: btn-shimmer-sweep 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes btn-shimmer-sweep {
+  0% {
+    left: -120%;
+  }
+
+  100% {
+    left: 200%;
+  }
+}
+
+/* Pulse badge for live / real-time / verified statuses */
+.badge-live-pulse {
+  position: relative;
+}
+
+.badge-live-pulse::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 9999px;
+  background-color: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: live-dot-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  vertical-align: middle;
+}
+
+.badge-live-pulse-amber::before {
+  background-color: #f59e0b;
+  box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+}
+
+@keyframes live-dot-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Lift on hover with a smooth cubic-bezier */
+.ls-lift {
+  transition:
+    transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.24s ease;
+  will-change: transform;
+}
+
+.ls-lift:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 14px 34px -6px rgba(121, 87, 255, 0.16),
+    0 6px 14px -3px rgba(36, 33, 43, 0.05);
+}
+
+/* Subtle 3D tilt on card hover */
+.ls-tilt-card {
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.ls-tilt-card:hover {
+  transform: translateY(-4px) rotateX(1.5deg) rotateY(-1deg);
+  box-shadow:
+    0 20px 40px -10px rgba(121, 87, 255, 0.18),
+    0 8px 18px -4px rgba(36, 33, 43, 0.06);
+}
+
+/* Number ticker settle pop */
+.ls-stat-settle {
+  animation: stat-settle 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes stat-settle {
+  0% {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.03);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Subtle ambient pulse for hero badges / trust seals */
+.ls-glow-ambient {
+  animation: glow-ambient 4s ease-in-out infinite;
+}
+
+@keyframes glow-ambient {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(121, 87, 255, 0.12),
+      0 6px 20px -2px rgba(121, 87, 255, 0.08);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(121, 87, 255, 0.3),
+      0 10px 30px -2px rgba(121, 87, 255, 0.22);
+  }
+}
+
+/* Scroll reveal helper classes: JS adds .is-in when in view */
+.ls-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.ls-reveal.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ls-reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ls-reveal-stagger.is-in > *:nth-child(1) {
+  transition-delay: 0.04s;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ls-reveal-stagger.is-in > *:nth-child(2) {
+  transition-delay: 0.1s;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ls-reveal-stagger.is-in > *:nth-child(3) {
+  transition-delay: 0.16s;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ls-reveal-stagger.is-in > *:nth-child(4) {
+  transition-delay: 0.22s;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ls-reveal-stagger.is-in > *:nth-child(5) {
+  transition-delay: 0.28s;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ls-reveal-stagger.is-in > *:nth-child(6) {
+  transition-delay: 0.34s;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ls-reveal-stagger.is-in > *:nth-child(7) {
+  transition-delay: 0.4s;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ls-reveal-stagger.is-in > *:nth-child(8) {
+  transition-delay: 0.46s;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Accessible reduced motion fallback */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .ls-reveal,
+  .ls-reveal-stagger > * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .ls-lift:hover,
+  .ls-tilt-card:hover {
+    transform: none !important;
+  }
+
+  .btn-shimmer::after {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Refined Site-Wide Polish: layered shadows, responsive typography, clean tokens
+   ========================================================================== */
+
+/* Multi-layered soft shadows: deeper perception of elevation without dark smudges */
+.shadow-elevated-sm {
+  box-shadow:
+    0 1px 2px rgba(36, 33, 43, 0.04),
+    0 3px 8px -2px rgba(121, 87, 255, 0.06);
+}
+
+.shadow-elevated-md {
+  box-shadow:
+    0 2px 4px rgba(36, 33, 43, 0.03),
+    0 8px 24px -4px rgba(121, 87, 255, 0.1);
+}
+
+.shadow-elevated-lg {
+  box-shadow:
+    0 4px 6px rgba(36, 33, 43, 0.03),
+    0 16px 40px -8px rgba(121, 87, 255, 0.16);
+}
+
+/* Hero gradient: vibrant yet readable behind text */
+.bg-hero-glow {
+  background: radial-gradient(
+    1100px 500px at 50% -40px,
+    rgba(121, 87, 255, 0.12) 0%,
+    rgba(244, 240, 255, 0.5) 45%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+/* Dot grid overlay for technical, precise financial feel */
+.bg-tech-grid {
+  background-image: radial-gradient(rgba(121, 87, 255, 0.14) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Premium interactive badge */
+.badge-interactive {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.badge-interactive:hover {
+  transform: scale(1.03);
+}
+
+/* Keyboard accessibility outline: crisp, brand-tinted, unclipped */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #7957ff;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ==========================================================================
+   Smooth scroll storytelling: reading progress, parallax, 3D lift, reveals
+   ========================================================================== */
+
+.ls-reveal-3d {
+  opacity: 0;
+  transform: perspective(1200px) translateY(36px) rotateX(8deg);
+  transform-origin: 50% 0;
+  transition:
+    opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.ls-reveal-3d.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.ls-reveal-flat {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.ls-reveal-flat.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes ls-enter-3d {
+  from {
+    opacity: 0;
+    transform: perspective(1200px) translateY(36px) rotateX(8deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ls-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 60;
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, #7957ff, #9277ff);
+  pointer-events: none;
+}
+
+[data-parallax],
+[data-scroll-tilt] {
+  will-change: translate, rotate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ls-reveal:not(.is-in) {
+    opacity: 1;
+    transform: none;
+  }
+
+  .ls-reveal.is-in,
+  .ls-reveal-flat.is-in {
+    animation: none;
+  }
+
+  .ls-reveal-flat:not(.is-in) {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-parallax],
+  [data-scroll-tilt] {
+    translate: none !important;
+    rotate: none !important;
+  }
+
+  .ls-tilt-card,
+  .ls-lift {
+    rotate: none;
+  }
+}
+
+/* Cursor aura and ripple disabled */
+.ls-aura,
+.ls-ripple {
+  display: none !important;
+}
+
+/* Result numbers settle in */
+@keyframes ls-pop {
+  0% {
+    transform: scale(0.96);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.ls-pop {
+  animation: ls-pop 0.35s ease-out;
+}

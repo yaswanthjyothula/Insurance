@@ -1,0 +1,12 @@
+Baseline profile:
+- Age: {age}
+- Annual income: Rs {annual_income:,.0f}
+- Annual household expenses: Rs {annual_expenses:,.0f}
+- Dependents: {dependents}
+- Outstanding loans: Rs {liabilities:,.0f}
+- Savings and investments: Rs {assets:,.0f}
+- Retirement age: {retirement_age}
+
+<customer_text>
+{customer_text}
+</customer_text>
