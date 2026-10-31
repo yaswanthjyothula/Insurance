@@ -144,3 +144,17 @@ def test_one_time_plans_are_not_judged_against_the_monthly_budget():
         r = recommend(to_recommend_request(profile))
         for note in r.basket.notes:
             assert "Single Premium costs at least" not in note
+
+
+def test_single_premiums_are_never_counted_as_a_monthly_cost():
+    # Abhishek Saxena's basket adds a single-premium ULIP; it once showed as "Rs 3,30,595 / month"
+    abhishek = recommend(to_recommend_request(get_pack().profiles["CUS-06ISGGSQ"])).basket
+    singles = [i for i in abhishek.items if i.quote.payment_option == "single"]
+    assert singles, "this customer's basket should include a single-premium plan"
+    assert abhishek.total_one_time == sum(i.quote.total_instalment for i in singles)
+    assert abhishek.total_monthly == sum(i.quote.total_instalment for i in abhishek.items if i.quote.payment_option != "single")
+    for profile in PROFILES:
+        basket = recommend(to_recommend_request(profile)).basket
+        regular = sum(i.quote.total_instalment for i in basket.items if i.quote.payment_option != "single")
+        assert basket.total_monthly == int(regular)
+        assert basket.within_budget == (basket.budget_monthly is None or regular <= basket.budget_monthly)

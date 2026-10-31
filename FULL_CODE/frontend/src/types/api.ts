@@ -98,6 +98,8 @@ export interface ProductFit {
 export interface Basket {
   items: ProductFit[];
   total_monthly: number;
+  /** Single-premium plans, paid once; never part of total_monthly. */
+  total_one_time?: number;
   total_cover: number;
   budget_monthly?: number | null;
   within_budget: boolean;

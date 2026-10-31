@@ -67,11 +67,14 @@ def _build_basket(fits: List[ProductFit], ctx: planning.Context) -> Basket:
     pack = get_pack()
     notes: List[str] = []
     items: List[ProductFit] = []
-    spent, bought, bought_non_term = 0.0, 0, 0
+    spent, one_time_total, bought, bought_non_term = 0.0, 0.0, 0, 0  # spent is monthly; single premiums are paid once and kept apart
     core = _top(fits, "Term Life")
     if core:
         items.append(core)
-        spent += core.quote.total_instalment
+        if core.quote.payment_option == "single":
+            one_time_total += core.quote.total_instalment
+        else:
+            spent += core.quote.total_instalment
         bought += core.quote.sum_assured
         if core.quote.sum_assured < ctx.gap:
             notes.append(_shortfall_note(core, ctx))
@@ -112,7 +115,10 @@ def _build_basket(fits: List[ProductFit], ctx: planning.Context) -> Basket:
         )
         again.reason = _reason(again)
         items.append(again)
-        spent += again.quote.total_instalment
+        if one_time:
+            one_time_total += again.quote.total_instalment
+        else:
+            spent += again.quote.total_instalment
         bought += again.quote.sum_assured
         bought_non_term += again.quote.sum_assured
     for it in items:
@@ -122,6 +128,7 @@ def _build_basket(fits: List[ProductFit], ctx: planning.Context) -> Basket:
     return Basket(
         items=items,
         total_monthly=int(spent),
+        total_one_time=int(one_time_total),
         total_cover=int(bought),
         budget_monthly=budget,
         within_budget=budget is None or spent <= budget,

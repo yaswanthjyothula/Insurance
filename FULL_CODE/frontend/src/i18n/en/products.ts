@@ -59,6 +59,7 @@ const products = {
   "products.basket.budget": "Budget {amount}",
   "products.basket.noBudget": "No budget set",
   "products.basket.itemOnce": "{cover} cover · {price} once",
+  "products.basket.plusOnce": "+ {amount} once",
   "products.basket.itemMonthly": "{cover} cover · {price} a month",
   "products.basket.inSelection": "Basket in my selection",
   "products.basket.use": "Use this basket",

@@ -39,6 +39,11 @@ export function BasketSummary({ basket, recommendedCover, onUse, active, compare
             {formatINR(basket.total_monthly)}
             <span className="text-[15px] font-semibold text-[#6F6A7C]"> {t("products.perMonthSuffix")}</span>
           </div>
+          {basket.total_one_time ? (
+            <div className="mt-1 text-[15px] font-bold tabular-nums text-[#24212B]">
+              {t("products.basket.plusOnce", { amount: formatINR(basket.total_one_time) })}
+            </div>
+          ) : null}
           <div className="mt-1 text-[13px] text-[#6F6A7C]">
             {basket.budget_monthly
               ? t("products.basket.budget", { amount: formatINR(basket.budget_monthly) })

@@ -60,6 +60,7 @@ class ProductFit(BaseModel):
 class Basket(BaseModel):
     items: List[ProductFit]
     total_monthly: int
+    total_one_time: int = 0  # single-premium plans, paid once and not part of the monthly total
     total_cover: int
     budget_monthly: Optional[int] = None
     within_budget: bool = True

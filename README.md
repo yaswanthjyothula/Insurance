@@ -71,7 +71,7 @@ From the repository root:
 python -m pytest
 ```
 
-That runs 456 backend tests: premium maths, needs, eligibility, recommendations, quick quote, admin live configuration, API, auth and the LLM layer (mocked).
+That runs 457 backend tests: premium maths, needs, eligibility, recommendations, quick quote, admin live configuration, API, auth and the LLM layer (mocked).
 
 ```bash
 cd FULL_CODE/frontend && npm test
